@@ -1,6 +1,7 @@
 ﻿#region MIT License
 
 /*
+ * Copyright (c) 2017 alangamedev.com
  * Copyright (c) 2009-2010 Nick Gravelyn (nick@gravelyn.com), Markus Ewald (cygon@nuclex.org)
  * 
  * Permission is hereby granted, free of charge, to any person obtaining a 
@@ -32,20 +33,9 @@ using System.IO;
 using System.Text.RegularExpressions;
 using sspack;
 
-public static class C
-{
-    public const int IMGSIZE = 2048;
-    public const string IMGFILE = "..\\..\\..\\TestGame\\Content\\atlas.png";
-    public const string MAPFILE = "..\\..\\..\\ælum\\Generated\\SpriteSheet.cs";
-//    public const string SOURCESROOT = "..\\..\\..\\TestGame\\Content\\_WORKING\\ATLAS";
-    public const string SOURCESROOT = "..\\..\\..\\TestGame\\_ATLAS";
-
-    public static float IMGSIZEF;
-}
 
 public class CsGenExporter : IMapExporter
 {
-    
     public string MapExtension => "cs";
 
     public struct IdRect
@@ -56,6 +46,25 @@ public class CsGenExporter : IMapExporter
 
     public void Save(string filename, Dictionary<string, Rectangle> map)
     {
+
+//        Packer.GetSpriteName = (spriteName,fullpath) =>
+//        {
+//            if (fullpath.Contains("PLAYABLE")) return "Plr_"+spriteName; 
+//            if (fullpath.Contains("CHARACTER")) return "Char_"+spriteName;
+//            if (fullpath.Contains("WALLS")) return "Wall_"+spriteName;
+//            if (fullpath.Contains("BLUEPRINT")) return "BPS_"+spriteName;
+//            return "Obj_"+spriteName;
+//        };
+
+        if (Packer.GetSpriteName == null)
+        {
+            Console.WriteLine("not custom spritename function provided, using default");
+            Packer.GetSpriteName = (spriteName,fullpath) =>
+            {
+                return spriteName;
+            };
+        }
+
         // copy the files list and sort alphabetically
         string[] keys = new string[map.Count];
         map.Keys.CopyTo(keys, 0);
@@ -63,26 +72,33 @@ public class CsGenExporter : IMapExporter
         outputFiles.Sort();
 
         List<IdRect> IDs = new List<IdRect>();
+        bool hasMissing = false;
         foreach (var fullpath in outputFiles)
         {
             // get the destination rectangle
             Rectangle destination = map[fullpath];
 
-            string imagename = Path.GetFileNameWithoutExtension(fullpath);
+            string spriteName;
+            if (fullpath.Contains("MISSING_SPRITE"))
+            {
+                spriteName = "MISSING_SPRITE";
+                hasMissing = true;
+            }
+            else
+                spriteName = Packer.GetSpriteName(Path.GetFileNameWithoutExtension(fullpath), fullpath);
                 
             //sanitize string
             const string regexPattern = @"[^a-zA-Z0-9]";
-            imagename = Regex.Replace(imagename, regexPattern, "_");
-
-            if (fullpath.Contains("PLAYABLE")) imagename = "Plr_"+imagename; 
-            else if (fullpath.Contains("CHARACTER")) imagename = "Char_"+imagename;
-            else if (fullpath.Contains("WALLS")) imagename = "Wall_"+imagename;
-            else if (fullpath.Contains("BLUEPRINT")) imagename = "BPS_"+imagename;
-            else imagename = "Obj_"+imagename;
-            
-            IDs.Add(new IdRect {id = imagename, rect = destination});
+            spriteName = Regex.Replace(spriteName, regexPattern, "_");
+            IDs.Add(new IdRect {id = spriteName, rect = destination});
         }
-        
+
+        if (!hasMissing)
+        {
+            Console.WriteLine("No missing sprite image provided! Please make an image called MISSING_SPRITE.png in your atlas directory for meaningful visual debugging helper");
+            IDs.Add(new IdRect {id = "MISSING_SPRITE", rect = new Rectangle(0,0,32,32)});
+        }
+
         using (StreamWriter writer = new StreamWriter(filename))
         {
 
@@ -111,10 +127,10 @@ public static class Sheet
             foreach (IdRect idRect in IDs)
             {
 
-                float x = idRect.rect.X/C.IMGSIZEF;
-                float y = idRect.rect.Y/C.IMGSIZEF;
-                float w = idRect.rect.Width/C.IMGSIZEF;
-                float h = idRect.rect.Height/C.IMGSIZEF;
+                float x = idRect.rect.X/Packer.IMGSIZEF;
+                float y = idRect.rect.Y/Packer.IMGSIZEF;
+                float w = idRect.rect.Width/Packer.IMGSIZEF;
+                float h = idRect.rect.Height/Packer.IMGSIZEF;
 
                 writer.WriteLine($"        Sprites[ID.{idRect.id}] = new RectF({x}f,{y}f,{w}f,{h}f);");
             }
@@ -132,32 +148,26 @@ public static class Sheet
     }
 }
 
-public class Program
+public class Packer
 {
-	static int Main(string[] args)
+    public static int Pack(string atlasDir, string outputDir, Func<string,string,string> namingFunc = null)
 	{
-		return Launch(args);
-	}
+	    SOURCESROOT = atlasDir;
+	    IMGFILE = outputDir+"\\atlas.png";
 
-	public static int Launch(string[] args)
-    {
-		// make sure we have our list of exporters
 		Exporters.Load();
-
-		// try to find matching exporters
 		IImageExporter imageExporter = new PngImageExporter();
 		IMapExporter mapExporter = new CsGenExporter();
             
 		// compile a list of images
 		List<string> images = new List<string>();
         
-        string[] allfiles = System.IO.Directory.GetFiles(C.SOURCESROOT, "*.*", System.IO.SearchOption.AllDirectories);
+        string[] allfiles = Directory.GetFiles(SOURCESROOT, "*.*", SearchOption.AllDirectories);
         foreach ( var file in allfiles){
             FileInfo info = new FileInfo(file);
             if(info.Extension == ".png")
                 images.Add(info.FullName);
         }
-
 
 		// make sure no images have the same name if we're building a map
 		for (int i = 0; i < images.Count; i++)
@@ -176,30 +186,34 @@ public class Program
 			}
 		}
 
-        // generate our output
-		ImagePacker imagePacker = new ImagePacker();
+        var imagePacker = new ImagePacker();
         
-		Bitmap outputImage;
+        Bitmap outputImage;
 		Dictionary<string, Rectangle> outputMap;
 
 		// pack the image, generating a map only if desired
-		int result = imagePacker.PackImage(images, true, true, C.IMGSIZE, C.IMGSIZE, 1, true, out outputImage, out outputMap);
+		int result = imagePacker.PackImage(images, true, true, IMGSIZE, IMGSIZE, 1, true, out outputImage, out outputMap);
 		if (result != 0)
 		{
 			Console.WriteLine("There was an error making the image sheet.");
 			return result;
 		}
 
-        C.IMGSIZEF = outputImage.Width;
+        IMGSIZEF = outputImage.Width;
+        
+		if (File.Exists(IMGFILE)) File.Delete(IMGFILE);
+		imageExporter.Save(IMGFILE, outputImage);
 
-		// try to save using our exporters
-		if (File.Exists(C.IMGFILE)) File.Delete(C.IMGFILE);
-		imageExporter.Save(C.IMGFILE, outputImage);
-
-		if (File.Exists(C.MAPFILE)) File.Delete(C.MAPFILE);
-        mapExporter.Save(C.MAPFILE, outputMap);
-
+		if (File.Exists(MAPFILE)) File.Delete(MAPFILE);
+        mapExporter.Save(MAPFILE, outputMap);
+        
 		return 0;
 	}
-    
+
+    public static float IMGSIZEF;
+    public const int IMGSIZE = 8096;
+    public static string IMGFILE = "..\\..\\TestGame\\Content\\atlas.png";
+    public const string MAPFILE = "..\\..\\..\\ælum\\Generated\\SpriteSheet.cs";
+    public static string SOURCESROOT = "..\\..\\TestGame\\_ATLAS";
+    public static Func<string, string, string> GetSpriteName;
 }

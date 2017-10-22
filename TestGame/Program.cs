@@ -10,7 +10,7 @@ public class PlayerScript : Script {
     public PlayerScript(Entity entity, float speed) : base(entity)
     {
         speed_ = speed;
-        currentProjectile = Sheet.ID.Obj_small_projectile;
+        currentProjectile = Sheet.ID.small_projectile;
     }
     public override void Update()
     {
@@ -71,7 +71,7 @@ class TestGame : Core
     {
         //create our player
         player_ = new Entity(new Vector2(8,15));
-        new Quad(player_, new QuadData(Sheet.ID.Obj_player));
+        new Quad(player_, new QuadData(Sheet.ID.player));
         new PlayerScript(player_, 25);
 
         //subscribe event
@@ -99,7 +99,7 @@ class TestGame : Core
             interval_ = 0;
             var enemy = new Entity(new Vector2(Randy.Range(20, 40), Randy.Range(6, 20)));
             new StaticBody(enemy).CreateCollider(new rectangleColliderData((Vector2.One * 2).ToVec2F()));
-            new Quad(enemy, new QuadData(Sheet.ID.Obj_enemy1));
+            new Quad(enemy, new QuadData(Sheet.ID.enemy1));
         }
     }
 
