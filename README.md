@@ -55,7 +55,7 @@ public class PersistentScript : Script
 ```
 The script above will automatically persist in the entity, it will be saved to disk when the chunk is being serialized, and loaded again when it's being deserialized. All primitive types are supported along with collections and some core types like Vectors and Rectangles.
 
-# Why we do stuff differently?
+# Why do we do stuff differently?
 
 Upon a closer look at the sources, the attentive coder will certainly notice that many things are done differently than the way most people are used to. While it's true that a lot of the code simply sucks, we try to keep things as simple as possible by taking advantage of the environment peculiarities (basically outsourcing complexity so we don't have to keep it in our code). Most notably, along with their respective reasoning, we have the following:
 
