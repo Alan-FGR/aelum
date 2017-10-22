@@ -1,10 +1,10 @@
 # Project Status: WIP
 
-How to build test game:
-1- Clone repository resursively
-3- Open Solution in VS2017
-3- Setup FNA binaries (deps)
-7- Cross fingers and hit Build :trollface:
+#### How to build test game:
+1. Clone repository recursively
+3. Open Solution in VS2017
+3. Setup FNA binaries (deps)
+7. Cross fingers and hit Build :trollface:
 
 # Why we do stuff differently?
 
