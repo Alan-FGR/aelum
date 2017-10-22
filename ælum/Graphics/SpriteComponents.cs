@@ -30,6 +30,7 @@ public struct SpriteData
 
 class Sprite : ManagedChunkedComponent<Sprite>
 {
+    // TODO calc sprites rects, we're currently just overscanning
     public static void DrawAll(SpriteBatch batcher)
     {
         foreach (KeyValuePair<Point, List<ManagedChunkedComponent<Sprite>>> chunk in chunks_)
@@ -41,7 +42,6 @@ class Sprite : ManagedChunkedComponent<Sprite>
         }
     }
 
-    // TODO calc sprites rects, we're currently just overscanning
     public static void DrawAllInRect(SpriteBatch batcher, RectF rect, Matrix spritesMatrix)
     {
         batcher.Begin(SpriteSortMode.FrontToBack, BlendState.Opaque, SamplerState.PointClamp, DepthStencilState.None, RasterizerState.CullNone, null, spritesMatrix);

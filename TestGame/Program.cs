@@ -1,5 +1,4 @@
-﻿using System.Collections.Generic;
-using System.Linq;
+﻿using System.Linq;
 using Microsoft.Xna.Framework;
 using Microsoft.Xna.Framework.Graphics;
 using Microsoft.Xna.Framework.Input;
@@ -21,7 +20,6 @@ public class PlayerScript : Script {
         if (Input.LMB.WasPressed())
         {
             var bullet = new Entity(entity.Position, Core.mainCam.WorldMousePosition - entity.Position);
-            bullet.persistent = false; //we don't save projectiles
             new Quad(bullet, new QuadData(currentProjectile));
             new Projectile(bullet, 60, 1);
         }
@@ -50,7 +48,6 @@ public class Projectile : Script
         if (hit.Key != null)
         {
             var body = (hit.Key.Body.UserData as PhysicalBody); // THIS SUCKCKCKCKCKCSSSSSSSSSSSS
-            //TODO GetPhysicalBody extension for farseer fixture and body
             body.entity.Dispose();
             entity.Dispose();
         }
@@ -58,8 +55,6 @@ public class Projectile : Script
             entity.Dispose();
     }
 }
-
-
 
 class TestGame : Core
 {
