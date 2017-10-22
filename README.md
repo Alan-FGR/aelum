@@ -28,6 +28,8 @@ public class PersistentScript : Script
 {
     float someData_;
     
+    // this is the normal constructor you call when creating the engine for the first time, it's not
+    // called when deserializing the script from persistent storage
     public PersistentScript(Entity entity, float someData) : base(entity)
     {
         someData_ = someData;
