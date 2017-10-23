@@ -32,26 +32,23 @@ public class PlayerScript : Script {
 public class Projectile : Script
 {
     private float speed_;
-    private int damage_;
     private float lifeTime_;
 
     public Projectile(Entity entity, float speed, int damage) : base(entity)
     {
-        damage_ = damage;
         speed_ = speed;
     }
 
     public override void Update()
     {
+        Vector2 lastPos = entity.Position;
         entity.Position += entity.Direction * speed_ * Core.lastDT;
         lifeTime_ += Core.lastDT;
 
-        var hit = Core.physWorld.RayCastSingle(entity.LastPosition, entity.Position);
+        var hit = Core.physWorld.RayCastSingle(lastPos, entity.Position);
         if (hit.Key != null)
         {
-            var body = (hit.Key.Body.UserData as PhysicalBody); // THIS SUCKCKCKCKCKCSSSSSSSSSSSS
-            //TODO GetPhysicalBody extension for farseer fixture and body
-            body.entity.Dispose();
+            hit.Key.GetPhysicalBody().entity.Dispose();
             entity.Dispose();
         }
         else if(lifeTime_ > 5)
@@ -98,7 +95,7 @@ class TestGame : Core
         {
             interval_ = 0;
             var enemy = new Entity(new Vector2(Randy.Range(20, 40), Randy.Range(6, 20)));
-            new StaticBody(enemy).CreateCollider(new rectangleColliderData((Vector2.One * 2).ToVec2F()));
+            new StaticBody(enemy).CreateCollider(new rectangleColliderData(Vector2.One * 2));
             new Quad(enemy, new QuadData(Sheet.ID.enemy1));
         }
     }
@@ -126,7 +123,7 @@ class TestGame : Core
     private void WorldDropFromUI(UI.IDraggable obj)
     {
         var e = new Entity(mainCam.WorldMousePosition);
-        new StaticBody(e).CreateCollider(new rectangleColliderData((Vector2.One * 2).ToVec2F()));
+        new StaticBody(e).CreateCollider(new rectangleColliderData(Vector2.One * 2));
         new Quad(e, new QuadData((obj as SpriteUIRect).sprite));
     }
 

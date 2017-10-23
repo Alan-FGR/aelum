@@ -76,11 +76,6 @@ public static partial class Extensions
         return new Point((int) v.X, (int) v.Y);
     }
 
-    public static vec2f ToVec2F(this Vector2 v)
-    {
-        return new vec2f{x = v.X, y = v.Y};
-    }
-
     public static Vector2 ToVector2(this Vector3 v)
     {
         return new Vector2(v.X, v.Y);
@@ -166,6 +161,18 @@ public static partial class Extensions
 
         return new KeyValuePair<Fixture, Vector2>(fixture, point);
     }
+    
+    public static PhysicalBody GetPhysicalBody(this Body b)
+    {
+        return b.UserData as PhysicalBody;
+    }
+
+    public static PhysicalBody GetPhysicalBody(this Fixture f)
+    {
+        return f.Body.GetPhysicalBody();
+    }
+
+    
 
     //rectangle
 

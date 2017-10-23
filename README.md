@@ -3,9 +3,11 @@
 #### How to build test game:
 1. Clone repository recursively
 3. Open Solution in VS2017
-3. Build and Run TestGameAssets (this step sucks :( )
+3. Build and Run TestGameAssets (this step sucks :worried:, more info below)
 3. Setup FNA binaries (deps)
 7. Cross fingers and hit Build :trollface:
+
+**NOTE:** 3rd step is required because it generates code that describes the assets, easiest way to rebuild your assets is to build and run in a new instance so you don't have to switch to the project. You can also automate that to automatically rebuild whenever files in your assets directories change.
 
 # Scripting
 Basic script:

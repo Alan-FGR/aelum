@@ -19,8 +19,6 @@ public sealed partial class Entity : IDisposable
     private Vector2 position_;
     private float rotation_;
 
-    public Vector2 LastPosition { get; private set; } // this is used in the region and chunk system
-
     public bool shifts
 #if ORIGIN_SHIFT
     {
@@ -34,6 +32,9 @@ public sealed partial class Entity : IDisposable
         }
     }
     private bool shifts_ = true; // not all entities should be directly origin shifted, e.g.: parented entities 
+
+    public Vector2 LastPosition { get; private set; } // this is used in the region and chunk system
+
 #else
     { private get { return false; } set {}}
 #endif
@@ -43,7 +44,13 @@ public sealed partial class Entity : IDisposable
     // accessors
     public Vector2 Position {
         get => position_;
-        set { LastPosition = position_; position_ = value; InformSpatialChange(); }
+        set
+        {
+#if ORIGIN_SHIFT      
+            LastPosition = position_;
+#endif
+            position_ = value; InformSpatialChange();
+        }
     }
     public float Rotation {
         get => rotation_;
@@ -56,14 +63,18 @@ public sealed partial class Entity : IDisposable
     
     public void SetPositionAndRotation(Vector2 position, float rotation)
     {
-        LastPosition = position_; 
+#if ORIGIN_SHIFT      
+        LastPosition = position_;
+#endif
         position_ = position;
         rotation_ = rotation;
         InformSpatialChange();
     }
     public void SetPositionAndDirection(Vector2 position, Vector2 direction)
     {
-        LastPosition = position_; 
+#if ORIGIN_SHIFT      
+        LastPosition = position_;
+#endif
         position_ = position;
         Direction = direction; //this will call Rotation which will call InformSpatialChange
     }
@@ -81,7 +92,9 @@ public sealed partial class Entity : IDisposable
 
     public Entity(Vector2 position, float rotation, List<ComponentData> components = null) // def constr
     {
+#if ORIGIN_SHIFT
         LastPosition = new Vector2(float.MinValue, float.MaxValue); 
+#endif
         position_ = position;
         rotation_ = rotation;
         entities_.Add(this);

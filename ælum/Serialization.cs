@@ -99,7 +99,7 @@ public interface colliderData
 //    [Key(0)] //???
     float Density {get;}
 //    [Key(1)] //???
-    vec2f Offset {get;}
+    Vector2 Offset {get;}
 
     void AddColliderToBody(Body body);
 }
@@ -110,27 +110,27 @@ public struct rectangleColliderData : colliderData
     //public colliderType Type => colliderType.Rectangle; //this is bug prone
     //colliderType colliderData.Type(){return colliderType.Rectangle;}
     [Key(0)] public float Density { get; }
-    [Key(1)] public vec2f Offset { get; }
-    [Key(2)] public vec2f dimensions;
+    [Key(1)] public Vector2 Offset { get; }
+    [Key(2)] public Vector2 dimensions;
 
     [SerializationConstructor]
-    public rectangleColliderData(float density, vec2f offset, vec2f dimensions)
+    public rectangleColliderData(float density, Vector2 offset, Vector2 dimensions)
     {
         this.dimensions = dimensions;
         Density = density;
         Offset = offset;
     }
 
-    public rectangleColliderData(vec2f dimensions, float density = 1, vec2f? offset = null)
+    public rectangleColliderData(Vector2 dimensions, float density = 1, Vector2? offset = null)
     {
         this.dimensions = dimensions;
         Density = density;
-        Offset = offset ?? new vec2f();
+        Offset = offset ?? new Vector2();
     }
 
     public void AddColliderToBody(Body body)
     {
-        FixtureFactory.AttachRectangle(dimensions.x, dimensions.y, Density, Offset.ToVector2(), body);
+        FixtureFactory.AttachRectangle(dimensions.X, dimensions.Y, Density, Offset, body);
     }
 }
 
@@ -139,10 +139,10 @@ public struct circleColliderData : colliderData
 {
     [Key(0)] public float radius;
     [Key(1)] public float Density { get; }
-    [Key(2)] public vec2f Offset { get; }
+    [Key(2)] public Vector2 Offset { get; }
     
     [SerializationConstructor]
-    public circleColliderData(float radius = 0.5f, float density = 1, vec2f offset = new vec2f())
+    public circleColliderData(float radius = 0.5f, float density = 1, Vector2 offset = new Vector2())
     {
         this.radius = radius;
         Density = density;
@@ -151,7 +151,7 @@ public struct circleColliderData : colliderData
 
     public void AddColliderToBody(Body body)
     {
-        FixtureFactory.AttachCircle(radius, Density, body, Offset.ToVector2());
+        FixtureFactory.AttachCircle(radius, Density, body, Offset);
     }
 }
 
@@ -179,24 +179,6 @@ public struct physicalComponentData
 
 
 //MISC TYPES (MATH, ETC.)
-[MessagePackObject]
-public struct vec2f
-{
-    [Key(0)]
-    public float x;
-    [Key(1)]
-    public float y;
-
-    public Vector2 ToVector2()
-    {
-        return new Vector2(x,y);
-    }
-    
-    public static vec2f ToVec2F(Vector2 vector2)
-    {
-        return vector2.ToVec2F();
-    }
-}
 
 // fixed point 2d vec used for storing relative positions in chunks, you gotta use a value at very most <1/2 of your max epsilon
 // so when you do math to calc relative positions from absolute coords, and then convert them back (say loading a region at another
