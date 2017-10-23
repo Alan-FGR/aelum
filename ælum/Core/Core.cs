@@ -42,6 +42,8 @@ public abstract partial class Core : Game
     public const float PX_TO_WORLD = 1f / PPU; // pixels to world
     public static bool DEBUG = true;
     public static int ATLAS_TO_WORLD { get; private set; }
+    public Color clearColor = Color.Black;
+    protected BlendState lightsBlendMode = BlendStateExtra.Multiply;
     
     // game arch shit
     public static Camera mainCam;
@@ -142,7 +144,7 @@ public abstract partial class Core : Game
 
         GraphicsDevice.SetRenderTarget(mainCam.RT(0));
         GraphicsDevice.SetStatesToDefault();
-        GraphicsDevice.Clear(Color.Black);
+        GraphicsDevice.Clear(clearColor);
         
         basicEffect.Projection = globalMatrix;
         basicEffect.Texture = atlas;
@@ -152,12 +154,13 @@ public abstract partial class Core : Game
         //render quads (and possibly meshes made of quads)
         Quad.DrawAllInRect(mainCam.GetCullRect(cullOverScan));
 
-        //render 2d lighting
-        //var lights = LightProjector.DrawAllInRect(mainCam.GetCullRect(20), globalMatrix);
-
         //render sprite components
         //TODO use private spritebatcher
-        //Sprite.DrawAllInRect(spriteBatch, mainCam.GetCullRect(cullOverScan), mainCam.GetSpritesViewMatrix());
+        Sprite.DrawAllInRect(spriteBatch, mainCam.GetCullRect(cullOverScan), mainCam.GetSpritesViewMatrix());
+
+        //render 2d lighting
+        var lights = LightProjector.DrawAllInRect(mainCam.GetCullRect(20), globalMatrix);
+
 
         //render UI
         Texture2D uiRender = UI.DrawUI();
@@ -170,7 +173,7 @@ public abstract partial class Core : Game
         RenderToScreen(mainCam.RT(0), BlendState.Opaque);
         
         //render lights and shadows
-        //RenderToScreen(lights.texture, BlendStateExtra.Multiply);
+        RenderToScreen(lights.texture, lightsBlendMode);
 
         //render UI
         spriteBatch.Begin(SpriteSortMode.Immediate, BlendState.AlphaBlend, SamplerState.PointClamp, DepthStencilState.Default, RasterizerState.CullCounterClockwise);

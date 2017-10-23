@@ -54,7 +54,7 @@ public abstract class Component
 {
     public readonly Entity entity;
 
-    public virtual void FinalizeComponent(){} //TODO IDisposable??
+    public virtual void FinalizeComponent(){}
     public virtual void EntityChanged(){}
 
     public abstract ComponentData GetSerialData();

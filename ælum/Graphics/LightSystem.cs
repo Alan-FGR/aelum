@@ -38,11 +38,18 @@ struct OccluderVertexFormat
     );
 }
 
-class LightOccluder : ManagedChunkedComponent<LightOccluder>
+public class LightOccluder : ManagedChunkedComponent<LightOccluder>
 {
-    public LightOccluder(Entity entity) : base(entity)
+    public static float SHADOW_BIAS = 0.00005f;
+
+    static LightOccluder()
     {
         
+    }
+
+    protected LightOccluder(Entity entity) : base(entity)
+    {
+
     }
 
     public enum OccluderShape{Cross,Vertical,Horizontal}
@@ -79,10 +86,17 @@ class LightOccluder : ManagedChunkedComponent<LightOccluder>
     public static IndexBuffer ib = new IndexBuffer(Core.GraphicsDevice, IndexElementSize.ThirtyTwoBits, 3, BufferUsage.WriteOnly);
     public static DynamicVertexBuffer vb = new DynamicVertexBuffer(Core.GraphicsDevice,VertexPositionTexture.VertexDeclaration,2,BufferUsage.WriteOnly);
     
-    private const float SHADOW_BIAS = 0.5f;
-    
     private readonly List<OccluderSegment> segments = new List<OccluderSegment>();
     private List<OccluderSegment> globalSegments;
+    public List<OccluderSegment> GlobalSegments
+    {
+        get {
+            if (globalSegments == null)
+                UpdateGlobalSegments(); //TODO FIX THIS
+            return globalSegments; }
+        set => globalSegments = value;
+    }
+
     private void UpdateGlobalSegments()
     {
         globalSegments = new List<OccluderSegment>(segments.Count);
@@ -102,7 +116,7 @@ class LightOccluder : ManagedChunkedComponent<LightOccluder>
         //collect all occluders segments in range
         foreach (LightOccluder occluder in GetComponentsInRect(rect))
         {
-            allOccludersSegments.AddRange(occluder.globalSegments);
+            allOccludersSegments.AddRange(occluder.GlobalSegments);
         }
 
         int verticesNeeded = allOccludersSegments.Count * 4 + 4; //each segment is a quad in vbo, PLUS the projector (first 4)
@@ -138,8 +152,8 @@ class LightOccluder : ManagedChunkedComponent<LightOccluder>
         //add shadow casters
         foreach (OccluderSegment segment in allOccludersSegments)
         {
-            verts.Add(new OccluderVertexFormat(segment.A.ToVector3(), 0.00005f)); //shadow biasing
-            verts.Add(new OccluderVertexFormat(segment.B.ToVector3(), 0.00005f));
+            verts.Add(new OccluderVertexFormat(segment.A.ToVector3(), SHADOW_BIAS)); //shadow biasing
+            verts.Add(new OccluderVertexFormat(segment.B.ToVector3(), SHADOW_BIAS));
             verts.Add(new OccluderVertexFormat(segment.B.ToVector3(), 1));
             verts.Add(new OccluderVertexFormat(segment.A.ToVector3(), 1));
 
@@ -166,7 +180,7 @@ class LightOccluder : ManagedChunkedComponent<LightOccluder>
     }
 }
 
-class LightProjector : ManagedChunkedComponent<LightProjector>
+public class LightProjector : ManagedChunkedComponent<LightProjector>
 {
     private float size_ = 17;
     private float centerOffset_ = 0;
@@ -174,8 +188,14 @@ class LightProjector : ManagedChunkedComponent<LightProjector>
     private Color lightColor_ = Color.White;
     private RenderTarget2D renderTarget_;
     
+    static readonly BlendState Max = new BlendState {
+        ColorSourceBlend = Blend.DestinationColor, ColorDestinationBlend = Blend.Zero, ColorBlendFunction = BlendFunction.Max,
+        AlphaSourceBlend = Blend.One, AlphaDestinationBlend = Blend.Zero, AlphaBlendFunction = BlendFunction.Add
+    };
+
     private static RenderTarget2D accumulation_;
-    private static int shadowsQuality_ = 4;
+    public static BlendState blendState_ = Max; //TODO FIXME
+    private static int shadowsQuality_ = 2;
     private static Point sizeLastCheck = Point.Zero;
     private static Effect shadowsEffect;
     private static Effect shadowsBlur;
@@ -191,18 +211,13 @@ class LightProjector : ManagedChunkedComponent<LightProjector>
         public Effect lastBlurEffect;
     }
     
-    static readonly BlendState Max = new BlendState {
-        ColorSourceBlend = Blend.DestinationColor, ColorDestinationBlend = Blend.Zero, ColorBlendFunction = BlendFunction.Max,
-        AlphaSourceBlend = Blend.One, AlphaDestinationBlend = Blend.Zero, AlphaBlendFunction = BlendFunction.Add
-    };
-
     public static void LoadContent()
     {
         shadowsEffect = Core.ContentManager.Load<Effect>("ExtrudeShadows");
         shadowsBlur = Core.ContentManager.Load<Effect>("ShadowsBlur");
     }
     
-    public LightProjector(Entity entity) : base(entity)
+    protected LightProjector(Entity entity) : base(entity)
     {
     }
 
@@ -210,11 +225,13 @@ class LightProjector : ManagedChunkedComponent<LightProjector>
     {
     }
 
-    public LightProjector(Entity entity, float size, float centerOffset, Texture2D lightTexture) : this(entity)
+    //TODO make light config object
+    public LightProjector(Entity entity, float size, float centerOffset, Texture2D lightTexture, Color? color = null) : this(entity)
     {
         size_ = size;
         centerOffset_ = centerOffset;
         lightTexture_ = lightTexture;
+        lightColor_ = color??Color.White;
     }
 
 //    public LightProjector(Entity entity, Texture2D lightTexture, float size, Color? lightColor = null, float centerOffset = 0) : base()
@@ -259,7 +276,7 @@ class LightProjector : ManagedChunkedComponent<LightProjector>
         Core.GraphicsDevice.Clear(Color.Black);
         float blurRadius = 2/3f;
         shadowsBlur.Parameters["pixelDimension"].SetValue(new Vector2(blurRadius/accumulation_.Width,blurRadius/accumulation_.Height));
-        Core.spriteBatch.Begin(SpriteSortMode.Deferred, Max, SamplerState.PointWrap, DepthStencilState.None,
+        Core.spriteBatch.Begin(SpriteSortMode.Deferred, blendState_, SamplerState.PointWrap, DepthStencilState.None,
             RasterizerState.CullNone, shadowsBlur);
         foreach (LightProjector light in GetComponentsInRect(rect))
         {

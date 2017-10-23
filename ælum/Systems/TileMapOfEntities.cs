@@ -119,7 +119,7 @@ public class EntityTile
 
     public void Finalize()
     {
-        entity?.Dispose();
+        entity?.Destroy();
     }
 }
 

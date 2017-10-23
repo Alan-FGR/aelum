@@ -11,7 +11,7 @@ using Microsoft.Xna.Framework;
 // you loop the pool and pass the entity to each component - where you do shit with them
 // entities[data_holder] -> components[data] -> systems[data_processors]
 
-public sealed partial class Entity : IDisposable
+public sealed partial class Entity
 {
     private static readonly List<Entity> entities_ = new List<Entity>();
     
@@ -152,7 +152,7 @@ public sealed partial class Entity : IDisposable
         return this;
     }
 
-    public void Dispose()
+    public void Destroy() // no way to have reliable deterministic finalization :(
     {
         entities_.Remove(this);
 #if ORIGIN_SHIFT
@@ -161,7 +161,20 @@ public sealed partial class Entity : IDisposable
         // we use this so we don't have to use weakrefs in the systems
         foreach (Component component in components)
             component.FinalizeComponent();
+
+#if DEBUG
+        isDestroyed = true;
     }
+    public bool isDestroyed { get; private set; } = false;
+    ~Entity()
+    {
+        if (!isDestroyed)
+            throw new Exception("entity was finalized (by GC probably) without being destroyed");
+    }
+#else
+    }
+#endif
+
 
 #if ORIGIN_SHIFT
     public static void ShiftAllEntities(Vector2 shift)

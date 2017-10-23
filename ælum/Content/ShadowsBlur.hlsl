@@ -6,7 +6,7 @@ float4 PixelShaderFunction(float4 color : COLOR0, float2 texCoord : TEXCOORD0) :
 {
     float4 Color;
     Color = tex2D(TextureSampler, texCoord.xy);
-
+    // naming sucksssssssssssss
     //Color += tex2D(TextureSampler, texCoord.xy + pixelDimension);
     //Color += tex2D(TextureSampler, texCoord.xy - pixelDimension);
 
@@ -19,7 +19,7 @@ float4 PixelShaderFunction(float4 color : COLOR0, float2 texCoord : TEXCOORD0) :
 
     Color = Color / 4;
 
-    return Color;
+    return Color*color;
 }
 
 technique Blur

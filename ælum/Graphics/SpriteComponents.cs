@@ -28,7 +28,7 @@ public struct SpriteData
     }
 }
 
-class Sprite : ManagedChunkedComponent<Sprite>
+public class Sprite : ManagedChunkedComponent<Sprite>
 {
     public static void DrawAll(SpriteBatch batcher)
     {

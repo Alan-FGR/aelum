@@ -12,6 +12,7 @@ public abstract class ManagedComponent<T> : Component // component that has a ma
     public override void FinalizeComponent()
     {
         systemComponents_.Remove(this);
+        base.FinalizeComponent();
     }
     protected static List<ManagedComponent<T>> GetAllComponents()
     {

@@ -218,7 +218,7 @@ public class Quad : ManagedChunkedComponent<Quad>
 
     public override void FinalizeComponent()
     {
+
         base.FinalizeComponent();
-        
     }
 }

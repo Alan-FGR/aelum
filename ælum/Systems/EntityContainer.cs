@@ -20,11 +20,11 @@ public class EntityContainer : Component
 
     public override void FinalizeComponent()
     {
-        base.FinalizeComponent();
         foreach (ChildEntityData ced in children)
         {
-            ced.entity.Dispose();
+            ced.entity.Destroy();
         }
+        base.FinalizeComponent();
     }
 
     public void AddChild(Entity child, bool inheritRotation = true, bool inheritPosition = true)

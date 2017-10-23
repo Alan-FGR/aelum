@@ -9,12 +9,12 @@ public abstract class Script : Behavior
 {
     private Dictionary<string, object> scriptData;
 
-    public Script(Entity entity) : base(entity)
+    protected Script(Entity entity) : base(entity)
     {
 
     }
 
-    public Script(Entity entity, Dictionary<string, object> scriptData) : this(entity)
+    protected Script(Entity entity, Dictionary<string, object> scriptData) : this(entity)
     {
         this.scriptData = scriptData;
     }
@@ -141,7 +141,7 @@ class Projectile : Script
         timeLived_ += Core.lastDT;
         if (timeLived_ > lifeTime_)
         {
-            entity.Dispose();
+            entity.Destroy();
             return;
         }
 
@@ -152,7 +152,7 @@ class Projectile : Script
         List<Fixture> cols = Core.physWorld.RayCast(lastPos, curPos);
         if (cols.Count > 0)
         {
-            entity.Dispose();
+            entity.Destroy();
 
             foreach (Fixture col in cols)
             {
@@ -193,7 +193,7 @@ class Rotator : Script
 
         if (Keys.X.WasPressed())
         {
-            entity.Dispose();
+            entity.Destroy();
         }
 
         if (Keys.L.IsDown())

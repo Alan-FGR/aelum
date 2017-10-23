@@ -23,7 +23,12 @@ public static class Randy
 
     public static Color NextColor()
     {
-        return new Color( NextFloat(), NextFloat(), NextFloat(), 1f);
+        return new Color(NextFloat(1), NextFloat(1), NextFloat(1), 1f);
+    }
+
+    public static Color NextSaturatedColor()
+    {
+        return new Color(NextFloat(1)>0.5f?1:0, NextFloat(1)>0.5f?1:0, NextFloat(1)>0.5f?1:0, 1f);
     }
 
     public static int Range(int min, int max)
