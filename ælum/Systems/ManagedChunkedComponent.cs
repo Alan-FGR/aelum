@@ -1,6 +1,7 @@
 using System;
 using System.Collections.Generic;
 using Microsoft.Xna.Framework;
+using Microsoft.Xna.Framework.Audio;
 
 //TODO deshitify
 //update: on a second thought... man all of this sucks
@@ -158,5 +159,111 @@ public abstract class ManagedChunkedComponent<T> : Component
             }
         }
     }
+}
 
+
+
+
+
+public class SoundPlayer : ManagedChunkedComponent<SoundPlayer>
+{
+    private const float SOUNDS_DIST = 16;
+
+    private SoundEffectInstance effectInstance_;
+
+    private bool lastInRange = false;
+    private bool inRange = false;
+    private void ResetCullState()
+    {
+        lastInRange = inRange;
+        inRange = false;
+    }
+    private void SetInRange()
+    {
+        inRange = true;
+    }
+    private void ProcessChange()
+    {
+        if (lastInRange != inRange)
+        {
+            if (inRange)// became hearable / was unculled
+            {
+//                if(effectInstance_.IsLooped)
+//                    effectInstance_.Play();
+            }
+            else //was culled out
+            {
+                effectInstance_.Stop();
+            }
+        }
+        if (inRange)
+        {
+            float vol = GetVolumeForPosition(entity.Position);
+            float pan = GetPanForPosition(entity.Position.X);
+            effectInstance_.Volume = vol;
+            effectInstance_.Pan = MathHelper.Clamp(pan,-1,1);
+//            DebugHelper.AddDebugText($"{vol}, {pan},\n {effectInstance_.Volume}, {effectInstance_.Pan}", entity.Position, Color.White);
+        }
+    }
+
+    private static float GetPanForPosition(float x)
+    {
+        return (x-Core.mainCam.Center.X)/SOUNDS_DIST/2;
+    }
+
+    protected static float GetVolumeForPosition(Vector2 pos)
+    {
+        return (SOUNDS_DIST - Vector2.Distance(Core.mainCam.Center, pos) + SOUNDS_DIST/2)/SOUNDS_DIST;
+    }
+
+
+
+
+    public static void PlayOneShotAt(SoundEffect sound, Vector2 position)
+    {
+        sound.Play(GetVolumeForPosition(position), 0, GetPanForPosition(position.X));
+    }
+
+
+
+
+
+    public SoundPlayer(Entity entity, SoundEffect effect) : base(entity)
+    {
+        effectInstance_ = effect.CreateInstance();
+    }
+
+    public void Play()
+    {
+        if (inRange)
+        {   
+            effectInstance_.Stop(true);
+            effectInstance_.Play();
+        }
+    }
+
+    public static void CullSoundsInRect(RectF rect)
+    {
+        //TODO store in range list to check when stuff gets in/outta range
+        //mark all as culled
+        foreach (SoundPlayer player in GetAllComponents())
+            player.ResetCullState();
+
+        //unmark the ones in rect
+        foreach (SoundPlayer player in GetComponentsInRect(rect))
+            player.SetInRange();
+
+        //process state changes
+        foreach (SoundPlayer player in GetAllComponents())
+            player.ProcessChange();
+
+    }
+
+//    public SoundPlayer(Entity entity, byte[] serialData) : this(entity)
+//    {}
+
+    public override ComponentData GetSerialData()
+    {
+        throw new NotImplementedException();
+    }
 }

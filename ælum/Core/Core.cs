@@ -12,7 +12,9 @@ using Microsoft.Xna.Framework.Input;
 using FarseerPhysics.Dynamics;
 using MessagePack;
 using MessagePack.Resolvers;
+using Microsoft.Xna.Framework.Audio;
 using Microsoft.Xna.Framework.Content;
+using Microsoft.Xna.Framework.Media;
 
 //TODO offset half a pixel when origin is centered on objects of odd pixel dimension??? OR NOT? =/
 
@@ -56,6 +58,12 @@ public abstract partial class Core : Game
     public Action OnBeforePhysicsUpdate;
     public Action OnEndUpdate;
     public Action OnBeforeDraw; // don't use for logic other that purely visual and unimportant or pre processing
+
+    //audio
+//    private Song BGM;
+//    public MediaPlayer BGMPlayer { get; private set; } holy jesus, this is static? 0_o
+    
+
 
     public Core()
     {
@@ -151,6 +159,8 @@ public abstract partial class Core : Game
         basicEffect.TextureEnabled = true;
         basicEffect.CurrentTechnique.Passes[0].Apply();
         
+        //THIS ALL SUCKS!! WE NEED A PROPER COMPONENT_SYSTEMS HANDLING SYSTEM BASED ON EVENTS!
+
         //render quads (and possibly meshes made of quads)
         Quad.DrawAllInRect(mainCam.GetCullRect(cullOverScan));
 
@@ -182,6 +192,10 @@ public abstract partial class Core : Game
 
 
         if (DEBUG) RenderToScreen(DebugHelper.instance.dbgRT, BlendState.NonPremultiplied, new Color(1,1,1,0.75f));
+
+
+        //audio TODO move from here
+        SoundPlayer.CullSoundsInRect(mainCam.GetCullRect());
 
     }
 

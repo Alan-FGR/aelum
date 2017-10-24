@@ -1,8 +1,10 @@
 ﻿using System.Collections.Generic;
 using System.Linq;
 using Microsoft.Xna.Framework;
+using Microsoft.Xna.Framework.Audio;
 using Microsoft.Xna.Framework.Graphics;
 using Microsoft.Xna.Framework.Input;
+using Microsoft.Xna.Framework.Media;
 
 public class PlayerScript : Script {
     private const float SPEED = 25;
@@ -15,11 +17,13 @@ public class PlayerScript : Script {
     public override void Update()
     {
         float movement = Keys.W.IsDown() ? SPEED : Keys.S.IsDown() ? -SPEED : 0;
-        float multiplier = Keys.LeftShift.IsDown() ? 2 : 1;
-        entity.Position += new Vector2(0,movement * multiplier * Core.lastDT);
+        float dbgmovement = Keys.D.IsDown() ? SPEED : Keys.A.IsDown() ? -SPEED : 0;
+        float multiplier = Keys.LeftShift.IsDown() ? 2 : 0.5f;
+        entity.Position += new Vector2(dbgmovement*Core.lastDT*multiplier,movement * multiplier * Core.lastDT);
 
         if (Input.LMB.WasPressed())
         {
+            entity.GetComponent<SoundPlayer>()?.Play(); //you'll want to cache this
             var bullet = new Entity(entity.Position, Core.mainCam.WorldMousePosition - entity.Position);
             new Quad(bullet, new QuadData(Sheet.ID.small_projectile)); //add quad to render bullet
             new Projectile(bullet, 60); // add projectile script to bullet
@@ -49,6 +53,7 @@ public class Projectile : Script
         if (hit.Key != null)
         {
             hit.Key.GetPhysicalBody().entity.Destroy();
+            SoundPlayer.PlayOneShotAt(TestGame.ExplosionSound, entity.Position);
             entity.Destroy();
         }
         else if(lifeTime_ > 5)
@@ -79,15 +84,20 @@ public class Rotate : Script
 class TestGame : Core
 {
     static void Main() { using (var game = new TestGame()) game.Run(); }
-    
+
+    public static SoundEffect ExplosionSound;
+
     public TestGame()
     {
+
+        ExplosionSound = Content.Load<SoundEffect>("explosion");
+
         //create our player
         Entity player = new Entity(new Vector2(8,15));
         new Quad(player, new QuadData(Sheet.ID.player));
         new PlayerScript(player);
         new LightOccluder(player, LightOccluder.OccluderShape.Horizontal, 2f);
-
+        new SoundPlayer(player, Content.Load<SoundEffect>("laser"));
 
         //we add a light for the player ship
         Texture2D lightTexture = Content.Load<Texture2D>("light");
@@ -115,6 +125,12 @@ class TestGame : Core
 
         //subscribe event
         OnBeforePhysicsUpdate += SpawnEnemy;
+
+
+        //audio
+//        MediaPlayer.Play(Content.Load<Song>("bgm"));
+//        MediaPlayer.Volume = 0.4f;
+
 
         //list all sprites in some UI
         UI.Layout spritesLo = UI.RootRect.AddChild(new UI.Layout(0,0,40,40));
