@@ -56,14 +56,16 @@ public class Projectile : Script
 
 public class Rotate : Script
 {
-    private readonly float speed_;
+    private float speed_;
     public Rotate(Entity entity, float speed) : base(entity)
     {
         speed_ = speed;
         StoreScriptData("speed",speed_);//we store the data for this script, so it persists in save file
     }
     //constructor used for deserialization
-    public Rotate(Entity entity, Dictionary<string, object> scriptData) : base(entity, scriptData)
+    public Rotate(Entity entity) : base(entity){}
+
+    protected override void AfterDeserialization()
     {
         speed_ = RetrieveScriptData<float>("speed");//we retrieve data stored when deserializing
     }
