@@ -7,8 +7,10 @@ using Microsoft.Xna.Framework.Input;
 public class PlayerScript : Script {
     private const float SPEED = 25;
 
-    //when you're not saving any data for script and it's persistent, this constructor is used when deserializing
     public PlayerScript(Entity entity) : base(entity){}
+
+    //when you're not saving any data for script but since it's persistent, we need this ctor for deserializing
+    public PlayerScript(ScriptSerialData serialData) : base(serialData) {}
 
     public override void Update()
     {
@@ -63,7 +65,7 @@ public class Rotate : Script
         StoreScriptData("speed",speed_);//we store the data for this script, so it persists in save file
     }
     //constructor used for deserialization
-    public Rotate(Entity entity, Dictionary<string, object> scriptData) : base(entity, scriptData)
+    public Rotate(ScriptSerialData serialData) : base(serialData)
     {
         speed_ = RetrieveScriptData<float>("speed");//we retrieve data stored when deserializing
     }

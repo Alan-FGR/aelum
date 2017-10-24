@@ -31,17 +31,17 @@ public class PersistentScript : Script
 {
     float someData_;
     
-    // this is the normal constructor you call when creating the engine for the first time, it's not
+    // this is the normal constructor you call when creating the entity for the first time, it's not
     // called when deserializing the script from persistent storage
     public PersistentScript(Entity entity, float someData) : base(entity)
     {
         someData_ = someData;
     }
 
-    // this is the deserialization ctor, pay no attention to params, just alt-enter it, we do this
+    // this is the deserialization ctor, pay no attention to params, just alt-insert them. we do this
     // so we don't need an AfterDeserialization callback what would require us to track initialization
     // state of the object since in C# you can't have a virtual call in the base class ctor
-    public PersistentScript(Entity entity, Dictionary<string, object> scriptData) : base(entity, scriptData)
+    public PersistentScript(ScriptSerialData serialData) : base(serialData)
     {
         someData_ = RetrieveScriptData<float>("someKey");
     }

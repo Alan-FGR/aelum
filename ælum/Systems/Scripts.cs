@@ -5,6 +5,18 @@ using MessagePack;
 using Microsoft.Xna.Framework;
 using Microsoft.Xna.Framework.Input;
 
+
+public struct ScriptSerialData
+{
+    public Entity entity;
+    public Dictionary<string, object> scriptData;
+    public ScriptSerialData(Entity entity, Dictionary<string, object> data)
+    {
+        this.entity = entity;
+        this.scriptData = data;
+    }
+}
+
 public abstract class Script : Behavior
 {
     private Dictionary<string, object> scriptData;
@@ -14,9 +26,9 @@ public abstract class Script : Behavior
 
     }
 
-    protected Script(Entity entity, Dictionary<string, object> scriptData) : this(entity)
+    protected Script(ScriptSerialData serialData) : this(serialData.entity)
     {
-        this.scriptData = scriptData;
+        scriptData = serialData.scriptData;
     }
 
     protected void StoreScriptData(string key, object data)
@@ -61,11 +73,6 @@ public abstract class Script : Behavior
 
 class PlayerController : Script
 {
-    public PlayerController(Entity entity, Dictionary<string, object> scriptData) : base(entity, scriptData)
-    {
-
-    }
-
     public PlayerController(Entity entity) : base(entity)
     {
 
@@ -181,10 +188,10 @@ class Rotator : Script
         StoreScriptData("spd", speed);
     }
 
-    public Rotator(Entity entity, Dictionary<string, object> scriptData) : base(entity, scriptData)
+
+    public Rotator(ScriptSerialData serialData) : base(serialData)
     {
         speed = RetrieveScriptData<float>("spd");
-
     }
     
     public override void Update()
@@ -217,7 +224,7 @@ class ICANHAZNAME : Script
         StoreScriptData("n", name);
     }
 
-    public ICANHAZNAME(Entity entity, Dictionary<string, object> scriptData) : base(entity, scriptData)
+    public ICANHAZNAME(ScriptSerialData serialData) : base(serialData)
     {
         name = RetrieveScriptData<string>("n");
     }
