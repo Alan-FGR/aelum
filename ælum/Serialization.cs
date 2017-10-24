@@ -73,10 +73,8 @@ public struct ComponentData
 [MessagePackObject]
 public struct ScriptTypeAndData
 {
-    [Key(0)]
-    public string ScriptType;
-    [Key(1)]
-    public Dictionary<string, object> ScriptData;
+    [Key(0)] public string ScriptType;
+    [Key(1)] public Dictionary<string, object> ScriptData;
 }
 
 
@@ -85,10 +83,8 @@ public struct ScriptTypeAndData
 [MessagePackObject]
 public struct DynamicBodyData
 {
-    [Key(0)]
-    public bool kinematic;
-    [Key(1)]
-    public List<colliderData> colliders;
+    [Key(0)] public bool kinematic;
+    [Key(1)] public List<colliderData> colliders;
 }
 
 [Union(0, typeof(rectangleColliderData))]
@@ -160,8 +156,8 @@ public struct circleColliderData : colliderData
 [MessagePackObject]
 public struct OccluderSegment
 {
-    public Vector2 A;
-    public Vector2 B;
+    [Key(0)] public Vector2 A;
+    [Key(1)] public Vector2 B;
     public OccluderSegment(Vector2 a, Vector2 b)
     {
         A = a;
@@ -409,6 +405,7 @@ internal static class SzMessagePackResolverHelper
     {
         {typeof(Vector2), new Vector2Formatter()},
         {typeof(Point), new PointFormatter()},
+        {typeof(Color), new ColorFormatter()},
         // add more your own custom serializers.
     };
 
@@ -468,5 +465,29 @@ class PointFormatter : IMessagePackFormatter<Point>
         offset += readSize;
         readSize = offset - startOffset;
         return new Point(x, y);
+    }
+}
+
+class ColorFormatter : IMessagePackFormatter<Color>
+{
+    public int Serialize(ref byte[] bytes, int offset, Color value, IFormatterResolver formatterResolver)
+    {
+        var startOffset = offset;
+        offset += MessagePackBinary.WriteByte(ref bytes, offset, value.R);
+        offset += MessagePackBinary.WriteByte(ref bytes, offset, value.G);
+        offset += MessagePackBinary.WriteByte(ref bytes, offset, value.B);
+        offset += MessagePackBinary.WriteByte(ref bytes, offset, value.A);
+        return offset - startOffset;
+    }
+
+    public Color Deserialize(byte[] bytes, int offset, IFormatterResolver formatterResolver, out int readSize)
+    {
+        var startOffset = offset;
+        var R = MessagePackBinary.ReadInt32(bytes, offset, out readSize); offset += readSize;
+        var G = MessagePackBinary.ReadInt32(bytes, offset, out readSize); offset += readSize;
+        var B = MessagePackBinary.ReadInt32(bytes, offset, out readSize); offset += readSize;
+        var A = MessagePackBinary.ReadInt32(bytes, offset, out readSize); offset += readSize;
+        readSize = offset - startOffset;
+        return new Color(R,G,B,A);
     }
 }

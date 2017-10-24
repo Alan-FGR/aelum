@@ -48,7 +48,7 @@ public abstract class Script : Behavior
     public sealed override ComponentData GetSerialData()
     {
         BeforeSerialization();
-        ScriptTypeAndData stad = new ScriptTypeAndData{ScriptType = GetType().FullName, ScriptData = scriptData};
+        ScriptTypeAndData stad = new ScriptTypeAndData{ScriptType = GetType().AssemblyQualifiedName, ScriptData = scriptData};
         return new ComponentData(ComponentTypes.Script, MessagePackSerializer.Serialize(stad));
     }
 

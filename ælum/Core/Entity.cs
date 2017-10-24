@@ -195,6 +195,14 @@ public sealed partial class Entity
         return new entityData{position = position_, rotation = rotation_, components = GetComponentsCerealList()};
     }
 
+    public static void DestroyAll()
+    {
+        for (var i = entities_.Count - 1; i >= 0; i--)
+        {
+            entities_[i].Destroy();
+        }
+    }
+
     public static void SaveAll(string path)
     {
         var ecds = new List<entityData>(entities_.Count);

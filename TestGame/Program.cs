@@ -12,6 +12,13 @@ public class PlayerScript : Script {
         speed_ = speed;
         currentProjectile = Sheet.ID.small_projectile;
     }
+
+    //for deserialization when no data is saved
+    public PlayerScript(Entity entity) : base(entity)
+    {
+        currentProjectile = Sheet.ID.small_projectile;
+    }
+
     public override void Update()
     {
         float movement = Keys.W.IsDown() ? speed_ : Keys.S.IsDown() ? -speed_ : 0;
@@ -63,6 +70,11 @@ public class Rotate : Script
     public Rotate(Entity entity, float speed) : base(entity)
     {
         speed_ = speed;
+        StoreScriptData("s",speed_);
+    }
+    public Rotate(Entity entity, Dictionary<string, object> scriptData) : base(entity, scriptData)
+    {
+        speed_ = RetrieveScriptData<float>("s");
     }
     public override void Update()
     {
@@ -112,8 +124,22 @@ class TestGame : Core
         //subscribe event, dropping sprites onto scene creates entities with the sprite
         UI.RootRect.OnDrop += WorldDropFromUI;
 
-    }
 
+        //saving and loading scene
+        OnBeforeLogicUpdate += () =>
+        {
+            if (Keys.D1.WasPressed())
+                Entity.SaveAll("savedata");
+            else if (Keys.D2.WasPressed())
+            {
+                Entity.DestroyAll();
+                Entity.LoadAll("savedata");
+            }
+        };
+
+
+    }
+    
     private float interval_ = 3;
     public void SpawnEnemy()
     {

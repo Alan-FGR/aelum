@@ -43,7 +43,9 @@ public static class ComponentFactory
         if (componentData.typeId == ComponentTypes.Script)
         {
             ScriptTypeAndData stad = MessagePackSerializer.Deserialize<ScriptTypeAndData>(componentData.serialData);
-            return Activator.CreateInstance(Type.GetType(stad.ScriptType), entity, stad.ScriptData) as Component;
+            if (stad.ScriptData != null)
+                return Activator.CreateInstance(Type.GetType(stad.ScriptType), entity, stad.ScriptData) as Component;
+            return Activator.CreateInstance(Type.GetType(stad.ScriptType), entity) as Component;
         }
 
         throw new Exception("component type couldn't be resolved; make sure to add all serializable types to this method");

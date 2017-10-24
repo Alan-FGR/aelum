@@ -182,10 +182,6 @@ public class LightOccluder : ManagedChunkedComponent<LightOccluder>
 
 public class LightProjector : ManagedChunkedComponent<LightProjector>
 {
-    private float size_ = 17;
-    private float centerOffset_ = 0;
-    private Texture2D lightTexture_;
-    private Color lightColor_ = Color.White;
     private RenderTarget2D renderTarget_;
     
     static readonly BlendState Max = new BlendState {
@@ -223,15 +219,46 @@ public class LightProjector : ManagedChunkedComponent<LightProjector>
 
     public LightProjector(Entity entity, byte[] serialData) : this(entity)
     {
+        cfg = MessagePackSerializer.Deserialize<LightProjectorConfig>(serialData);
+        InitRT();
     }
 
-    //TODO make light config object
+    [MessagePackObject]
+    public struct LightProjectorConfig
+    {
+        [Key(0)] public float size;
+        [Key(1)] public float centerOffset;
+        [IgnoreMember] public Texture2D lightTexture;
+        [Key(2)] public string TextureName => lightTexture.Name;
+        [Key(3)] public Color lightColor;
+
+        //TODO FIX ALL THIS SHIT
+        [SerializationConstructor]
+        public LightProjectorConfig(float size, float centerOffset, string TextureName, Color lightColor) //WTH!
+        {
+            this.size = size;
+            this.centerOffset = centerOffset;
+            this.lightTexture = Core.ContentManager.Load<Texture2D>(TextureName); //WTFH!!
+            this.lightColor = lightColor;
+        }
+
+        public LightProjectorConfig(float size, float centerOffset, Texture2D lightTexture, Color lightColor)
+        {
+            this.size = size;
+            this.centerOffset = centerOffset;
+            this.lightTexture = lightTexture;
+            this.lightColor = lightColor;
+        }
+    }
+    public LightProjectorConfig cfg;
+    
     public LightProjector(Entity entity, float size, float centerOffset, Texture2D lightTexture, Color? color = null) : this(entity)
     {
-        size_ = size;
-        centerOffset_ = centerOffset;
-        lightTexture_ = lightTexture;
-        lightColor_ = color??Color.White;
+        cfg.size = size;
+        cfg.centerOffset = centerOffset;
+        cfg.lightTexture = lightTexture;
+        cfg.lightColor = color??Color.White;
+        InitRT();
     }
 
 //    public LightProjector(Entity entity, Texture2D lightTexture, float size, Color? lightColor = null, float centerOffset = 0) : base()
@@ -241,7 +268,13 @@ public class LightProjector : ManagedChunkedComponent<LightProjector>
 //        centerOffset_ = centerOffset;
 //        lightColor_ = lightColor ?? Color.White;
 //    }
-    
+
+    void InitRT()
+    {
+        renderTarget_?.Dispose();
+        renderTarget_ = new RenderTarget2D(Core.GraphicsDevice,Core.mainCam.RT(0).Width/shadowsQuality_,Core.mainCam.RT(0).Height/shadowsQuality_);
+    }
+
     public static Result DrawAllInRect(RectF rect, Matrix globalProjMatrix)
     {
         //init/resize render buffer if necessary
@@ -252,8 +285,7 @@ public class LightProjector : ManagedChunkedComponent<LightProjector>
             accumulation_ = new RenderTarget2D(Core.GraphicsDevice,Core.mainCam.RT(0).Width/shadowsQuality_,Core.mainCam.RT(0).Height/shadowsQuality_);
             foreach (LightProjector light in GetAllComponents())
             {
-                light.renderTarget_?.Dispose();
-                light.renderTarget_ = new RenderTarget2D(Core.GraphicsDevice,Core.mainCam.RT(0).Width/shadowsQuality_,Core.mainCam.RT(0).Height/shadowsQuality_);
+                light.InitRT();
             }
         }
 
@@ -291,7 +323,7 @@ public class LightProjector : ManagedChunkedComponent<LightProjector>
 
     public void Accumulate()
     {
-        Core.spriteBatch.Draw(renderTarget_, new Vector2(0,0), lightColor_);
+        Core.spriteBatch.Draw(renderTarget_, new Vector2(0,0), cfg.lightColor);
     }
 
     public virtual void Draw()
@@ -303,15 +335,15 @@ public class LightProjector : ManagedChunkedComponent<LightProjector>
         float sinT = (float) Math.Sin(entity.Rotation+Math.PI/4);
         float cosT = (float) Math.Cos(entity.Rotation+Math.PI/4);
         
-        Vector3 fwdCenter = MathUtils.AngleToDirection(entity.Rotation).ToVector3()*-centerOffset_;
+        Vector3 fwdCenter = MathUtils.AngleToDirection(entity.Rotation).ToVector3()*-cfg.centerOffset;
 
-        Vector3 localCorner0 = fwdCenter + new Vector3(size_*-sinT,size_*cosT,0);
-        Vector3 localCorner1 = fwdCenter + new Vector3(size_*cosT, size_*sinT,0);
-        Vector3 localCorner2 = fwdCenter + new Vector3(size_*sinT, size_*-cosT,0);
-        Vector3 localCorner3 = fwdCenter + new Vector3(size_*-cosT,size_*-sinT,0);
+        Vector3 localCorner0 = fwdCenter + new Vector3(cfg.size*-sinT,cfg.size*cosT,0);
+        Vector3 localCorner1 = fwdCenter + new Vector3(cfg.size*cosT, cfg.size*sinT,0);
+        Vector3 localCorner2 = fwdCenter + new Vector3(cfg.size*sinT, cfg.size*-cosT,0);
+        Vector3 localCorner3 = fwdCenter + new Vector3(cfg.size*-cosT,cfg.size*-sinT,0);
 
         shadowsEffect.Parameters["Origin"].SetValue(entity.Position); //set shadows extrude origin
-        shadowsEffect.Parameters["Texture"].SetValue(lightTexture_);
+        shadowsEffect.Parameters["Texture"].SetValue(cfg.lightTexture);
         shadowsEffect.Parameters["projCorner0"].SetValue(entity.Position.ToVector3(-9)+localCorner0);
         shadowsEffect.Parameters["projCorner1"].SetValue(entity.Position.ToVector3(-9)+localCorner1);
         shadowsEffect.Parameters["projCorner2"].SetValue(entity.Position.ToVector3(-9)+localCorner2);
@@ -333,7 +365,7 @@ public class LightProjector : ManagedChunkedComponent<LightProjector>
 
     public override ComponentData GetSerialData()
     {
-        throw new NotImplementedException();
+        return new ComponentData(ComponentTypes.LightProjector, MessagePackSerializer.Serialize(cfg));
     }
 }
 
