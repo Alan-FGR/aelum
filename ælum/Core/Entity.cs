@@ -170,6 +170,9 @@ public sealed partial class Entity
     {
         if (!isDestroyed)
             throw new Exception("entity was finalized (by GC probably) without being destroyed");
+        //Q: why can't we just do this for release so when entity isn't destroyed manually it's destroyed here (dtor)?
+        //A: because this isn't deterministic (i.e.: unreliable) so we gotta make sure to destroy entities manually
+        //what we could do however is use weak references, but that's slow and unpleasant to deal with
     }
 #else
     }
