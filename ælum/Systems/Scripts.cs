@@ -14,15 +14,11 @@ public abstract class Script : Behavior
 
     }
 
-    //cereal factory
-    internal static Script CreateFromData(Entity entity, ScriptTypeAndData stad)
+    protected Script(Entity entity, Dictionary<string, object> scriptData) : this(entity)
     {
-        var newScript = Activator.CreateInstance(Type.GetType(stad.ScriptType), entity) as Script;
-        newScript.scriptData = stad.ScriptData;
-        newScript.AfterDeserialization();
-        return newScript;
+        this.scriptData = scriptData;
     }
-    
+
     protected void StoreScriptData(string key, object data)
     {
         if (scriptData == null) scriptData = new Dictionary<string, object>();
@@ -57,15 +53,19 @@ public abstract class Script : Behavior
     }
 
     protected virtual void BeforeSerialization() //ovrd if you need to update script data before entity gets serialized
-    {}
-
-    protected virtual void AfterDeserialization()
-    {}
+    {
+        
+    }
 
 }
 
 class PlayerController : Script
 {
+    public PlayerController(Entity entity, Dictionary<string, object> scriptData) : base(entity, scriptData)
+    {
+
+    }
+
     public PlayerController(Entity entity) : base(entity)
     {
 
@@ -181,11 +181,12 @@ class Rotator : Script
         StoreScriptData("spd", speed);
     }
 
-    protected override void AfterDeserialization()
+    public Rotator(Entity entity, Dictionary<string, object> scriptData) : base(entity, scriptData)
     {
         speed = RetrieveScriptData<float>("spd");
-    }
 
+    }
+    
     public override void Update()
     {
         entity.Rotation += speed*0.1f;
@@ -216,7 +217,7 @@ class ICANHAZNAME : Script
         StoreScriptData("n", name);
     }
 
-    protected override void AfterDeserialization()
+    public ICANHAZNAME(Entity entity, Dictionary<string, object> scriptData) : base(entity, scriptData)
     {
         name = RetrieveScriptData<string>("n");
     }
