@@ -191,7 +191,7 @@ public class LightProjector : ManagedChunkedComponent<LightProjector>
 
     private static RenderTarget2D accumulation_;
     public static BlendState blendState_ = Max; //TODO FIXME
-    private static int shadowsQuality_ = 2;
+    private static int shadowsQuality_ = 1;
     private static Point sizeLastCheck = Point.Zero;
     private static Effect shadowsEffect;
     private static Effect shadowsBlur;

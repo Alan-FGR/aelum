@@ -5,33 +5,22 @@ using Microsoft.Xna.Framework.Graphics;
 using Microsoft.Xna.Framework.Input;
 
 public class PlayerScript : Script {
-    private float speed_;
-    private Sheet.ID currentProjectile;
-    public PlayerScript(Entity entity, float speed) : base(entity)
-    {
-        speed_ = speed;
-        currentProjectile = Sheet.ID.small_projectile;
-    }
+    private const float SPEED = 25;
 
-    //for deserialization when no data is saved
-    public PlayerScript(Entity entity) : base(entity)
-    {
-        currentProjectile = Sheet.ID.small_projectile;
-    }
+    //when you're not saving any data for script and it's persistent, this constructor is used when deserializing
+    public PlayerScript(Entity entity) : base(entity){}
 
     public override void Update()
     {
-        float movement = Keys.W.IsDown() ? speed_ : Keys.S.IsDown() ? -speed_ : 0;
+        float movement = Keys.W.IsDown() ? SPEED : Keys.S.IsDown() ? -SPEED : 0;
         float multiplier = Keys.LeftShift.IsDown() ? 2 : 1;
         entity.Position += new Vector2(0,movement * multiplier * Core.lastDT);
 
         if (Input.LMB.WasPressed())
         {
             var bullet = new Entity(entity.Position, Core.mainCam.WorldMousePosition - entity.Position);
-            bullet.persistent = false; //we don't save projectiles
-            new Quad(bullet, new QuadData(currentProjectile));
-//            new Sprite(bullet, new SpriteData(Vector2.Zero, Color.White, currentProjectile.GetRect().UvToPixels()));
-            new Projectile(bullet, 60, 1);
+            new Quad(bullet, new QuadData(Sheet.ID.small_projectile)); //add quad to render bullet
+            new Projectile(bullet, 60); // add projectile script to bullet
         }
         DebugHelper.AddDebugLine(entity.Position, Core.mainCam.WorldMousePosition, Color.Green);
     }
@@ -39,12 +28,13 @@ public class PlayerScript : Script {
 
 public class Projectile : Script
 {
-    private float speed_;
+    private readonly float speed_;
     private float lifeTime_;
 
-    public Projectile(Entity entity, float speed, int damage) : base(entity)
+    public Projectile(Entity entity, float speed) : base(entity)
     {
         speed_ = speed;
+        entity.persistent = false; //we don't save projectiles
     }
 
     public override void Update()
@@ -66,15 +56,16 @@ public class Projectile : Script
 
 public class Rotate : Script
 {
-    private float speed_;
+    private readonly float speed_;
     public Rotate(Entity entity, float speed) : base(entity)
     {
         speed_ = speed;
-        StoreScriptData("s",speed_);
+        StoreScriptData("speed",speed_);//we store the data for this script, so it persists in save file
     }
+    //constructor used for deserialization
     public Rotate(Entity entity, Dictionary<string, object> scriptData) : base(entity, scriptData)
     {
-        speed_ = RetrieveScriptData<float>("s");
+        speed_ = RetrieveScriptData<float>("speed");//we retrieve data stored when deserializing
     }
     public override void Update()
     {
@@ -86,28 +77,38 @@ public class Rotate : Script
 class TestGame : Core
 {
     static void Main() { using (var game = new TestGame()) game.Run(); }
-
-    private Entity player_;
-
+    
     public TestGame()
     {
         //create our player
-        player_ = new Entity(new Vector2(8,15));
-        new Quad(player_, new QuadData(Sheet.ID.player));
-        new PlayerScript(player_, 25);
-        new LightOccluder(player_, LightOccluder.OccluderShape.Horizontal, 2f);
+        Entity player = new Entity(new Vector2(8,15));
+        new Quad(player, new QuadData(Sheet.ID.player));
+        new PlayerScript(player);
+        new LightOccluder(player, LightOccluder.OccluderShape.Horizontal, 2f);
+
+
+        //we add a light for the player ship
+        Texture2D lightTexture = Content.Load<Texture2D>("light");
+        Entity headlight = new Entity(player.Position+Vector2.UnitX, Vector2.UnitX); //pointing right (unitx)
+        new LightProjector(headlight, 20, -15, lightTexture, Color.White);
+
+        //we parent the light to the player entity
+        new EntityContainer(player).AddChild(headlight);
+
 
         //create some rotating lights
         clearColor = Color.Black;
         lightsBlendMode = BlendState.Additive;
         LightProjector.blendState_ = BlendState.Additive;
         LightOccluder.SHADOW_BIAS = 0;
-        for (int i = 0; i < 16; i++)
-        {   
-            Texture2D lightTexture = Content.Load<Texture2D>("light");
-            var light = new Entity(new Vector2(Randy.Range(1f,35f),Randy.Range(1f,25f)));
-            new LightProjector(light, 12, -8, lightTexture, Randy.NextSaturatedColor());
-            new Rotate(light, Randy.Range(-3f,3f));
+        for (int i = 1; i < 4; i++)
+        {
+            for (int j = 0; j < 2; j++)
+            {
+                var light = new Entity(new Vector2(i*9,j*23));
+                new LightProjector(light, 20, -15, lightTexture, Randy.NextSaturatedColor());
+                new Rotate(light, Randy.Range(-3f,3f));
+            }
         }
 
         //subscribe event
@@ -120,6 +121,11 @@ class TestGame : Core
         spritesLo.AddLayoutter(new UI.Layout.LayoutChildren(UI.Layout.Mode.Horizontal));
         foreach (Sheet.ID id in System.Enum.GetValues(typeof(Sheet.ID)).Cast<Sheet.ID>())
             spritesLo.AddChild(new SpriteUIRect(0, 0, 56, 32, id));
+
+        //some help UI
+        UI.RootRect.AddChild(new UI.TextRect(0,0,200,10,
+            "Controls: W,A,LMB. Drag and drop sprites from bottom onto scene, press 1 to save scene, 2 to load"
+            ));
 
         //subscribe event, dropping sprites onto scene creates entities with the sprite
         UI.RootRect.OnDrop += WorldDropFromUI;

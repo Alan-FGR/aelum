@@ -211,13 +211,15 @@ public sealed partial class Entity
         var ecds = new List<entityData>(entities_.Count);
         foreach (Entity entity in entities_)
         {
-            ecds.Add(entity.GetCereal());
+            if(entity.persistent)
+                ecds.Add(entity.GetCereal());
         }
         File.WriteAllBytes(path, MessagePackSerializer.Serialize(ecds));
     }
 
     public static void LoadAll(string path)
     {
+        if (!File.Exists(path)) return;
         var ecds = MessagePackSerializer.Deserialize<List<entityData>>(File.ReadAllBytes(path));
         foreach (entityData entityData in ecds)
         {
