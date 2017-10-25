@@ -51,6 +51,7 @@
             this.button10 = new System.Windows.Forms.Button();
             this.button9 = new System.Windows.Forms.Button();
             this.groupBox1 = new System.Windows.Forms.GroupBox();
+            this.button14 = new System.Windows.Forms.Button();
             this.tabPage1 = new System.Windows.Forms.TabPage();
             this.textBox2 = new System.Windows.Forms.TextBox();
             this.test_button = new System.Windows.Forms.Button();
@@ -62,6 +63,7 @@
             this.textBox4 = new System.Windows.Forms.TextBox();
             this.checkBox8 = new System.Windows.Forms.CheckBox();
             this.button13 = new System.Windows.Forms.Button();
+            this.backgroundWorker1 = new System.ComponentModel.BackgroundWorker();
             this.groupBox2.SuspendLayout();
             this.groupBox1.SuspendLayout();
             this.tabPage1.SuspendLayout();
@@ -72,9 +74,10 @@
             // 
             // button1
             // 
-            this.button1.Location = new System.Drawing.Point(79, 41);
+            this.button1.Font = new System.Drawing.Font("Microsoft Sans Serif", 7F, System.Drawing.FontStyle.Regular, System.Drawing.GraphicsUnit.Point, ((byte)(0)));
+            this.button1.Location = new System.Drawing.Point(68, 41);
             this.button1.Name = "button1";
-            this.button1.Size = new System.Drawing.Size(391, 23);
+            this.button1.Size = new System.Drawing.Size(402, 23);
             this.button1.TabIndex = 1;
             this.button1.Text = "Atlas Sprites Root";
             this.button1.UseVisualStyleBackColor = true;
@@ -83,7 +86,8 @@
             // checkBox1
             // 
             this.checkBox1.AutoSize = true;
-            this.checkBox1.Location = new System.Drawing.Point(12, 12);
+            this.checkBox1.Font = new System.Drawing.Font("Microsoft Sans Serif", 8.25F, System.Drawing.FontStyle.Regular, System.Drawing.GraphicsUnit.Point, ((byte)(0)));
+            this.checkBox1.Location = new System.Drawing.Point(13, 12);
             this.checkBox1.Name = "checkBox1";
             this.checkBox1.Size = new System.Drawing.Size(116, 17);
             this.checkBox1.TabIndex = 2;
@@ -93,12 +97,14 @@
             // 
             // button2
             // 
+            this.button2.Font = new System.Drawing.Font("Microsoft Sans Serif", 8.25F, System.Drawing.FontStyle.Bold, System.Drawing.GraphicsUnit.Point, ((byte)(0)));
             this.button2.Location = new System.Drawing.Point(314, 12);
             this.button2.Name = "button2";
             this.button2.Size = new System.Drawing.Size(156, 23);
             this.button2.TabIndex = 3;
             this.button2.Text = "Rebuild Now";
             this.button2.UseVisualStyleBackColor = true;
+            this.button2.Click += new System.EventHandler(this.button2_Click);
             // 
             // progressBar1
             // 
@@ -106,13 +112,14 @@
             this.progressBar1.Name = "progressBar1";
             this.progressBar1.Size = new System.Drawing.Size(31, 17);
             this.progressBar1.TabIndex = 4;
-            this.progressBar1.Click += new System.EventHandler(this.progressBar1_Click);
             // 
             // button3
             // 
-            this.button3.Location = new System.Drawing.Point(79, 70);
+            this.button3.Enabled = false;
+            this.button3.Font = new System.Drawing.Font("Microsoft Sans Serif", 7F, System.Drawing.FontStyle.Regular, System.Drawing.GraphicsUnit.Point, ((byte)(0)));
+            this.button3.Location = new System.Drawing.Point(68, 70);
             this.button3.Name = "button3";
-            this.button3.Size = new System.Drawing.Size(391, 23);
+            this.button3.Size = new System.Drawing.Size(402, 23);
             this.button3.TabIndex = 5;
             this.button3.Text = "Sounds Root";
             this.button3.UseVisualStyleBackColor = true;
@@ -120,9 +127,11 @@
             // 
             // button4
             // 
-            this.button4.Location = new System.Drawing.Point(79, 99);
+            this.button4.Enabled = false;
+            this.button4.Font = new System.Drawing.Font("Microsoft Sans Serif", 7F, System.Drawing.FontStyle.Regular, System.Drawing.GraphicsUnit.Point, ((byte)(0)));
+            this.button4.Location = new System.Drawing.Point(68, 99);
             this.button4.Name = "button4";
-            this.button4.Size = new System.Drawing.Size(391, 23);
+            this.button4.Size = new System.Drawing.Size(402, 23);
             this.button4.TabIndex = 6;
             this.button4.Text = "Musics Root";
             this.button4.UseVisualStyleBackColor = true;
@@ -130,9 +139,11 @@
             // 
             // button5
             // 
-            this.button5.Location = new System.Drawing.Point(79, 128);
+            this.button5.Enabled = false;
+            this.button5.Font = new System.Drawing.Font("Microsoft Sans Serif", 7F, System.Drawing.FontStyle.Regular, System.Drawing.GraphicsUnit.Point, ((byte)(0)));
+            this.button5.Location = new System.Drawing.Point(68, 128);
             this.button5.Name = "button5";
-            this.button5.Size = new System.Drawing.Size(391, 23);
+            this.button5.Size = new System.Drawing.Size(402, 23);
             this.button5.TabIndex = 7;
             this.button5.Text = "Fonts Root";
             this.button5.UseVisualStyleBackColor = true;
@@ -140,19 +151,22 @@
             // 
             // button6
             // 
+            this.button6.Font = new System.Drawing.Font("Microsoft Sans Serif", 7F, System.Drawing.FontStyle.Regular, System.Drawing.GraphicsUnit.Point, ((byte)(0)));
             this.button6.Location = new System.Drawing.Point(6, 19);
             this.button6.Name = "button6";
             this.button6.Size = new System.Drawing.Size(446, 23);
             this.button6.TabIndex = 8;
-            this.button6.Text = "Output Project Root";
+            this.button6.Text = "Bin Output";
             this.button6.UseVisualStyleBackColor = true;
             this.button6.Click += new System.EventHandler(this.button6_Click);
             // 
             // button7
             // 
-            this.button7.Location = new System.Drawing.Point(79, 157);
+            this.button7.Enabled = false;
+            this.button7.Font = new System.Drawing.Font("Microsoft Sans Serif", 7F, System.Drawing.FontStyle.Regular, System.Drawing.GraphicsUnit.Point, ((byte)(0)));
+            this.button7.Location = new System.Drawing.Point(68, 157);
             this.button7.Name = "button7";
-            this.button7.Size = new System.Drawing.Size(391, 23);
+            this.button7.Size = new System.Drawing.Size(402, 23);
             this.button7.TabIndex = 9;
             this.button7.Text = "Shaders Root";
             this.button7.UseVisualStyleBackColor = true;
@@ -163,79 +177,87 @@
             this.checkBox2.AutoSize = true;
             this.checkBox2.Checked = true;
             this.checkBox2.CheckState = System.Windows.Forms.CheckState.Checked;
-            this.checkBox2.Location = new System.Drawing.Point(12, 41);
+            this.checkBox2.Location = new System.Drawing.Point(11, 44);
+            this.checkBox2.Margin = new System.Windows.Forms.Padding(0);
             this.checkBox2.Name = "checkBox2";
-            this.checkBox2.Size = new System.Drawing.Size(62, 17);
+            this.checkBox2.Size = new System.Drawing.Size(58, 17);
             this.checkBox2.TabIndex = 10;
-            this.checkBox2.Text = "TRACK";
+            this.checkBox2.Text = "BUILD";
             this.checkBox2.UseVisualStyleBackColor = true;
             this.checkBox2.CheckedChanged += new System.EventHandler(this.checkBox2_CheckedChanged);
             // 
             // checkBox3
             // 
             this.checkBox3.AutoSize = true;
-            this.checkBox3.Checked = true;
-            this.checkBox3.CheckState = System.Windows.Forms.CheckState.Checked;
-            this.checkBox3.Location = new System.Drawing.Point(11, 70);
+            this.checkBox3.Enabled = false;
+            this.checkBox3.Location = new System.Drawing.Point(10, 73);
+            this.checkBox3.Margin = new System.Windows.Forms.Padding(0);
             this.checkBox3.Name = "checkBox3";
-            this.checkBox3.Size = new System.Drawing.Size(62, 17);
+            this.checkBox3.Size = new System.Drawing.Size(58, 17);
             this.checkBox3.TabIndex = 11;
-            this.checkBox3.Text = "TRACK";
+            this.checkBox3.Text = "BUILD";
             this.checkBox3.UseVisualStyleBackColor = true;
+            this.checkBox3.CheckedChanged += new System.EventHandler(this.checkBox3_CheckedChanged);
             // 
             // checkBox4
             // 
             this.checkBox4.AutoSize = true;
-            this.checkBox4.Checked = true;
-            this.checkBox4.CheckState = System.Windows.Forms.CheckState.Checked;
-            this.checkBox4.Location = new System.Drawing.Point(11, 99);
+            this.checkBox4.Enabled = false;
+            this.checkBox4.Location = new System.Drawing.Point(10, 102);
+            this.checkBox4.Margin = new System.Windows.Forms.Padding(0);
             this.checkBox4.Name = "checkBox4";
-            this.checkBox4.Size = new System.Drawing.Size(62, 17);
+            this.checkBox4.Size = new System.Drawing.Size(58, 17);
             this.checkBox4.TabIndex = 12;
-            this.checkBox4.Text = "TRACK";
+            this.checkBox4.Text = "BUILD";
             this.checkBox4.UseVisualStyleBackColor = true;
+            this.checkBox4.CheckedChanged += new System.EventHandler(this.checkBox4_CheckedChanged);
             // 
             // checkBox5
             // 
             this.checkBox5.AutoSize = true;
-            this.checkBox5.Checked = true;
-            this.checkBox5.CheckState = System.Windows.Forms.CheckState.Checked;
-            this.checkBox5.Location = new System.Drawing.Point(11, 128);
+            this.checkBox5.Enabled = false;
+            this.checkBox5.Location = new System.Drawing.Point(10, 131);
+            this.checkBox5.Margin = new System.Windows.Forms.Padding(0);
             this.checkBox5.Name = "checkBox5";
-            this.checkBox5.Size = new System.Drawing.Size(62, 17);
+            this.checkBox5.Size = new System.Drawing.Size(58, 17);
             this.checkBox5.TabIndex = 13;
-            this.checkBox5.Text = "TRACK";
+            this.checkBox5.Text = "BUILD";
             this.checkBox5.UseVisualStyleBackColor = true;
+            this.checkBox5.CheckedChanged += new System.EventHandler(this.checkBox5_CheckedChanged);
             // 
             // checkBox6
             // 
             this.checkBox6.AutoSize = true;
-            this.checkBox6.Checked = true;
-            this.checkBox6.CheckState = System.Windows.Forms.CheckState.Checked;
-            this.checkBox6.Location = new System.Drawing.Point(11, 157);
+            this.checkBox6.Enabled = false;
+            this.checkBox6.Location = new System.Drawing.Point(10, 160);
+            this.checkBox6.Margin = new System.Windows.Forms.Padding(0);
             this.checkBox6.Name = "checkBox6";
-            this.checkBox6.Size = new System.Drawing.Size(62, 17);
+            this.checkBox6.Size = new System.Drawing.Size(58, 17);
             this.checkBox6.TabIndex = 14;
-            this.checkBox6.Text = "TRACK";
+            this.checkBox6.Text = "BUILD";
             this.checkBox6.UseVisualStyleBackColor = true;
+            this.checkBox6.CheckedChanged += new System.EventHandler(this.checkBox6_CheckedChanged);
             // 
             // checkBox7
             // 
             this.checkBox7.AutoSize = true;
             this.checkBox7.Checked = true;
             this.checkBox7.CheckState = System.Windows.Forms.CheckState.Checked;
-            this.checkBox7.Location = new System.Drawing.Point(11, 215);
+            this.checkBox7.Location = new System.Drawing.Point(10, 218);
+            this.checkBox7.Margin = new System.Windows.Forms.Padding(0);
             this.checkBox7.Name = "checkBox7";
-            this.checkBox7.Size = new System.Drawing.Size(62, 17);
+            this.checkBox7.Size = new System.Drawing.Size(58, 17);
             this.checkBox7.TabIndex = 16;
-            this.checkBox7.Text = "TRACK";
+            this.checkBox7.Text = "BUILD";
             this.checkBox7.UseVisualStyleBackColor = true;
+            this.checkBox7.CheckedChanged += new System.EventHandler(this.checkBox7_CheckedChanged);
             // 
             // button8
             // 
-            this.button8.Location = new System.Drawing.Point(79, 215);
+            this.button8.Font = new System.Drawing.Font("Microsoft Sans Serif", 7F, System.Drawing.FontStyle.Regular, System.Drawing.GraphicsUnit.Point, ((byte)(0)));
+            this.button8.Location = new System.Drawing.Point(68, 215);
             this.button8.Name = "button8";
-            this.button8.Size = new System.Drawing.Size(391, 23);
+            this.button8.Size = new System.Drawing.Size(402, 23);
             this.button8.TabIndex = 15;
             this.button8.Text = "Other Data Root";
             this.button8.UseVisualStyleBackColor = true;
@@ -247,7 +269,7 @@
             this.groupBox2.Controls.Add(this.button11);
             this.groupBox2.Controls.Add(this.button10);
             this.groupBox2.Controls.Add(this.button9);
-            this.groupBox2.Location = new System.Drawing.Point(11, 255);
+            this.groupBox2.Location = new System.Drawing.Point(11, 243);
             this.groupBox2.Name = "groupBox2";
             this.groupBox2.Size = new System.Drawing.Size(459, 136);
             this.groupBox2.TabIndex = 18;
@@ -256,6 +278,8 @@
             // 
             // button12
             // 
+            this.button12.Enabled = false;
+            this.button12.Font = new System.Drawing.Font("Microsoft Sans Serif", 7F, System.Drawing.FontStyle.Regular, System.Drawing.GraphicsUnit.Point, ((byte)(0)));
             this.button12.Location = new System.Drawing.Point(6, 106);
             this.button12.Name = "button12";
             this.button12.Size = new System.Drawing.Size(447, 23);
@@ -266,6 +290,8 @@
             // 
             // button11
             // 
+            this.button11.Enabled = false;
+            this.button11.Font = new System.Drawing.Font("Microsoft Sans Serif", 7F, System.Drawing.FontStyle.Regular, System.Drawing.GraphicsUnit.Point, ((byte)(0)));
             this.button11.Location = new System.Drawing.Point(6, 77);
             this.button11.Name = "button11";
             this.button11.Size = new System.Drawing.Size(447, 23);
@@ -276,33 +302,49 @@
             // 
             // button10
             // 
+            this.button10.Enabled = false;
+            this.button10.Font = new System.Drawing.Font("Microsoft Sans Serif", 7F, System.Drawing.FontStyle.Regular, System.Drawing.GraphicsUnit.Point, ((byte)(0)));
             this.button10.Location = new System.Drawing.Point(6, 48);
             this.button10.Name = "button10";
             this.button10.Size = new System.Drawing.Size(447, 23);
             this.button10.TabIndex = 21;
-            this.button10.Text = "XNA Compat Binary Compiler Tool";
+            this.button10.Text = "XNB Compiler";
             this.button10.UseVisualStyleBackColor = true;
             this.button10.Click += new System.EventHandler(this.button10_Click);
             // 
             // button9
             // 
+            this.button9.Enabled = false;
+            this.button9.Font = new System.Drawing.Font("Microsoft Sans Serif", 7F, System.Drawing.FontStyle.Regular, System.Drawing.GraphicsUnit.Point, ((byte)(0)));
             this.button9.Location = new System.Drawing.Point(6, 19);
             this.button9.Name = "button9";
             this.button9.Size = new System.Drawing.Size(447, 23);
             this.button9.TabIndex = 20;
-            this.button9.Text = "DirectX Shader Compiler";
+            this.button9.Text = "DX Compiler";
             this.button9.UseVisualStyleBackColor = true;
             this.button9.Click += new System.EventHandler(this.button9_Click);
             // 
             // groupBox1
             // 
+            this.groupBox1.Controls.Add(this.button14);
             this.groupBox1.Controls.Add(this.button6);
-            this.groupBox1.Location = new System.Drawing.Point(12, 404);
+            this.groupBox1.Location = new System.Drawing.Point(12, 386);
             this.groupBox1.Name = "groupBox1";
-            this.groupBox1.Size = new System.Drawing.Size(458, 50);
+            this.groupBox1.Size = new System.Drawing.Size(458, 81);
             this.groupBox1.TabIndex = 19;
             this.groupBox1.TabStop = false;
             this.groupBox1.Text = "Output";
+            // 
+            // button14
+            // 
+            this.button14.Font = new System.Drawing.Font("Microsoft Sans Serif", 7F, System.Drawing.FontStyle.Regular, System.Drawing.GraphicsUnit.Point, ((byte)(0)));
+            this.button14.Location = new System.Drawing.Point(6, 48);
+            this.button14.Name = "button14";
+            this.button14.Size = new System.Drawing.Size(446, 23);
+            this.button14.TabIndex = 9;
+            this.button14.Text = "Code Output";
+            this.button14.UseVisualStyleBackColor = true;
+            this.button14.Click += new System.EventHandler(this.button14_Click);
             // 
             // tabPage1
             // 
@@ -326,7 +368,6 @@
             this.textBox2.ScrollBars = System.Windows.Forms.ScrollBars.Vertical;
             this.textBox2.Size = new System.Drawing.Size(315, 126);
             this.textBox2.TabIndex = 2;
-            this.textBox2.TextChanged += new System.EventHandler(this.textBox2_TextChanged);
             // 
             // test_button
             // 
@@ -347,7 +388,6 @@
             this.textBox1.Size = new System.Drawing.Size(360, 303);
             this.textBox1.TabIndex = 0;
             this.textBox1.Text = "return file;";
-            this.textBox1.TextChanged += new System.EventHandler(this.textBox1_TextChanged);
             // 
             // tabControl1
             // 
@@ -394,37 +434,45 @@
             // 
             // textBox4
             // 
+            this.textBox4.Font = new System.Drawing.Font("Microsoft Sans Serif", 7F, System.Drawing.FontStyle.Regular, System.Drawing.GraphicsUnit.Point, ((byte)(0)));
             this.textBox4.Location = new System.Drawing.Point(3, 3);
             this.textBox4.Multiline = true;
             this.textBox4.Name = "textBox4";
             this.textBox4.ReadOnly = true;
-            this.textBox4.ScrollBars = System.Windows.Forms.ScrollBars.Vertical;
+            this.textBox4.ScrollBars = System.Windows.Forms.ScrollBars.Both;
             this.textBox4.Size = new System.Drawing.Size(360, 435);
             this.textBox4.TabIndex = 1;
             this.textBox4.Text = "OUTPUT";
-            this.textBox4.TextChanged += new System.EventHandler(this.textBox4_TextChanged);
+            this.textBox4.WordWrap = false;
             // 
             // checkBox8
             // 
             this.checkBox8.AutoSize = true;
-            this.checkBox8.Checked = true;
-            this.checkBox8.CheckState = System.Windows.Forms.CheckState.Checked;
-            this.checkBox8.Location = new System.Drawing.Point(11, 186);
+            this.checkBox8.Enabled = false;
+            this.checkBox8.Location = new System.Drawing.Point(10, 189);
+            this.checkBox8.Margin = new System.Windows.Forms.Padding(0);
             this.checkBox8.Name = "checkBox8";
-            this.checkBox8.Size = new System.Drawing.Size(62, 17);
+            this.checkBox8.Size = new System.Drawing.Size(58, 17);
             this.checkBox8.TabIndex = 22;
-            this.checkBox8.Text = "TRACK";
+            this.checkBox8.Text = "BUILD";
             this.checkBox8.UseVisualStyleBackColor = true;
+            this.checkBox8.CheckedChanged += new System.EventHandler(this.checkBox8_CheckedChanged);
             // 
             // button13
             // 
-            this.button13.Location = new System.Drawing.Point(79, 186);
+            this.button13.Enabled = false;
+            this.button13.Font = new System.Drawing.Font("Microsoft Sans Serif", 7F, System.Drawing.FontStyle.Regular, System.Drawing.GraphicsUnit.Point, ((byte)(0)));
+            this.button13.Location = new System.Drawing.Point(68, 186);
             this.button13.Name = "button13";
-            this.button13.Size = new System.Drawing.Size(391, 23);
+            this.button13.Size = new System.Drawing.Size(402, 23);
             this.button13.TabIndex = 21;
             this.button13.Text = "Meshes Root";
             this.button13.UseVisualStyleBackColor = true;
             this.button13.Click += new System.EventHandler(this.button13_Click_1);
+            // 
+            // backgroundWorker1
+            // 
+            this.backgroundWorker1.WorkerReportsProgress = true;
             // 
             // Form1
             // 
@@ -454,6 +502,7 @@
             this.FormBorderStyle = System.Windows.Forms.FormBorderStyle.FixedToolWindow;
             this.Name = "Form1";
             this.Text = "Pipeline";
+            this.FormClosing += new System.Windows.Forms.FormClosingEventHandler(this.Form1_FormClosing);
             this.groupBox2.ResumeLayout(false);
             this.groupBox1.ResumeLayout(false);
             this.tabPage1.ResumeLayout(false);
@@ -503,5 +552,7 @@
         private System.Windows.Forms.TextBox textBox4;
         private System.Windows.Forms.CheckBox checkBox8;
         private System.Windows.Forms.Button button13;
+        private System.Windows.Forms.Button button14;
+        private System.ComponentModel.BackgroundWorker backgroundWorker1;
     }
 }

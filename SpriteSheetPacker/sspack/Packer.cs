@@ -156,19 +156,23 @@ public class Packer
         IMGFILE = imageOutputDir + "\\atlas.png";
         MAPFILE = codeOutputDir + "\\SpritesDefs.cs";
 
-		Exporters.Load();
+//	    Exporters.Load();
 		IImageExporter imageExporter = new PngImageExporter();
 		IMapExporter mapExporter = new CsGenExporter();
+	    //return 0;
             
 		// compile a list of images
 		List<string> images = new List<string>();
         
+
         string[] allfiles = Directory.GetFiles(SOURCESROOT, "*.*", SearchOption.AllDirectories);
         foreach ( var file in allfiles){
             FileInfo info = new FileInfo(file);
             if(info.Extension == ".png")
                 images.Add(info.FullName);
         }
+
+	    
 
 		// make sure no images have the same name if we're building a map
 		for (int i = 0; i < images.Count; i++)
@@ -199,7 +203,7 @@ public class Packer
 			Console.WriteLine("There was an error making the image sheet.");
 			return result;
 		}
-
+        
         IMGSIZEF = outputImage.Width;
         
 		if (File.Exists(IMGFILE)) File.Delete(IMGFILE);
