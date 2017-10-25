@@ -2,7 +2,15 @@
 [![Build status](https://ci.appveyor.com/api/projects/status/gfmeiefkf3dnffie/branch/master?svg=true)](https://ci.appveyor.com/project/Alan-FGR/aelum/branch/master)
 [![License](http://img.shields.io/:license-mit-blue.svg)](http://doge.mit-license.org)
 ![Since](https://img.shields.io/badge/since-3200bc-yellow.svg)
-![:trollface:](https://img.shields.io/badge/ʕ•ᴥ•ʔ-%E0%B2%A0.%E0%B2%A0-ff77bb.svg)
+
+Too few badges?
+
+[![We could](http://img.shields.io/:We-could-brightgreen.svg)](https://github.com/Alan-FGR/BogusBadges)
+[![have all](http://img.shields.io/:have-all-green.svg)](https://github.com/Alan-FGR/BogusBadges)
+[![them badges](http://img.shields.io/:them-badges-yellowgreen.svg)](https://github.com/Alan-FGR/BogusBadges)
+[![if we really](http://img.shields.io/:if_we-really-yellow.svg)](https://github.com/Alan-FGR/BogusBadges)
+[![wanted ◕‿◕](http://img.shields.io/:wanted-◕‿◕-blue.svg)](https://github.com/Alan-FGR/BogusBadges)
+
 
 #### How to build test game:
 1. Clone repository recursively
