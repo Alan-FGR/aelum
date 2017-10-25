@@ -1,5 +1,5 @@
 # Project Status: WIP
-*clever code != good code*
+[![Build status](https://ci.appveyor.com/api/projects/status/gfmeiefkf3dnffie/branch/master?svg=true)](https://ci.appveyor.com/project/Alan-FGR/aelum/branch/master)
 #### How to build test game:
 1. Clone repository recursively
 3. Open Solution in VS2017
