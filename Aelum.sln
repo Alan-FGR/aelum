@@ -9,7 +9,7 @@ Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "Farseer DebugView", "Farsee
 EndProject
 Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "FNA", "FNA\FNA.csproj", "{35253CE1-C864-4CD3-8249-4D1319748E8F}"
 EndProject
-Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "SpriteSheetPacker", "SpriteSheetPacker\SpriteSheetPacker.csproj", "{43886759-9276-4097-8892-2D33AB56D6E6}"
+Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "PipelineTool", "SpriteSheetPacker\PipelineTool.csproj", "{43886759-9276-4097-8892-2D33AB56D6E6}"
 EndProject
 Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "ælum", "ælum\ælum.csproj", "{653266D7-A4B5-41D3-8554-A41ED289F460}"
 EndProject

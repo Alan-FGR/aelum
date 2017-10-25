@@ -74,7 +74,7 @@
   <ItemGroup>
     <Compile Include="Core\Core.cs" />
     <Compile Include="Core\Input.cs" />
-    <Compile Include="Generated\SpriteSheet.cs" />
+    <Compile Include="Graphics\SpriteSheet.cs" />
     <Compile Include="Graphics\Camera.cs" />
     <Compile Include="Graphics\QuadComponent.cs" />
     <Compile Include="Core\UI.cs" />

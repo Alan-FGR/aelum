@@ -8,7 +8,7 @@ using Microsoft.Xna.Framework.Graphics;
 [MessagePackObject]
 public struct QuadData
 {
-    [Key(0)] public Sheet.ID SpriteId;
+    [Key(0)] public int SpriteId;
     [Key(1)] public Vector2 origin;
     [Key(2)] public Vector2 scale;
     [Key(3)] public float topShear;
@@ -28,10 +28,10 @@ public struct QuadData
 //    }
 
     [SerializationConstructor]
-    public QuadData(Sheet.ID spriteId, Vector2 origin, Vector2 scale, float topShear, float rightShear, bool flipX) : this()
+    public QuadData(int spriteId, Vector2 origin, Vector2 scale, float topShear, float rightShear, bool flipX) : this()
     {
         SpriteId = spriteId;
-        atlasTile = spriteId.GetRect();
+        atlasTile = spriteId.GetSprite();
         this.origin = origin;
         this.scale = scale;
         this.topShear = topShear;
@@ -39,10 +39,10 @@ public struct QuadData
         this.flipX = flipX;
     }
 
-    public QuadData(Sheet.ID sprite, Vector2? scale = null, bool centered = true, bool flipX = false, float topShear = 0, float rightShear = 0) : this()
+    public QuadData(int sprite, Vector2? scale = null, bool centered = true, bool flipX = false, float topShear = 0, float rightShear = 0) : this()
     {
         SpriteId = sprite;
-        atlasTile = sprite.GetRect();
+        atlasTile = sprite.GetSprite();
         this.topShear = topShear;
         this.rightShear = rightShear;
         this.flipX = flipX;

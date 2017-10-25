@@ -87,7 +87,7 @@ public class EntityTile
         entity = new Entity(pos);
         entity.persistent = false;
         entity.shifts = false;
-        quad = new Quad(entity, new QuadData(Sheet.ID.MISSING_SPRITE, Vector2.Zero));//TODO fix overflow
+        quad = new Quad(entity, new QuadData(Sheet.MISSING_SPRITE, Vector2.Zero));//TODO fix overflow
     }
 
     public void RefreshTile()

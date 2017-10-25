@@ -58,7 +58,7 @@ public class CsGenExporter : IMapExporter
 
         if (Packer.GetSpriteName == null)
         {
-            Console.WriteLine("not custom spritename function provided, using default");
+            Console.WriteLine("no custom spritename function provided, using default");
             Packer.GetSpriteName = (spriteName,fullpath) =>
             {
                 return spriteName;
@@ -150,10 +150,11 @@ public static class Sheet
 
 public class Packer
 {
-    public static int Pack(string atlasDir, string outputDir, Func<string,string,string> namingFunc = null)
+    public static int Pack(string atlasDir, string imageOutputDir, string codeOutputDir, Func<string,string,string> namingFunc = null)
 	{
 	    SOURCESROOT = atlasDir;
-	    IMGFILE = outputDir+"\\atlas.png";
+        IMGFILE = imageOutputDir + "\\atlas.png";
+        MAPFILE = codeOutputDir + "\\SpritesDefs.cs";
 
 		Exporters.Load();
 		IImageExporter imageExporter = new PngImageExporter();
@@ -213,7 +214,7 @@ public class Packer
     public static float IMGSIZEF;
     public const int IMGSIZE = 8096;
     public static string IMGFILE = "..\\..\\TestGame\\Content\\atlas.png";
-    public const string MAPFILE = "..\\..\\..\\ælum\\Generated\\SpriteSheet.cs";
+    public static string MAPFILE = "..\\..\\..\\ælum\\Generated\\SpriteSheet.cs";
     public static string SOURCESROOT = "..\\..\\TestGame\\_ATLAS";
     public static Func<string, string, string> GetSpriteName;
 }

@@ -34,9 +34,9 @@
     <None Include="App.config" />
   </ItemGroup>
   <ItemGroup>
-    <ProjectReference Include="..\SpriteSheetPacker\SpriteSheetPacker.csproj">
+    <ProjectReference Include="..\SpriteSheetPacker\PipelineTool.csproj">
       <Project>{43886759-9276-4097-8892-2d33ab56d6e6}</Project>
-      <Name>SpriteSheetPacker</Name>
+      <Name>PipelineTool</Name>
     </ProjectReference>
   </ItemGroup>
   <Import Project="$(MSBuildToolsPath)\Microsoft.CSharp.targets" />

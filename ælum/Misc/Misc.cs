@@ -114,7 +114,7 @@ public static partial class Extensions
 
 
     //spritesheet
-    public static RectF GetRect(this Sheet.ID id)
+    public static RectF GetSprite(this int id)
     {
         return Sheet.Get(id);
     }
