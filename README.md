@@ -1,5 +1,9 @@
 # Project Status: WIP
 [![Build status](https://ci.appveyor.com/api/projects/status/gfmeiefkf3dnffie/branch/master?svg=true)](https://ci.appveyor.com/project/Alan-FGR/aelum/branch/master)
+[![License](http://img.shields.io/:license-mit-blue.svg)](http://doge.mit-license.org)
+![Since](https://img.shields.io/badge/since-3200bc-yellow.svg)
+![:trollface:](https://img.shields.io/badge/ʕ•ᴥ•ʔ-%E0%B2%A0.%E0%B2%A0-ff77bb.svg)
+
 #### How to build test game:
 1. Clone repository recursively
 3. Open Solution in VS2017
