@@ -64,11 +64,8 @@
       <DependentUpon>Form1.cs</DependentUpon>
     </Compile>
     <Compile Include="PipelineTool.cs">
-      <SubType>Form</SubType>
     </Compile>
-    <Compile Include="SaneWidgets.cs">
-      <SubType>Component</SubType>
-    </Compile>
+    <Compile Include="SaneWidgets.cs" />
     <Compile Include="sspack\Constants.cs" />
     <Compile Include="sspack\Exporters\BmpImageExporter.cs" />
     <Compile Include="sspack\Exporters\Exporters.cs" />

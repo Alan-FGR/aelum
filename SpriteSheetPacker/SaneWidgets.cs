@@ -1,6 +1,8 @@
 ﻿using System;
+using System.ComponentModel;
 using System.Windows.Forms;
 using System.Drawing;
+using System.Drawing.Drawing2D;
 
 public struct SaneCoords
 {
@@ -42,6 +44,7 @@ public interface ISaneCoords
     SaneCoords SaneCoords { get; }
 }
 
+[DesignerCategory("")] // we don't want useless tools
 public sealed class SaneLabel : Label, ISaneCoords
 {
     public SaneLabel(Control parent, string text, int width = 5)
@@ -57,32 +60,62 @@ public sealed class SaneLabel : Label, ISaneCoords
     public SaneCoords SaneCoords { get; }
 }
 
-public sealed class SaneButton : Button, ISaneCoords
+[DesignerCategory("")] // we don't want useless tools
+public class SaneButton : Button, ISaneCoords
 {
     public readonly object userData;
-    public SaneButton(Control parent, string text, int width = 2, object userData = null, Action<SaneButton> callBack = null)
+    public Action<SaneButton> SaneClick;
+    public SaneButton(Control parent, string text, int width = 2, object userData = null)
     {
         SaneCoords = new SaneCoords(this);
-        Text = text;
+        SetText(text);
         Parent = parent;
         SaneCoords.SaneScale(width, 1);
-
-        this.userData = userData;
-        if (callBack != null)
-            SetCallback(callBack);
-    }
-
-    public void SetCallback(Action<SaneButton> callBack)
-    {
-        Click += (s, e) =>
-        {
-            callBack(this);
-        };
-    }
         
+        this.userData = userData;
+        Click += (s, e) => { Clicked(); };
+    }
+
+    public void SetText(string text) // Text property is virtual
+    {
+        Text = text;
+    }
+
+    public virtual void Clicked()
+    {
+        SaneClick?.Invoke(this);
+    }
+    
     public SaneCoords SaneCoords { get; }
 }
 
+[DesignerCategory("")] // we don't want useless tools
+public class SaneToggleButton : SaneButton
+{
+    private bool state_;
+    public bool State
+    {
+        get => state_;
+        set
+        {
+            state_ = value;
+            BackColor = state_ ? Color.LightGreen : Color.LightGray;
+        }
+    }
+
+    public SaneToggleButton(Control parent, int width = 2, object userData = null) : base(parent, "Toggle", width, userData)
+    {
+        State = false;
+    }
+
+    public override void Clicked()
+    {
+        State = !state_;
+        base.Clicked();
+    }
+}
+
+[DesignerCategory("")] // we don't want useless tools
 public class SanePanel : Panel, ISaneCoords
 {
     public SanePanel(Control parent, int width = 7, int height = 1)
@@ -96,3 +129,45 @@ public class SanePanel : Panel, ISaneCoords
     public SaneCoords SaneCoords { get; }
 }
 
+[DesignerCategory("")] // we don't want useless tools
+public class SaneTextBox : TextBox, ISaneCoords
+{
+    public SaneTextBox(Control parent, int width = 7, int height = 3)
+    {
+        SaneCoords = new SaneCoords(this);
+        Parent = parent;
+        ScrollBars = ScrollBars.Both;
+        WordWrap = false;
+        Multiline = true;
+        SaneCoords.SaneScale(width, height);
+    }
+
+    public SaneCoords SaneCoords { get; }
+}
+
+[DesignerCategory("")] // we don't want useless tools
+public class SaneTabs : TabControl, ISaneCoords
+{
+    public SaneTabs(Control parent, int width = 7, int height = 7)
+    {
+        SaneCoords = new SaneCoords(this);
+        Parent = parent;
+        SaneCoords.SaneScale(width, height);
+    }
+
+    public TabPage NewPage(string label)
+    {
+        TabPage newPage = new TabPage(label);
+        Controls.Add(newPage);
+        return newPage;
+    }
+
+    public SaneCoords SaneCoords { get; }
+}
+
+//[DesignerCategory("")] // we don't want useless tools
+//[DesignerCategory("")] // we don't want useless tools
+//[DesignerCategory("")] // we don't want useless tools
+//[DesignerCategory("")] // we don't want useless tools
+//[DesignerCategory("")] // we don't want useless tools
+//[DesignerCategory("")] // we don't want useless tools
