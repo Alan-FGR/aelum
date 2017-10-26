@@ -1,4 +1,4 @@
-﻿namespace PipelineTool
+﻿namespace PipelineToolNS
 {
     partial class Form1
     {

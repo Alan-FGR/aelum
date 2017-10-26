@@ -17,23 +17,23 @@ using System.Windows.Forms;
 using Microsoft.CSharp;
 
 
-namespace PipelineTool
+namespace PipelineToolNS
 {
     public partial class Form1 : Form
     {
-        [STAThread]
-        public static void Main()
-        {
-            try //TROLOLOLOL 
-            {
-                Application.EnableVisualStyles();
-                Application.Run(new Form1());
-            }
-            catch (Exception e)
-            {
-                Console.WriteLine(e);
-            }
-        }
+//        [STAThread]
+//        public static void Main()
+//        {
+//            try //TROLOLOLOL 
+//            {
+//                Application.EnableVisualStyles();
+//                Application.Run(new Form1());
+//            }
+//            catch (Exception e)
+//            {
+//                Console.WriteLine(e);
+//            }
+//        }
         
         public static TextBox debugBox;
         public static void AddDebugText(string text)
