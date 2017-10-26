@@ -70,6 +70,23 @@ public class PersistentScript : Script
 ```
 The script above will automatically persist in the entity, it will be saved to disk when the chunk is being serialized, and loaded again when it's being deserialized. All primitive types are supported along with collections and some core types like Vectors and Rectangles.
 
+# Pipeline
+
+ælum comes with a GUI pipeline tool to make your life easier, ideal usage is to configure it to monitor your asset source folders and keep it running in the background while you develop your game, new assets will be automatically imported and copied into the configured output folder, while code will be generated into your project for easy usage.
+
+*Supported Formats* (Currently, more coming soon)
+
+|TYPE|EXTENSION|Details|
+|----|---------|-------|
+|Atlased Sprites|PNG|non-atlased textures coming soon|
+|Sound Effects|WAV|compression can affect leading/trailing|
+|Musics|OGG|not only BGM but any long/stream audio|
+|Fonts|XNB|WIP, has to be precompiled atm|
+|Shaders|HLSL|DirectX Effects v2.0|
+|Meshes|---|NOT SUPPORTED CURRENTLY|
+|Others|N/A|Files are simply copied|
+
+
 # Why do we do stuff differently?
 
 Upon a closer look at the sources, the attentive coder will certainly notice that many things are done differently than the way most people are used to. While it's true that a lot of the code simply sucks, we try to keep things as simple as possible by taking advantage of the environment peculiarities (basically outsourcing complexity so we don't have to keep it in our code). Most notably, along with their respective reasoning, we have the following:

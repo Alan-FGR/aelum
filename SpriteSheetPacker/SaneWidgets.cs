@@ -54,7 +54,8 @@ public sealed class SaneLabel : Label, ISaneCoords
         Parent = parent;
         SaneCoords.SaneScale(width, 1);
         TextAlign = ContentAlignment.MiddleLeft;
-        BorderStyle = BorderStyle.Fixed3D;
+        BackColor = Color.Transparent;
+//        BorderStyle = BorderStyle.Fixed3D;
     }
         
     public SaneCoords SaneCoords { get; }
@@ -93,7 +94,7 @@ public class SaneButton : Button, ISaneCoords
 public class SaneToggleButton : SaneButton
 {
     private bool state_;
-    public bool State
+    public bool Toggled
     {
         get => state_;
         set
@@ -105,12 +106,12 @@ public class SaneToggleButton : SaneButton
 
     public SaneToggleButton(Control parent, int width = 2, object userData = null) : base(parent, "Toggle", width, userData)
     {
-        State = false;
+        Toggled = false;
     }
 
     public override void Clicked()
     {
-        State = !state_;
+        Toggled = !state_;
         base.Clicked();
     }
 }
@@ -122,8 +123,18 @@ public class SanePanel : Panel, ISaneCoords
     {
         SaneCoords = new SaneCoords(this);
         Parent = parent;
-        BorderStyle = BorderStyle.FixedSingle;
         SaneCoords.SaneScale(width, height);
+    }
+
+    protected override void OnPaint(PaintEventArgs e)
+    {
+        base.OnPaint(e);
+        var r = ClientRectangle;
+        ControlPaint.DrawBorder(e.Graphics, r,
+            Color.Black, 1, ButtonBorderStyle.None,
+            Color.Black, 1, ButtonBorderStyle.None,
+            Color.Black, 1, ButtonBorderStyle.None,
+            Color.Black, 1, ButtonBorderStyle.Inset);
     }
 
     public SaneCoords SaneCoords { get; }

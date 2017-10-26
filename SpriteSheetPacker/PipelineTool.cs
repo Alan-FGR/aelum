@@ -1,4 +1,5 @@
 ﻿using System;
+using System.CodeDom.Compiler;
 using System.Collections.Concurrent;
 using System.Collections.Generic;
 using System.ComponentModel;
@@ -6,9 +7,12 @@ using System.Diagnostics;
 using System.Windows.Forms;
 using System.Drawing;
 using System.IO;
+using System.Reflection;
 using System.Runtime.Serialization;
 using System.Runtime.Serialization.Formatters.Binary;
 using System.Threading;
+using Microsoft.CSharp;
+using Timer = System.Windows.Forms.Timer;
 
 public static class Dbg
 {
@@ -74,33 +78,37 @@ public class FileChangesBuffer
         fsw_.Dispose();
     }
 
-    private void ProcessChange(object sender, FileSystemEventArgs e)
+    private void ProcessChange(object sender, FileSystemEventArgs e) //MT
     {
-        Dbg.Write("detected file change "+e.FullPath);
+        Dbg.SafeWrite("detected file change "+e.FullPath);
         RegisterChange(e.FullPath);
     }
 
-    void RegisterChange(string file)
+    void RegisterChange(string file) //MT
     {
         lock (lock_)
         {
-            Dbg.Write("enqueueing changed file "+file);
+            Dbg.SafeWrite("enqueueing changed file "+file);
             inputFlow_.Add(file);
         }
     }
 
-    public string[] TickAndGetResults() //only if results are ready
+    public string[] ConsumeAccumulatedChanges() //only if results are ready
     {
         lock (lock_)
         {
             if (inputFlow_.Count == 0)
             {
-                Dbg.Write("collecting results available for path "+fsw_.Path);
-                var retArray = accumulator_.ToArray();
-                accumulator_.Clear();
-                return retArray;
+                if (accumulator_.Count > 0)
+                {
+                    Dbg.Write("collecting results available for "+fsw_.Path);
+                    var retArray = accumulator_.ToArray();
+                    accumulator_.Clear();
+                    return retArray;
+                }
+                return new string[]{};
             }
-            Dbg.Write("trying to get results, but there are pending changes for path "+fsw_.Path);
+            Dbg.Write("postponing results; processing pending changes for "+fsw_.Path);
             accumulator_.AddRange(inputFlow_);
             inputFlow_.Clear();
             return new string[]{};
@@ -141,9 +149,13 @@ public class PipelineTool : Form
         Application.Run(new PipelineTool());
     }
 
+    public static SaneToggleButton MasterSwitch;
+
     public static Dictionary<string,object> GlobalData = new Dictionary<string, object>();
     public static Action GlobalSave;
     public static Action GlobalLoad;
+
+    public static Action GlobalTick;
 
     public class DirectoryWidget : SanePanel
     {
@@ -215,25 +227,131 @@ public class PipelineTool : Form
         }
     }
 
+    class NamerProcessor
+    {
+        public NamerProcessor(string code)
+        {
+            string source = 
+                "namespace DYNAMN { public class DYNAMC { public string DYNAMF(string path, string file) { "+code+"; } } } ";
+            Dictionary<string, string> providerOptions = new Dictionary<string, string>{{"CompilerVersion", "v3.5"}};
+            CSharpCodeProvider provider = new CSharpCodeProvider(providerOptions);
+            CompilerParameters compilerParams = new CompilerParameters {GenerateInMemory = true, GenerateExecutable = false};
+            CompilerResults results = provider.CompileAssemblyFromSource(compilerParams, source);
+            if (results.Errors.Count > 0)
+            {
+                string err = "Errors compiling code:\r\n";
+                foreach (CompilerError error in results.Errors)
+                    err += error.ErrorText+"\r\n";
+                throw new Exception(err);
+            }
+            instance_ = results.CompiledAssembly.CreateInstance("DYNAMN.DYNAMC");
+            methodInfo_ = instance_.GetType().GetMethod("DYNAMF");
+        }
+        
+        private MethodInfo methodInfo_;
+        private object instance_;
+
+        public string RunProcessor(string input)
+        {
+            return methodInfo_.Invoke(instance_, new object[]{Path.GetFullPath(input),Path.GetFileNameWithoutExtension(input)}) as string;
+        }
+    }
+
     public class AssetDirectoryMonitorWidget : DirectoryWidget
     {
-        private SaneToggleButton ticker_;
-        private FileChangesBuffer monitorBuffer_;
+        //ui
+        private SaneToggleButton switch_;
+        private SaneTextBox namerBox_;
+        private SaneTextBox namerPreviewBox_;
 
-        public AssetDirectoryMonitorWidget(Control parent, string id, int width = 14, int height = 1) : base(parent, id, width, height)
+        private FileChangesBuffer monitorBuffer_;
+        private int ticks_;
+
+        public AssetDirectoryMonitorWidget(Control parent, string id, SaneTabs namerTabs, int width = 14, int height = 1) : base(parent, id, width, height)
         {
             label_.SaneCoords.SanePosition(2, 0);
             label_.SaneCoords.SaneScale(10, 1);
 
-            ticker_ = new SaneToggleButton(this);
-            ticker_.SaneClick += b => { StateChanged(); };
+            switch_ = new SaneToggleButton(this);
+            switch_.SaneClick += b => { StateChanged(); };
+
+            //shader editor
+            var page = namerTabs.NewPage(id);
+            new SaneLabel(page, id+" Naming Processor");
+            var minihelp = new SaneLabel(page, "vars: file, path", 8);
+            minihelp.SaneCoords.SanePosition(6, 0);
+            minihelp.TextAlign = ContentAlignment.BottomRight;
+            minihelp.Font = new Font(FontFamily.GenericMonospace, 9);
+            namerBox_ = new SaneTextBox(page,14,12);
+            namerBox_.SaneCoords.SanePosition(0, 1);
+            namerBox_.Text = "return file;";
+            namerBox_.Font = new Font(FontFamily.GenericMonospace, 10);
+            var previewNamerButton = new SaneButton(page,"Preview Results (Output Below)",8);
+            previewNamerButton.SaneCoords.SanePosition(3, 13);
+            previewNamerButton.SaneClick += button => { PreviewNamer(); };
+            namerPreviewBox_ = new SaneTextBox(page,14,6);
+            namerPreviewBox_.SaneCoords.SanePosition(0, 14);
+            namerPreviewBox_.ReadOnly = true;
 
             PathChanged += StateChanged;
+            GlobalTick += Tick;
+        }
+
+        void Tick()
+        {
+            // delayed subscribe so when user changes namer code auto compilation stops
+            if (ticks_ == 0) namerBox_.TextChanged += (sender, args) =>{MasterSwitch.Toggled = false;};
+
+            ticks_++;
+            if (MasterSwitch.Toggled && switch_.Toggled)
+            {
+                AutoBuild();
+            }
+        }
+
+        void AutoBuild()
+        {
+            switch_.Text = "Toggle "+ticks_ % 10;
+            BuildInternal(GetMonitorResults());
+        }
+
+        public void BuildAll(bool ignoreToggle = false)
+        {
+            if (ignoreToggle)
+            {
+                BuildInternal(GetAllFilesInPath());
+            }
+            else
+            {
+                if (switch_.Toggled)
+                {
+                    BuildInternal(GetAllFilesInPath());
+                }
+            }
+        }
+
+        private void BuildInternal(string[] filesToBuild)
+        {
+            if (filesToBuild.Length == 0) return;
+            
+            Dbg.Write("building "+id_+" from "+path_);
+            foreach (string s in filesToBuild)
+            {
+                Dbg.Write(s);
+            }
+        }
+
+        string[] GetAllFilesInPath()
+        {
+            if(Directory.Exists(path_))
+                return Directory.GetFiles(path_, "*.*", SearchOption.AllDirectories);
+            Dbg.Write(id_+" path is not valid "+path_);
+            return new string[]{};
         }
 
         void StateChanged()
         {
-            if (ticker_.State)
+            if (switch_.Toggled)
             {
                 StartMonitoring();
             }
@@ -258,7 +376,67 @@ public class PipelineTool : Form
             monitorBuffer_ = null;
         }
 
+        string[] GetMonitorResults()
+        {
+            if (monitorBuffer_ != null)
+            {
+                return monitorBuffer_.ConsumeAccumulatedChanges();
+            }
+            Dbg.Write("no valid monitor for "+id_+", disabling monitoring");
+            switch_.Toggled = false;
+            StateChanged();
+            return new string[]{};
+        }
+
+        public override void SaveData()
+        {
+            GlobalData[id_] = new Tuple<string, bool, string>(path_, switch_.Toggled, namerBox_.Text);
+        }
+
+        public override void LoadData()
+        {
+            if (GlobalData.TryGetValue(id_, out object obj))
+            {
+                var data = obj as Tuple<string, bool, string>;
+                SetPath(data.Item1);
+                switch_.Toggled = data.Item2;
+                namerBox_.Text = data.Item3;
+                StateChanged();
+            }
+        }
+
+
+        //namer processing
+        void PreviewNamer()
+        {
+            namerPreviewBox_.Clear();
+            string[] filesInPath = GetAllFilesInPath();
+            if (filesInPath.Length == 0)
+            {
+                namerPreviewBox_.AppendText("NO VALID FILE IN PATH!");
+                return;
+            }
+
+            try
+            {
+                NamerProcessor proc = new NamerProcessor(namerBox_.Text);
+                foreach (string file in filesInPath)
+                {
+                    string processed = proc.RunProcessor(file);
+                    namerPreviewBox_.AppendText(processed+"\t\t\t\tINPUT: "+file+"\r\n");
+                }
+            }
+            catch (Exception e)
+            {
+                namerPreviewBox_.AppendText(e.Message);
+            }
+        }
+
+
     }
+
+    private List<AssetDirectoryMonitorWidget> allMonitorWidgets_ = new List<AssetDirectoryMonitorWidget>();
+    private Timer ticker_;
 
     public PipelineTool()
     {
@@ -266,12 +444,11 @@ public class PipelineTool : Form
         FormBorderStyle = FormBorderStyle.FixedToolWindow;
         
 
-
-        //right column area
+        //right column area (FIRST FOR DBG)
         var tabs = new SaneTabs(this, 15, 21);
         tabs.SaneCoords.SanePosition(15, 0);
 
-        var dbgPage = tabs.NewPage("Debug");
+        var dbgPage = tabs.NewPage("Info");
         var dbgBox = new SaneTextBox(dbgPage, 14, 20);
         dbgBox.ReadOnly = true;
         Dbg.UiBox = dbgBox;
@@ -304,11 +481,35 @@ You have to return a string that will be used as the name your asset resource.
         help.WordWrap = true;
 
 
+
+        //master controls
+        MasterSwitch = new SaneToggleButton(this,3);
+        MasterSwitch.Text = "Master Switch";
+        
+        var rebuildEnabled = new SaneButton(this, "Rebuild Enabled", 3);
+        rebuildEnabled.SaneCoords.SanePosition(8, 0);
+        rebuildEnabled.SaneClick += button =>
+        {foreach (AssetDirectoryMonitorWidget widget in allMonitorWidgets_)
+            widget.BuildAll();};
+        
+        var rebuildEverything = new SaneButton(this, "Rebuild Everything", 3);
+        rebuildEverything.SaneCoords.SanePosition(11, 0);
+        rebuildEverything.SaneClick += button =>
+        {foreach (AssetDirectoryMonitorWidget widget in allMonitorWidgets_)
+            widget.BuildAll(true);};
+
+
+
         //left column area
+
         int c = 2;
         new SaneLabel(this, "Source Paths").SaneCoords.SanePosition(1,c++);
         foreach (string s in PTHS_IDS)
-            new AssetDirectoryMonitorWidget(this, s).SaneCoords.SanePosition(0, c++);
+        {
+            var monitor = new AssetDirectoryMonitorWidget(this, s, tabs);
+            monitor.SaneCoords.SanePosition(0, c++);
+            allMonitorWidgets_.Add(monitor);
+        }
 
         c++;
         new SaneLabel(this, "Binaries").SaneCoords.SanePosition(1,c++);
@@ -328,8 +529,17 @@ You have to return a string that will be used as the name your asset resource.
         LoadGlobalData();
 
         FormClosing += (sender, args) => { 
+            ticker_.Stop();
             SaveGlobalData();
             };
+
+        // ticker
+        ticker_ = new Timer();
+        ticker_.Tick += (sender, args) => { GlobalTick?.Invoke(); };
+        ticker_.Interval = 500;//todo 500
+        ticker_.Start();
+
+        GlobalTick += Dbg.Tick;
     }
 
     private static void LoadGlobalData()
@@ -341,6 +551,7 @@ You have to return a string that will be used as the name your asset resource.
             Stream stream = new FileStream(SAVEF, FileMode.Open, FileAccess.Read, FileShare.Read);
             try{GlobalData = formatter.Deserialize(stream) as Dictionary<string, object>;}catch{}
             stream.Close();
+            try{MasterSwitch.Toggled = (bool)GlobalData["MS"];}catch{}
             Dbg.Write("invoking load data event");
             GlobalLoad?.Invoke();
         }
@@ -354,6 +565,7 @@ You have to return a string that will be used as the name your asset resource.
     {
         Dbg.Write("preparing to save");
         GlobalSave?.Invoke();
+        GlobalData["MS"] = MasterSwitch.Toggled;
         IFormatter formatter = new BinaryFormatter();
         Dbg.Write("opening stream");
         Stream stream = new FileStream(SAVEF, FileMode.Create, FileAccess.Write, FileShare.None);

@@ -164,32 +164,29 @@ public class Packer
 		// compile a list of images
 		List<string> images = new List<string>();
         
-
         string[] allfiles = Directory.GetFiles(SOURCESROOT, "*.*", SearchOption.AllDirectories);
         foreach ( var file in allfiles){
             FileInfo info = new FileInfo(file);
             if(info.Extension == ".png")
                 images.Add(info.FullName);
         }
-
-	    
-
+        
 		// make sure no images have the same name if we're building a map
-		for (int i = 0; i < images.Count; i++)
-		{
-			string str1 = Path.GetFileNameWithoutExtension(images[i]);
-
-			for (int j = i + 1; j < images.Count; j++)
-			{
-				string str2 = Path.GetFileNameWithoutExtension(images[j]);
-
-				if (str1 == str2)
-				{
-					Console.WriteLine("Two images have the same name: {0} = {1}", images[i], images[j]);
-					return -1;
-				}
-			}
-		}
+//		for (int i = 0; i < images.Count; i++)
+//		{
+//			string str1 = Path.GetFileNameWithoutExtension(images[i]);
+//
+//			for (int j = i + 1; j < images.Count; j++)
+//			{
+//				string str2 = Path.GetFileNameWithoutExtension(images[j]);
+//
+//				if (str1 == str2)
+//				{
+//					Console.WriteLine("Two images have the same name: {0} = {1}", images[i], images[j]);
+//					return -1;
+//				}
+//			}
+//		}
 
         var imagePacker = new ImagePacker();
         
