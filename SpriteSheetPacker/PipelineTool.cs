@@ -148,7 +148,7 @@ public abstract class Importer
         this.exportExtension = exportExtension;
     }
 
-    public Dictionary<string, string> GetAllFinalFiles(string inputPath, string outPath, Func<string,string> namer)
+    public Dictionary<string, string> GetCorrespondenceList(string inputPath, string outPath, Func<string,string> namer)
     {
         var retDict = new Dictionary<string, string>();
         var allSourceFiles = Directory.GetFiles(inputPath, "*.*", SearchOption.AllDirectories);
@@ -185,12 +185,12 @@ public abstract class Importer
     
     public virtual void Import(string inputPath, string[] changedFilesFull, string outputBins, string outputCode, Func<string, string> namer)
     {
-        var finalFiles = GetAllFinalFiles(inputPath, outputBins, namer);
+        var correspondenceList = GetCorrespondenceList(inputPath, outputBins, namer);
         var allFilesInDest = GetAllFilesInDest(outputBins);
 
         Dbg.Write($"importing files from {inputPath} into {outputBins}, generating code into {outputCode}");
 
-        List<string> finalDestFiles = finalFiles.Values.ToList();
+        List<string> finalDestFiles = correspondenceList.Values.ToList();
         foreach (string destFile in allFilesInDest) //for all files in destination folder
         {
             if (!finalDestFiles.Contains(destFile)) //if it's not in the list of files we want in dest
@@ -203,7 +203,7 @@ public abstract class Importer
 
         foreach (string changedFile in changedFilesFull)
         {
-            if (finalFiles.TryGetValue(changedFile, out string finalFilePath))
+            if (correspondenceList.TryGetValue(changedFile, out string finalFilePath))
             {
                 Dbg.Write("copying file: "+changedFile+"  -  "+finalFilePath);
 
