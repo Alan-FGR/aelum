@@ -74,7 +74,7 @@ The script above will automatically persist in the entity, it will be saved to d
 
 ælum comes with a GUI pipeline tool to make your life easier, ideal usage is to configure it to monitor your asset source folders and keep it running in the background while you develop your game, new assets will be automatically imported and copied into the configured output folder, while code will be generated into your project for easy usage.
 
-*Supported Formats* (Currently, more coming soon)
+#### Supported Formats (Currently - more coming soon!)
 
 |TYPE|EXTENSION|Details|
 |----|---------|-------|

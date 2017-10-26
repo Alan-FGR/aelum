@@ -7,9 +7,11 @@ using System.Diagnostics;
 using System.Windows.Forms;
 using System.Drawing;
 using System.IO;
+using System.Linq;
 using System.Reflection;
 using System.Runtime.Serialization;
 using System.Runtime.Serialization.Formatters.Binary;
+using System.Text.RegularExpressions;
 using System.Threading;
 using Microsoft.CSharp;
 using Timer = System.Windows.Forms.Timer;
@@ -116,6 +118,107 @@ public class FileChangesBuffer
     }
 }
 
+
+public abstract class Importer
+{
+    protected string[] extensions;
+    protected string exportExtension;
+
+    protected bool ImportsExtension(string path)
+    {
+        if (extensions.Length == 0)
+            return true;
+        string extension = Path.GetExtension(path).Replace(".","");
+        if (extension != null && extensions.Contains(extension.ToLower()))
+            return true;
+        return false;
+    }
+
+    protected bool ExportsExtension(string path)
+    {
+        string extension = Path.GetExtension(path).Replace(".","");
+        if (extension == exportExtension)
+            return true;
+        return false;
+    }
+    
+    protected Importer(string[] extensions, string exportExtension)
+    {
+        this.extensions = extensions;
+        this.exportExtension = exportExtension;
+    }
+
+    public Dictionary<string, string> GetAllFinalFiles(string inputPath, string outPath, Func<string,string> namer)
+    {
+        var retDict = new Dictionary<string, string>();
+        var allSourceFiles = Directory.GetFiles(inputPath, "*.*", SearchOption.AllDirectories);
+        foreach (string file in allSourceFiles)
+        {
+            if (ImportsExtension(file))
+            {
+                var finalFileName = namer(file);
+                var finalFile = Path.Combine(outPath, finalFileName);
+
+                if (exportExtension != null)
+                    finalFile += "."+exportExtension;
+                else
+                    finalFile += Path.GetExtension(file);
+
+                retDict[file] = finalFile;
+            }
+        }
+        return retDict;
+    }
+
+    public List<string> GetAllFilesInDest(string outPath)
+    {
+        //we only care about files we can import
+        List<string> retList = new List<string>();
+        var all = Directory.GetFiles(outPath, "*.*", SearchOption.AllDirectories);
+        foreach (string file in all)
+        {
+            if(ExportsExtension(file))
+                retList.Add(file);
+        }
+        return retList;
+    }
+    
+    public virtual void Import(string inputPath, string[] changedFilesFull, string outputBins, string outputCode, Func<string, string> namer)
+    {
+        var finalFiles = GetAllFinalFiles(inputPath, outputBins, namer);
+        var allFilesInDest = GetAllFilesInDest(outputBins);
+
+        Dbg.Write($"importing files from {inputPath} into {outputBins}, generating code into {outputCode}");
+
+        List<string> finalDestFiles = finalFiles.Values.ToList();
+        foreach (string destFile in allFilesInDest) //for all files in destination folder
+        {
+            if (!finalDestFiles.Contains(destFile)) //if it's not in the list of files we want in dest
+            {
+                //then it should be removed
+                Dbg.Write("removing file: "+destFile);
+
+            }
+        }
+
+        foreach (string changedFile in changedFilesFull)
+        {
+            if (finalFiles.TryGetValue(changedFile, out string finalFilePath))
+            {
+                Dbg.Write("copying file: "+changedFile+"  -  "+finalFilePath);
+
+            }
+        }
+        
+    }
+}
+
+public class FileCopierImporter : Importer
+{
+    public FileCopierImporter(string[] extensions, string exportExtension) : base(extensions, exportExtension)
+    {}
+}
+
 [DesignerCategory("")] // we don't want useless tools
 public class PipelineTool : Form
 {
@@ -127,7 +230,17 @@ public class PipelineTool : Form
     public const string SHADR = "Shaders";
     public const string MESHS = "Meshes";
     public const string OTHER = "Other"; //just copy
-    public static string[] PTHS_IDS = {ATLAS,SOUND,MUSIC,FONTS,SHADR,MESHS,OTHER,};
+    //extensions
+    public static Dictionary<string,Importer> IMPORTERS = new Dictionary<string,Importer>
+    {
+        {ATLAS,new FileCopierImporter(new []{"png",}, "png")},
+        {SOUND,new FileCopierImporter(new []{"wav",}, "wav")},
+        {MUSIC,new FileCopierImporter(new []{"ogg",}, "ogg")},
+        {FONTS,new FileCopierImporter(new []{"xnb",}, "xnb")},//TODO
+        {SHADR,new FileCopierImporter(new []{"hlsl",}, "fxb")},
+        {MESHS,new FileCopierImporter(new []{"",},"")},
+        {OTHER,new FileCopierImporter(new string[]{},null)},//empty array = catch all
+    };
 
     public const string DXCPL = "DX Compiler";
     public const string XNBCP = "XNB Compiler";
@@ -149,7 +262,16 @@ public class PipelineTool : Form
         Application.Run(new PipelineTool());
     }
 
+    public static string Sanitize(string text)
+    {
+        const string regexPattern = @"[^a-zA-Z0-9]"; //TODO cache
+        return Regex.Replace(text, regexPattern, "_");
+    }
+
+    //global ui stuff
     public static SaneToggleButton MasterSwitch;
+    public static DirectoryWidget OutBinsDirWid;
+    public static DirectoryWidget OutCodeDirWid;
 
     public static Dictionary<string,object> GlobalData = new Dictionary<string, object>();
     public static Action GlobalSave;
@@ -169,11 +291,15 @@ public class PipelineTool : Form
         //data members
         protected string id_;
         protected string path_;
-        public void SetPath(string path)
+        public void SetPath(string path) //TODO property
         {
             path_ = path;
             label_.Text = $"{id_}: {path_}";
             PathChanged?.Invoke();
+        }
+        public string GetPath()
+        {
+            return path_;
         }
 
         public DirectoryWidget(Control parent, string id, int width = 14, int height = 1) : base(parent, width, height)
@@ -232,7 +358,7 @@ public class PipelineTool : Form
         public NamerProcessor(string code)
         {
             string source = 
-                "namespace DYNAMN { public class DYNAMC { public string DYNAMF(string path, string file) { "+code+"; } } } ";
+                "namespace DYNAMN { public class DYNAMC { public string DYNAMF(string path, string file, string folder) { "+code+"; } } } ";
             Dictionary<string, string> providerOptions = new Dictionary<string, string>{{"CompilerVersion", "v3.5"}};
             CSharpCodeProvider provider = new CSharpCodeProvider(providerOptions);
             CompilerParameters compilerParams = new CompilerParameters {GenerateInMemory = true, GenerateExecutable = false};
@@ -253,7 +379,14 @@ public class PipelineTool : Form
 
         public string RunProcessor(string input)
         {
-            return methodInfo_.Invoke(instance_, new object[]{Path.GetFullPath(input),Path.GetFileNameWithoutExtension(input)}) as string;
+            return 
+                Sanitize(
+                methodInfo_.Invoke(instance_, new object[]
+                {
+                    Path.GetDirectoryName(input),
+                    Path.GetFileNameWithoutExtension(input),
+                    new DirectoryInfo(Path.GetDirectoryName(input)).Name,
+                }) as string);
         }
     }
 
@@ -265,6 +398,7 @@ public class PipelineTool : Form
         private SaneTextBox namerPreviewBox_;
 
         private FileChangesBuffer monitorBuffer_;
+        private Importer importer_;
         private int ticks_;
 
         public AssetDirectoryMonitorWidget(Control parent, string id, SaneTabs namerTabs, int width = 14, int height = 1) : base(parent, id, width, height)
@@ -275,13 +409,15 @@ public class PipelineTool : Form
             switch_ = new SaneToggleButton(this);
             switch_.SaneClick += b => { StateChanged(); };
 
+            importer_ = IMPORTERS[id];
+
             //shader editor
             var page = namerTabs.NewPage(id);
             new SaneLabel(page, id+" Naming Processor");
-            var minihelp = new SaneLabel(page, "vars: file, path", 8);
+            var minihelp = new SaneLabel(page, "input vars: file, path, folder", 8);
             minihelp.SaneCoords.SanePosition(6, 0);
             minihelp.TextAlign = ContentAlignment.BottomRight;
-            minihelp.Font = new Font(FontFamily.GenericMonospace, 9);
+            minihelp.Font = new Font(FontFamily.GenericMonospace, 8);
             namerBox_ = new SaneTextBox(page,14,12);
             namerBox_.SaneCoords.SanePosition(0, 1);
             namerBox_.Text = "return file;";
@@ -335,10 +471,9 @@ public class PipelineTool : Form
             if (filesToBuild.Length == 0) return;
             
             Dbg.Write("building "+id_+" from "+path_);
-            foreach (string s in filesToBuild)
-            {
-                Dbg.Write(s);
-            }
+
+            NamerProcessor proc = new NamerProcessor(namerBox_.Text);
+            importer_.Import(path_, filesToBuild, OutBinsDirWid.GetPath(), OutCodeDirWid.GetPath(), proc.RunProcessor);
         }
 
         string[] GetAllFilesInPath()
@@ -466,12 +601,16 @@ About Naming Processors:
         Input values:
             string path
             string file
+            string folder
         Output:
             string
 
 ### More information:
 Think of these as shaders but for filenames and in C#.
-You get two input variables: 'file' which contains the filename without extension, and 'path' which contains the full path to the file so you can check which folder they're on.
+You get these input variables:
+    'file' which contains the filename without extension
+    'path' which contains the full path to the file
+    'folder' which is the folder where the file is (last in path)
 You have to return a string that will be used as the name your asset resource.
 
 #####################################
@@ -504,7 +643,7 @@ You have to return a string that will be used as the name your asset resource.
 
         int c = 2;
         new SaneLabel(this, "Source Paths").SaneCoords.SanePosition(1,c++);
-        foreach (string s in PTHS_IDS)
+        foreach (string s in IMPORTERS.Keys)
         {
             var monitor = new AssetDirectoryMonitorWidget(this, s, tabs);
             monitor.SaneCoords.SanePosition(0, c++);
@@ -518,8 +657,12 @@ You have to return a string that will be used as the name your asset resource.
 
         c++;
         new SaneLabel(this, "Output Directories").SaneCoords.SanePosition(1,c++);
-        foreach (string s in OUTS_IDS)
-            new DirectoryWidget(this, s).SaneCoords.SanePosition(0, c++);
+//        foreach (string s in OUTS_IDS)
+//        new DirectoryWidget(this, s).SaneCoords.SanePosition(0, c++);
+        OutBinsDirWid = new DirectoryWidget(this, OUTBN);
+        OutBinsDirWid.SaneCoords.SanePosition(0, c++);
+        OutCodeDirWid = new DirectoryWidget(this, OUTCD);
+        OutCodeDirWid.SaneCoords.SanePosition(0, c++);
         
         SaneCoords SaneCoords = new SaneCoords(this);
         SaneCoords.SaneScale(30, 22);
@@ -536,7 +679,7 @@ You have to return a string that will be used as the name your asset resource.
         // ticker
         ticker_ = new Timer();
         ticker_.Tick += (sender, args) => { GlobalTick?.Invoke(); };
-        ticker_.Interval = 500;//todo 500
+        ticker_.Interval = 500;//todo 1000
         ticker_.Start();
 
         GlobalTick += Dbg.Tick;
