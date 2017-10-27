@@ -125,6 +125,7 @@ public partial class PipelineTool
     {
         protected readonly string[] extensions;
         protected readonly string exportExtension;
+        public string Id { protected get; set; }
 
         //TODO this is mostly stateless, staticize most stuff
 
@@ -246,12 +247,47 @@ public partial class PipelineTool
                 File.Delete(file);
             }
         }
+
+//        protected void GenerateCodeForFileList(string )
+//        {
+//            
+//        }
+
+    }
+
+    public class DebugPrinterImporter : Importer
+    {
+        public DebugPrinterImporter(string[] extensions, string exportExtension) : base(extensions, exportExtension){}
+        protected override void ImportHighLevel(Dictionary<string, string> correspondents, List<string> orphans)
+        {
+            Dbg.Write("RUNNING A DEBUG IMPORTER");
+            Dbg.Write("THIS IS NOT A VALID IMPORTER!");
+            Dbg.Write("CORRESPONDENTS:");
+            foreach (KeyValuePair<string, string> pair in correspondents)
+            {
+                Dbg.Write(pair.Key+" <-> "+pair.Value);
+            }
+            Dbg.Write("ORPHANS:");
+            foreach (string orphan in orphans)
+            {
+                Dbg.Write(orphan);
+            }
+        }
     }
 
     public class FileCopierImporter : Importer
     {
-        public FileCopierImporter(string[] extensions, string exportExtension) : base(extensions, exportExtension)
-        {}
+        public FileCopierImporter(string[] extensions, string exportExtension) : base(extensions, exportExtension){}
+
+        protected override void ImportHighLevel(Dictionary<string, string> correspondents, List<string> orphans)
+        {
+            foreach (var pair in correspondents)
+            {
+                Dbg.Write($"copying {pair.Key} into {pair.Value}");
+                File.Copy(pair.Key, pair.Value);
+            }
+            DeleteAllFiles(orphans);
+        }
     }
 
     public class ShaderImporter : Importer
@@ -298,17 +334,6 @@ public partial class PipelineTool : Form
     public const string SHADR = "Shaders";
     public const string MESHS = "Meshes";
     public const string OTHER = "Other"; //just copy
-    //extensions
-    public static Dictionary<string,Importer> IMPORTERS = new Dictionary<string,Importer>
-    {
-        {ATLAS,new FileCopierImporter(new []{"png",}, "png")},
-        {SOUND,new FileCopierImporter(new []{"wav",}, "wav")},
-        {MUSIC,new FileCopierImporter(new []{"ogg",}, "ogg")},
-        {FONTS,new FileCopierImporter(new []{"xnb",}, "xnb")},//TODO
-        {SHADR,new ShaderImporter(new []{"hlsl",}, "fxb")},
-        {MESHS,new FileCopierImporter(new []{"",},"")},
-        {OTHER,new FileCopierImporter(new string[]{},null)},//empty array = catch all
-    };
 
     public const string DXCPL = "DX Compiler";
     public const string XNBCP = "XNB Compiler";
@@ -318,6 +343,7 @@ public partial class PipelineTool : Form
 
     public const string OUTBN = "OutputBinaries";
     public const string OUTCD = "OutputCode";
+    public static string[] OUT_IDS = {OUTBN,OUTCD,};
 
     //misc
     public const string SAVEF = "ToolConf";
@@ -337,14 +363,13 @@ public partial class PipelineTool : Form
 
     //global ui stuff
     public static SaneToggleButton MasterSwitch;//sucks
-    public static DirectoryWidget OutBinsDirWid;//sucks
-    public static DirectoryWidget OutCodeDirWid;//sucks
 
     public static Dictionary<string,object> GlobalData = new Dictionary<string, object>();
     public static Action GlobalSave;
     public static Action GlobalLoad;
-
     public static Action GlobalTick;
+
+    public static Action<bool> GlobalBuild;
 
     public class DirectoryWidget : SanePanel
     {
@@ -475,7 +500,7 @@ public partial class PipelineTool : Form
         private Importer importer_;
         private int ticks_;
 
-        public AssetDirectoryMonitorWidget(Control parent, string id, SaneTabs namerTabs, int width = 14, int height = 1) : base(parent, id, width, height)
+        public AssetDirectoryMonitorWidget(Control parent, string id, Importer importer, SaneTabs namerTabs, int width = 14, int height = 1) : base(parent, id, width, height)
         {
             label_.SaneCoords.SanePosition(2, 0);
             label_.SaneCoords.SaneScale(10, 1);
@@ -483,7 +508,8 @@ public partial class PipelineTool : Form
             switch_ = new SaneToggleButton(this);
             switch_.SaneClick += b => { StateChanged(); };
 
-            importer_ = IMPORTERS[id];
+            importer_ = importer;
+            importer.Id = id;
 
             //shader editor
             var page = namerTabs.NewPage(id);
@@ -504,7 +530,9 @@ public partial class PipelineTool : Form
             namerPreviewBox_.ReadOnly = true;
 
             PathChanged += StateChanged;
+            MasterSwitch.SaneClick += button => { StateChanged(); };
             GlobalTick += Tick;
+            GlobalBuild += BuildAll;
         }
 
         void Tick()
@@ -527,7 +555,7 @@ public partial class PipelineTool : Form
                 BuildInternal(monitorResults);
         }
 
-        public void BuildAll(bool ignoreToggle = false)
+        private void BuildAll(bool ignoreToggle = false)
         {
             if (ignoreToggle)
             {
@@ -549,11 +577,30 @@ public partial class PipelineTool : Form
                 Dbg.Write("No files to build for "+id_);
                 return;
             }
-            
+
+            if (!Directory.Exists(GetPathOf(OUTBN)) || !Directory.Exists(GetPathOf(OUTCD)))
+            {
+                Dbg.Write("No valid output path for "+id_+", cancelling importation");
+                return;
+            }
+
             Dbg.Write("building "+id_+" from "+path_);
 
-            NamerProcessor proc = new NamerProcessor(namerBox_.Text);
-            importer_.Import(path_, filesToBuild, OutBinsDirWid.GetPath(), OutCodeDirWid.GetPath(), proc.RunProcessor);
+            NamerProcessor proc;
+            try
+            {
+                proc = new NamerProcessor(namerBox_.Text);
+            }
+            catch (Exception e)
+            {
+                Dbg.Write("### ERROR COMPILING NAMER FUNCTION for "+id_);
+                Dbg.Write(e.Message);
+                Dbg.Write("### NOTE: Use the 'Preview Results' functionality to make sure your code is valid!");
+                return;
+            }
+
+            //todo get paths in importer?
+            importer_.Import(path_, filesToBuild, GetPathOf(OUTBN), GetPathOf(OUTCD), proc.RunProcessor);
         }
 
         string[] GetAllFilesInPath()
@@ -566,7 +613,7 @@ public partial class PipelineTool : Form
 
         void StateChanged()
         {
-            if (switch_.Toggled)
+            if (switch_.Toggled && MasterSwitch.Toggled)
             {
                 StartMonitoring();
             }
@@ -579,10 +626,13 @@ public partial class PipelineTool : Form
         void StartMonitoring()
         {
             StopMonitoring();
-            if(Directory.Exists(path_))
+            if (Directory.Exists(path_))
                 monitorBuffer_ = new FileChangesBuffer(path_);
             else
+            {
                 Dbg.Write("can't monitor path for "+id_+" - "+path_);
+                switch_.Toggled = false;
+            }
         }
 
         void StopMonitoring()
@@ -650,7 +700,6 @@ public partial class PipelineTool : Form
 
     }
 
-    private List<AssetDirectoryMonitorWidget> allMonitorWidgets_ = new List<AssetDirectoryMonitorWidget>();
     private Timer ticker_;
 
     public PipelineTool()
@@ -702,20 +751,16 @@ You have to return a string that will be used as the name your asset resource.
 
 
         //master controls
-        MasterSwitch = new SaneToggleButton(this,3);
-        MasterSwitch.Text = "Master Switch";
+        MasterSwitch = new SaneToggleButton(this,4);
+        MasterSwitch.Text = "Import on Change";
         
-        var rebuildEnabled = new SaneButton(this, "Rebuild Enabled", 3);
+        var rebuildEnabled = new SaneButton(this, "Build Active", 3);
         rebuildEnabled.SaneCoords.SanePosition(8, 0);
-        rebuildEnabled.SaneClick += button =>
-        {foreach (AssetDirectoryMonitorWidget widget in allMonitorWidgets_)
-            widget.BuildAll();};
+        rebuildEnabled.SaneClick += button => { GlobalBuild(false); };
         
-        var rebuildEverything = new SaneButton(this, "Rebuild Everything", 3);
+        var rebuildEverything = new SaneButton(this, "Build All", 3);
         rebuildEverything.SaneCoords.SanePosition(11, 0);
-        rebuildEverything.SaneClick += button =>
-        {foreach (AssetDirectoryMonitorWidget widget in allMonitorWidgets_)
-            widget.BuildAll(true);};
+        rebuildEverything.SaneClick += button => { GlobalBuild(true); };
 
 
 
@@ -723,12 +768,14 @@ You have to return a string that will be used as the name your asset resource.
 
         int c = 2;
         new SaneLabel(this, "Source Paths").SaneCoords.SanePosition(1,c++);
-        foreach (string s in IMPORTERS.Keys)
-        {
-            var monitor = new AssetDirectoryMonitorWidget(this, s, tabs);
-            monitor.SaneCoords.SanePosition(0, c++);
-            allMonitorWidgets_.Add(monitor);
-        }
+        
+        new AssetDirectoryMonitorWidget(this, ATLAS, new DebugPrinterImporter(new []{"png",}, "png"), tabs).SaneCoords.SanePosition(0, c++);
+        new AssetDirectoryMonitorWidget(this, SOUND, new FileCopierImporter(new []{"wav",}, "wav"), tabs).SaneCoords.SanePosition(0, c++);
+        new AssetDirectoryMonitorWidget(this, MUSIC, new FileCopierImporter(new []{"ogg",}, "ogg"), tabs).SaneCoords.SanePosition(0, c++);
+        new AssetDirectoryMonitorWidget(this, FONTS, new DebugPrinterImporter(new []{"xnb",}, "xnb"), tabs).SaneCoords.SanePosition(0, c++);//TODO
+        new AssetDirectoryMonitorWidget(this, SHADR, new ShaderImporter(new []{"hlsl",}, "fxb"), tabs).SaneCoords.SanePosition(0, c++);
+        new AssetDirectoryMonitorWidget(this, MESHS, new DebugPrinterImporter(new []{"",},""), tabs).SaneCoords.SanePosition(0, c++);
+        new AssetDirectoryMonitorWidget(this, OTHER, new FileCopierImporter(new string[]{},null), tabs).SaneCoords.SanePosition(0, c++);//empty array = catch all
 
         c++;
         new SaneLabel(this, "Binaries").SaneCoords.SanePosition(1,c++);
@@ -737,12 +784,8 @@ You have to return a string that will be used as the name your asset resource.
 
         c++;
         new SaneLabel(this, "Output Directories").SaneCoords.SanePosition(1,c++);
-//        foreach (string s in OUTS_IDS)
-//        new DirectoryWidget(this, s).SaneCoords.SanePosition(0, c++);
-        OutBinsDirWid = new DirectoryWidget(this, OUTBN);
-        OutBinsDirWid.SaneCoords.SanePosition(0, c++);
-        OutCodeDirWid = new DirectoryWidget(this, OUTCD);
-        OutCodeDirWid.SaneCoords.SanePosition(0, c++);
+        foreach (string s in OUT_IDS)
+            new DirectoryWidget(this, s).SaneCoords.SanePosition(0, c++);
         
         SaneCoords SaneCoords = new SaneCoords(this);
         SaneCoords.SaneScale(30, 22);
