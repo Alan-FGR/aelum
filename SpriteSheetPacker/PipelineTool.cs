@@ -119,108 +119,176 @@ public class FileChangesBuffer
 }
 
 
-public abstract class Importer
+public partial class PipelineTool
 {
-    protected string[] extensions;
-    protected string exportExtension;
-
-    protected bool ImportsExtension(string path)
+    public abstract class Importer
     {
-        if (extensions.Length == 0)
-            return true;
-        string extension = Path.GetExtension(path).Replace(".","");
-        if (extension != null && extensions.Contains(extension.ToLower()))
-            return true;
-        return false;
-    }
+        protected readonly string[] extensions;
+        protected readonly string exportExtension;
 
-    protected bool ExportsExtension(string path)
-    {
-        string extension = Path.GetExtension(path).Replace(".","");
-        if (extension == exportExtension)
-            return true;
-        return false;
-    }
+        //TODO this is mostly stateless, staticize most stuff
+
+        protected bool ImportsExtension(string path)
+        {
+            if (extensions.Length == 0)
+                return true;
+            string extension = Path.GetExtension(path).Replace(".","");
+            if (extension != null && extensions.Contains(extension.ToLower()))
+                return true;
+            return false;
+        }
+
+        protected bool ExportsExtension(string path)
+        {
+            string extension = Path.GetExtension(path).Replace(".","");
+            if (extension == exportExtension)
+                return true;
+            return false;
+        }
     
-    protected Importer(string[] extensions, string exportExtension)
-    {
-        this.extensions = extensions;
-        this.exportExtension = exportExtension;
-    }
-
-    public Dictionary<string, string> GetCorrespondenceList(string inputPath, string outPath, Func<string,string> namer)
-    {
-        var retDict = new Dictionary<string, string>();
-        var allSourceFiles = Directory.GetFiles(inputPath, "*.*", SearchOption.AllDirectories);
-        foreach (string file in allSourceFiles)
+        protected Importer(string[] extensions, string exportExtension)
         {
-            if (ImportsExtension(file))
+            this.extensions = extensions;
+            this.exportExtension = exportExtension;
+        }
+
+        public Dictionary<string, string> GetCorrespondenceList(string inputPath, string outPath, Func<string,string> namer)
+        {
+            var retDict = new Dictionary<string, string>();
+            var allSourceFiles = Directory.GetFiles(inputPath, "*.*", SearchOption.AllDirectories);
+            foreach (string file in allSourceFiles)
             {
-                var finalFileName = namer(file);
-                var finalFile = Path.Combine(outPath, finalFileName);
+                if (ImportsExtension(file))
+                {
+                    var finalFileName = namer(file);
+                    var finalFile = Path.Combine(outPath, finalFileName);
 
-                if (exportExtension != null)
-                    finalFile += "."+exportExtension;
-                else
-                    finalFile += Path.GetExtension(file);
+                    if (exportExtension != null)
+                        finalFile += "."+exportExtension;
+                    else
+                        finalFile += Path.GetExtension(file);
 
-                retDict[file] = finalFile;
+                    retDict[file] = finalFile;
+                }
             }
+            return retDict;
         }
-        return retDict;
-    }
 
-    public List<string> GetAllFilesInDest(string outPath)
-    {
-        //we only care about files we can import
-        List<string> retList = new List<string>();
-        var all = Directory.GetFiles(outPath, "*.*", SearchOption.AllDirectories);
-        foreach (string file in all)
+        public List<string> GetAllFilesInDest(string outPath)
         {
-            if(ExportsExtension(file))
-                retList.Add(file);
-        }
-        return retList;
-    }
-    
-    public virtual void Import(string inputPath, string[] changedFilesFull, string outputBins, string outputCode, Func<string, string> namer)
-    {
-        var correspondenceList = GetCorrespondenceList(inputPath, outputBins, namer);
-        var allFilesInDest = GetAllFilesInDest(outputBins);
-
-        Dbg.Write($"importing files from {inputPath} into {outputBins}, generating code into {outputCode}");
-
-        List<string> finalDestFiles = correspondenceList.Values.ToList();
-        foreach (string destFile in allFilesInDest) //for all files in destination folder
-        {
-            if (!finalDestFiles.Contains(destFile)) //if it's not in the list of files we want in dest
+            //we only care about files we can import
+            List<string> retList = new List<string>();
+            var all = Directory.GetFiles(outPath, "*.*", SearchOption.AllDirectories);
+            foreach (string file in all)
             {
-                //then it should be removed
-                Dbg.Write("removing file: "+destFile);
-
+                if(ExportsExtension(file))
+                    retList.Add(file);
             }
+            return retList;
         }
 
-        foreach (string changedFile in changedFilesFull)
+        public List<string> GetFilesInDestWithNoCorrespondent(Dictionary<string, string> correspondences, List<string> allFilesInDest)
         {
-            if (correspondenceList.TryGetValue(changedFile, out string finalFilePath))
-            {
-                Dbg.Write("copying file: "+changedFile+"  -  "+finalFilePath);
+            List<string> retList = new List<string>();
 
+            List<string> finalDestFiles = correspondences.Values.ToList();
+            foreach (string destFile in allFilesInDest) //for all files in destination folder
+            {
+                if (!finalDestFiles.Contains(destFile)) //if it's not in the list of files we want in dest
+                {
+                    //then we add to list (typically it should be removed)
+                    retList.Add(destFile);
+                }
             }
+            return retList;
         }
+
+        public virtual void Import(string inputPath, string[] changedFilesFull, string outputBins, string outputCode, Func<string, string> namer)
+        {
+            Dictionary<string, string> correspondenceList = GetCorrespondenceList(inputPath, outputBins, namer);
+            List<string> allFilesInDest = GetAllFilesInDest(outputBins);
+
+            Dbg.Write($"importing files from {inputPath} into {outputBins}, generating code into {outputCode}");
+
+            List<string> orphans = new List<string>();
+            foreach (string file in GetFilesInDestWithNoCorrespondent(correspondenceList, allFilesInDest))
+            {
+                Dbg.Write("found orphan "+file);
+                orphans.Add(file);
+            }
         
+            Dictionary<string, string> correspondents = new Dictionary<string, string>();
+            foreach (string changedFile in changedFilesFull)
+            {
+                if (correspondenceList.TryGetValue(changedFile, out string finalFilePath))
+                {
+                    Dbg.Write("found corresponding pair "+changedFile+"  -  "+finalFilePath);
+                    correspondents[changedFile] = finalFilePath;
+                }
+                else
+                {
+                    Dbg.Write("FOUND MODIFIED FILE WITH NO CORRESPONDENT!!! "+changedFile);
+                }
+            }
+
+            Dbg.Write("running high-level importing");
+            ImportHighLevel(correspondents, orphans);
+        }
+
+        protected virtual void ImportHighLevel(Dictionary<string, string> correspondents, List<string> orphans)
+        {}
+
+        protected static void DeleteAllFiles(List<string> files)
+        {
+            foreach (string file in files)
+            {
+                Dbg.Write("DELETING ORPHAN: "+file);
+                File.Delete(file);
+            }
+        }
+    }
+
+    public class FileCopierImporter : Importer
+    {
+        public FileCopierImporter(string[] extensions, string exportExtension) : base(extensions, exportExtension)
+        {}
+    }
+
+    public class ShaderImporter : Importer
+    {
+        public ShaderImporter(string[] extensions, string exportExtension) : base(extensions, exportExtension)
+        {}
+
+        protected override void ImportHighLevel(Dictionary<string, string> correspondents, List<string> orphans)
+        {
+            foreach (KeyValuePair<string, string> correspondent in correspondents)
+            {
+                Dbg.Write("COMPILING SHADER: "+correspondent.Key+" -> "+correspondent.Value);
+                try
+                {
+                    Process process = new Process();
+                    process.StartInfo.FileName = DirectoryWidget.GetPathOf(DXCPL);
+                    process.StartInfo.Arguments = $"/T fx_2_0 5 \"{correspondent.Key}\" /Fo \"{correspondent.Value}\"";
+                    process.StartInfo.RedirectStandardOutput = true;
+                    process.StartInfo.RedirectStandardError = true;
+                    process.StartInfo.UseShellExecute = false;
+                    process.StartInfo.CreateNoWindow = true;
+                    process.Start();
+                    Dbg.Write(process.StandardOutput.ReadLine()+process.StandardError.ReadLine());
+                }
+                catch (Exception e)
+                {
+                    Dbg.Write("ERROR COMPILING SHADERS!: "+e.Message);
+                }
+            }
+            DeleteAllFiles(orphans);
+        }
     }
 }
 
-public class FileCopierImporter : Importer
-{
-    public FileCopierImporter(string[] extensions, string exportExtension) : base(extensions, exportExtension)
-    {}
-}
 
 [DesignerCategory("")] // we don't want useless tools
-public class PipelineTool : Form
+public partial class PipelineTool : Form
 {
     //text IDS
     public const string ATLAS = "Atlas";
@@ -237,7 +305,7 @@ public class PipelineTool : Form
         {SOUND,new FileCopierImporter(new []{"wav",}, "wav")},
         {MUSIC,new FileCopierImporter(new []{"ogg",}, "ogg")},
         {FONTS,new FileCopierImporter(new []{"xnb",}, "xnb")},//TODO
-        {SHADR,new FileCopierImporter(new []{"hlsl",}, "fxb")},
+        {SHADR,new ShaderImporter(new []{"hlsl",}, "fxb")},
         {MESHS,new FileCopierImporter(new []{"",},"")},
         {OTHER,new FileCopierImporter(new string[]{},null)},//empty array = catch all
     };
@@ -250,7 +318,6 @@ public class PipelineTool : Form
 
     public const string OUTBN = "OutputBinaries";
     public const string OUTCD = "OutputCode";
-    public static string[] OUTS_IDS = {OUTBN,OUTCD,};
 
     //misc
     public const string SAVEF = "ToolConf";
@@ -269,9 +336,9 @@ public class PipelineTool : Form
     }
 
     //global ui stuff
-    public static SaneToggleButton MasterSwitch;
-    public static DirectoryWidget OutBinsDirWid;
-    public static DirectoryWidget OutCodeDirWid;
+    public static SaneToggleButton MasterSwitch;//sucks
+    public static DirectoryWidget OutBinsDirWid;//sucks
+    public static DirectoryWidget OutCodeDirWid;//sucks
 
     public static Dictionary<string,object> GlobalData = new Dictionary<string, object>();
     public static Action GlobalSave;
@@ -312,7 +379,14 @@ public class PipelineTool : Form
             button_.SaneCoords.SanePosition(label_.SaneCoords.Width, 0);
             GlobalSave += SaveData;
             GlobalLoad += LoadData;
+
+            //hacky solution SUCKS
+            allDirs[id] = this;
         }
+        //we go hacky a liddle bit :trollface:
+        static Dictionary<string, DirectoryWidget> allDirs = new Dictionary<string, DirectoryWidget>();
+        public static string GetPathOf(string id){return allDirs[id].path_;}
+
 
         public virtual void Browse(SaneButton b)
         {
@@ -448,7 +522,9 @@ public class PipelineTool : Form
         void AutoBuild()
         {
             switch_.Text = "Toggle "+ticks_ % 10;
-            BuildInternal(GetMonitorResults());
+            var monitorResults = GetMonitorResults();
+            if (monitorResults.Length > 0)
+                BuildInternal(monitorResults);
         }
 
         public void BuildAll(bool ignoreToggle = false)
@@ -468,7 +544,11 @@ public class PipelineTool : Form
 
         private void BuildInternal(string[] filesToBuild)
         {
-            if (filesToBuild.Length == 0) return;
+            if (filesToBuild.Length == 0)
+            {
+                Dbg.Write("No files to build for "+id_);
+                return;
+            }
             
             Dbg.Write("building "+id_+" from "+path_);
 
@@ -698,10 +778,7 @@ You have to return a string that will be used as the name your asset resource.
             Dbg.Write("invoking load data event");
             GlobalLoad?.Invoke();
         }
-        catch (Exception e)
-        {
-            Console.WriteLine(e);
-        }
+        catch (Exception e) {}
     }
 
     private static void SaveGlobalData()

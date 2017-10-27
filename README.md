@@ -3,15 +3,6 @@
 [![License](http://img.shields.io/:license-mit-blue.svg)](http://doge.mit-license.org)
 [![Since](https://img.shields.io/badge/since-3200BC-lightgray.svg)](https://github.com/Alan-FGR/aelum/blob/master/LICENSE)
 
-Too few badges?
-
-[![We could](http://img.shields.io/:We-could-brightgreen.svg)](https://github.com/Alan-FGR/BogusBadges)
-[![have all](http://img.shields.io/:have-all-green.svg)](https://github.com/Alan-FGR/BogusBadges)
-[![them badges](http://img.shields.io/:them-badges-yellowgreen.svg)](https://github.com/Alan-FGR/BogusBadges)
-[![if we really](http://img.shields.io/:if_we-really-yellow.svg)](https://github.com/Alan-FGR/BogusBadges)
-[![wanted ◕‿◕](http://img.shields.io/:wanted-◕‿◕-blue.svg)](https://github.com/Alan-FGR/BogusBadges)
-
-
 #### How to build test game:
 1. Clone repository recursively
 3. Open Solution in VS2017
@@ -76,6 +67,8 @@ The script above will automatically persist in the entity, it will be saved to d
 
 #### Supported Formats (Currently - more coming soon!)
 
+[RELATED ISSUE](https://github.com/Alan-FGR/aelum/issues/10) <- Current Features
+
 |TYPE|EXTENSION|Details|
 |----|---------|-------|
 |Atlased Sprites|PNG|non-atlased textures coming soon|
@@ -101,3 +94,13 @@ Upon a closer look at the sources, the attentive coder will certainly notice tha
 # General Development Directions
 ## Core
 - Components should always initialize all its non-private members on the main constructor, so provide a 'base' constructor that does that and always pipe the others through it (`OtherCtor() : this()`) the idea here is that all members should be ready to be acessed in the subclasses ctors, this doesn't apply to user scripts of course, just engine components.
+
+# Goodies :trollface:
+
+Too few badges?
+
+[![We could](http://img.shields.io/:We-could-brightgreen.svg)](https://github.com/Alan-FGR/BogusBadges)
+[![have all](http://img.shields.io/:have-all-green.svg)](https://github.com/Alan-FGR/BogusBadges)
+[![them badges](http://img.shields.io/:them-badges-yellowgreen.svg)](https://github.com/Alan-FGR/BogusBadges)
+[![if we really](http://img.shields.io/:if_we-really-yellow.svg)](https://github.com/Alan-FGR/BogusBadges)
+[![wanted ◕‿◕](http://img.shields.io/:wanted-◕‿◕-blue.svg)](https://github.com/Alan-FGR/BogusBadges)
