@@ -1,8 +1,7 @@
-# ælum game engine
-## Project Status: WIP  [![Build status](https://ci.appveyor.com/api/projects/status/gfmeiefkf3dnffie/branch/master?svg=true)](https://ci.appveyor.com/project/Alan-FGR/aelum/branch/master) [![License](http://img.shields.io/:license-mit-blue.svg)](http://doge.mit-license.org) [![Since](https://img.shields.io/badge/since-3200BC-lightgray.svg)](https://github.com/Alan-FGR/aelum/blob/master/LICENSE)
+# ° ![æ](https://upload.wikimedia.org/wikipedia/commons/thumb/1/1d/Information_icon4.svg/40px-Information_icon4.svg.png) Project Status: WIP  [![Build status](https://ci.appveyor.com/api/projects/status/gfmeiefkf3dnffie/branch/master?svg=true)](https://ci.appveyor.com/project/Alan-FGR/aelum/branch/master) [![License](http://img.shields.io/:license-mit-blue.svg)](http://doge.mit-license.org) [![Since](https://img.shields.io/badge/since-3200BC-lightgray.svg)](https://github.com/Alan-FGR/aelum/blob/master/LICENSE)
 
-#### How to build test game:
-1. Clone repository recursively
+### How to build test game:
+1. Clone repository recursively  
 3. Open Solution in VS2017
 3. Build and Run TestGameAssets (this step sucks :worried:, more info below), **FIX SOON**
 3. Setup FNA binaries (deps)
@@ -10,7 +9,9 @@
 
 **NOTE:** 3rd step is required because it generates code that describes the assets, easiest way to rebuild your assets is to build and run in a new instance so you don't have to switch to the project. You can also automate that to automatically rebuild whenever files in your assets directories change.
 
-## Scripting
+
+# Scripting
+
 Basic script:
 ```C#
 public class SampleScript : Script
@@ -59,11 +60,12 @@ public class PersistentScript : Script
 ```
 The script above will automatically persist in the entity, it will be saved to disk when the chunk is being serialized, and loaded again when it's being deserialized. All primitive types are supported along with collections and some core types like Vectors and Rectangles.
 
-## Pipeline
+
+# Pipeline
 
 ælum comes with a GUI pipeline tool to make your life easier, ideal usage is to configure it to monitor your asset source folders and keep it running in the background while you develop your game, new assets will be automatically imported and copied into the configured output folder, while code will be generated into your project for easy usage.
 
-#### Supported Formats (Currently - more coming soon!)
+### Supported Formats (Currently - more coming soon!)
 
 [RELATED ISSUE](https://github.com/Alan-FGR/aelum/issues/10) <- Current Features
 
@@ -78,7 +80,7 @@ The script above will automatically persist in the entity, it will be saved to d
 |Others|N/A|Files are simply copied|
 
 
-## Why do we do stuff differently?
+# Why do we do stuff differently?
 
 Upon a closer look at the sources, the attentive coder will certainly notice that many things are done differently than the way most people are used to. While it's true that a lot of the code simply sucks, we try to keep things as simple as possible by taking advantage of the environment peculiarities (basically outsourcing complexity so we don't have to keep it in our code). Most notably, along with their respective reasoning, we have the following:
 
@@ -89,11 +91,16 @@ Upon a closer look at the sources, the attentive coder will certainly notice tha
 - Why so much constructor piping?
     - We [didn't have that once](https://github.com/Alan-FGR/aelum/commit/e3cc8f360f4be1e89b74a2f9bc16332124d1a6ef), but the implications were too bad for a minor annoyance in the user code, so we decided it's not worthy it.
 
-## General Development Directions
+
+# General Development Directions
+
 ### Core
+
 - Components should always initialize all its non-private members on the main constructor, so provide a 'base' constructor that does that and always pipe the others through it (`OtherCtor() : this()`) the idea here is that all members should be ready to be acessed in the subclasses ctors, this doesn't apply to user scripts of course, just engine components.
 
-## Goodies
+
+# Goodies
+
 Too few badges?
 
 [![We could](http://img.shields.io/:We-could-brightgreen.svg)](https://github.com/Alan-FGR/BogusBadges)
