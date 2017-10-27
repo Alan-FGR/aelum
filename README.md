@@ -1,12 +1,9 @@
-# Project Status: WIP
-[![Build status](https://ci.appveyor.com/api/projects/status/gfmeiefkf3dnffie/branch/master?svg=true)](https://ci.appveyor.com/project/Alan-FGR/aelum/branch/master)
-[![License](http://img.shields.io/:license-mit-blue.svg)](http://doge.mit-license.org)
-[![Since](https://img.shields.io/badge/since-3200BC-lightgray.svg)](https://github.com/Alan-FGR/aelum/blob/master/LICENSE)
+# Project Status: WIP  [![Build status](https://ci.appveyor.com/api/projects/status/gfmeiefkf3dnffie/branch/master?svg=true)](https://ci.appveyor.com/project/Alan-FGR/aelum/branch/master) [![License](http://img.shields.io/:license-mit-blue.svg)](http://doge.mit-license.org) [![Since](https://img.shields.io/badge/since-3200BC-lightgray.svg)](https://github.com/Alan-FGR/aelum/blob/master/LICENSE)
 
 #### How to build test game:
 1. Clone repository recursively
 3. Open Solution in VS2017
-3. Build and Run TestGameAssets (this step sucks :worried:, more info below)
+3. Build and Run TestGameAssets (this step sucks :worried:, more info below), **FIX SOON**
 3. Setup FNA binaries (deps)
 7. Cross fingers and hit Build :trollface:
 
@@ -72,11 +69,11 @@ The script above will automatically persist in the entity, it will be saved to d
 |TYPE|EXTENSION|Details|
 |----|---------|-------|
 |Atlased Sprites|PNG|non-atlased textures coming soon|
-|Sound Effects|WAV|compression can affect leading/trailing|
+|Sound Effects|WAV|compression may cause leading/trailing silence|
 |Musics|OGG|not only BGM but any long/stream audio|
-|Fonts|XNB|WIP, has to be precompiled atm|
+|Fonts|XNB|WIP, have to be precompiled atm|
 |Shaders|HLSL|DirectX Effects v2.0|
-|Meshes|---|NOT SUPPORTED CURRENTLY|
+|Meshes|---|NOT CURRENTLY SUPPORTED|
 |Others|N/A|Files are simply copied|
 
 
@@ -95,8 +92,7 @@ Upon a closer look at the sources, the attentive coder will certainly notice tha
 ## Core
 - Components should always initialize all its non-private members on the main constructor, so provide a 'base' constructor that does that and always pipe the others through it (`OtherCtor() : this()`) the idea here is that all members should be ready to be acessed in the subclasses ctors, this doesn't apply to user scripts of course, just engine components.
 
-# Goodies :trollface:
-
+# Goodies
 Too few badges?
 
 [![We could](http://img.shields.io/:We-could-brightgreen.svg)](https://github.com/Alan-FGR/BogusBadges)
