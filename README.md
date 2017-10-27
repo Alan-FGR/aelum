@@ -1,4 +1,4 @@
-# ° ![æ](https://upload.wikimedia.org/wikipedia/commons/thumb/1/1d/Information_icon4.svg/40px-Information_icon4.svg.png) Project Status: WIP  [![Build status](https://ci.appveyor.com/api/projects/status/gfmeiefkf3dnffie/branch/master?svg=true)](https://ci.appveyor.com/project/Alan-FGR/aelum/branch/master) [![License](http://img.shields.io/:license-mit-blue.svg)](http://doge.mit-license.org) [![Since](https://img.shields.io/badge/since-3200BC-lightgray.svg)](https://github.com/Alan-FGR/aelum/blob/master/LICENSE)
+# Project Status: WIP - [![Build status](https://ci.appveyor.com/api/projects/status/gfmeiefkf3dnffie/branch/master?svg=true)](https://ci.appveyor.com/project/Alan-FGR/aelum/branch/master) [![License](http://img.shields.io/:license-mit-blue.svg)](http://doge.mit-license.org) [![Since](https://img.shields.io/badge/since-3200BC-lightgray.svg)](https://github.com/Alan-FGR/aelum/blob/master/LICENSE)
 
 ### How to build test game:
 1. Clone repository recursively  
@@ -62,7 +62,39 @@ The script above will automatically persist in the entity, it will be saved to d
 
 # Pipeline
 
+### Graphical Pipeline Tool (currently Windows only)
+
 ælum comes with a GUI pipeline tool to make your life easier, ideal usage is to configure it to monitor your asset source folders and keep it running in the background while you develop your game, new assets will be automatically imported and copied into the configured output folder, while code will be generated into your project for easy usage.
+
+#### Overview
+![Pipeline Tool](Docs/pipeline.png)
+
+- **Top buttons:**
+  - Import on Change: when on, assets are imported when changes are detected
+  - Build Active: immediately builds all assets in active folders (green)
+  - Build All: immediately builds all assets, even from inactive folders
+- **Source Paths**
+  - Click the left button on each path to de/activate it, the "Browse" button allows you to select a folder in your filesystem that contains the path to the asset sources. Only active paths are monitored for changes. When folders are being monitored for changes a number cycles in the switch button.
+- **Binaries**
+  - Allow you to select binaries that are used in the pipeline (currently only DX compiler is used)
+- **Output Directories**
+  - Should be self-explanatory, it's the folders where output files will be copied to
+
+The pipeline tool is a minimal application (30kb) that loads settings from the working folder at startup and saves them upon exit, so you can keep it in your working directories with no problems and can add the binary in any repository. Full source code is included but it's not necessary to compile it to use the engine.
+
+#### Naming functions
+
+The pipeline is a powerful tool and allow you to code naming functions for your assets, think of them like shaders but in C# and for paths, you get three string vars as the input:
+
+- 'file' which contains the filename without extension
+- 'path' which contains the full path to the file
+- 'folder' which is the folder where the file is (last in path)
+
+And you have to return a string that will be used as the name your asset resource. By default the filename is returned, but you can use any C# code (.NET 3.5), for example:
+
+![Naming Funcs](Docs/naming.png)
+
+Use the "Preview Results" button to check if the code is correct, don't be afraid of making mistakes, errors in code will be displayed in the output box.
 
 ### Supported Formats (Currently - more coming soon!)
 
