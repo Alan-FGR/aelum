@@ -1,4 +1,5 @@
-﻿namespace PipelineToolNS
+﻿/*
+namespace PipelineToolNS
 {
     partial class Form1
     {
@@ -556,3 +557,4 @@
         private System.ComponentModel.BackgroundWorker backgroundWorker1;
     }
 }
+*/

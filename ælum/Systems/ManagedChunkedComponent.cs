@@ -1,5 +1,6 @@
 using System;
 using System.Collections.Generic;
+using MessagePack;
 using Microsoft.Xna.Framework;
 using Microsoft.Xna.Framework.Audio;
 
@@ -225,12 +226,12 @@ public class SoundPlayer : ManagedChunkedComponent<SoundPlayer>
     }
 
 
+    private string effectId_;
 
-
-
-    public SoundPlayer(Entity entity, SoundEffect effect) : base(entity)
+    public SoundPlayer(Entity entity, string effectId) : base(entity)
     {
-        effectInstance_ = effect.CreateInstance();
+        effectId_ = effectId;
+        effectInstance_ = PipelineAssets.LoadAsset<SoundEffect>(effectId).CreateInstance();
     }
 
     public void Play()
@@ -258,12 +259,13 @@ public class SoundPlayer : ManagedChunkedComponent<SoundPlayer>
             player.ProcessChange();
 
     }
-
-//    public SoundPlayer(Entity entity, byte[] serialData) : this(entity)
-//    {}
+    
+    //TODO save more data
+    public SoundPlayer(Entity entity, byte[] serialData) : this(entity, MessagePackSerializer.Deserialize<string>(serialData))
+    {}
 
     public override ComponentData GetSerialData()
     {
-        throw new NotImplementedException();
+        return new ComponentData(ComponentTypes.SoundPlayer, MessagePackSerializer.Serialize(effectId_));
     }
 }

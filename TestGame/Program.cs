@@ -25,7 +25,7 @@ public class PlayerScript : Script {
         {
             entity.GetComponent<SoundPlayer>()?.Play(); //you'll want to cache this
             var bullet = new Entity(entity.Position, Core.mainCam.WorldMousePosition - entity.Position);
-            new Quad(bullet, new QuadData(Sheet.ID.small_projectile)); //add quad to render bullet
+            new Quad(bullet, new QuadData(Atlas.small_projectile)); //add quad to render bullet
             new Projectile(bullet, 60); // add projectile script to bullet
         }
         DebugHelper.AddDebugLine(entity.Position, Core.mainCam.WorldMousePosition, Color.Green);
@@ -87,20 +87,21 @@ class TestGame : Core
 
     public static SoundEffect ExplosionSound;
 
-    public TestGame()
+    protected override void Initialize()
     {
+        Atlas.RegisterPipelineAssets();
 
-        ExplosionSound = Content.Load<SoundEffect>("explosion");
+        ExplosionSound = Sound.Cache.explosion;
 
         //create our player
         Entity player = new Entity(new Vector2(8,15));
-        new Quad(player, new QuadData(Sheet.ID.player));
+        new Quad(player, new QuadData(Atlas.player));
         new PlayerScript(player);
         new LightOccluder(player, LightOccluder.OccluderShape.Horizontal, 2f);
-        new SoundPlayer(player, Content.Load<SoundEffect>("laser"));
+        new SoundPlayer(player, Sound.laser); //jesus christ :(
 
         //we add a light for the player ship
-        Texture2D lightTexture = Content.Load<Texture2D>("light");
+        Texture2D lightTexture = Content.Load<Texture2D>(Other.light);
         Entity headlight = new Entity(player.Position+Vector2.UnitX, Vector2.UnitX); //pointing right (unitx)
         new LightProjector(headlight, 20, -15, lightTexture, Color.White);
 
@@ -125,11 +126,10 @@ class TestGame : Core
 
         //subscribe event
         OnBeforePhysicsUpdate += SpawnEnemy;
-
-
+        
         //audio
-//        MediaPlayer.Play(Content.Load<Song>("bgm"));
-//        MediaPlayer.Volume = 0.4f;
+        MediaPlayer.Play(Music.Cache.bgm);
+        MediaPlayer.Volume = 0.4f;
 
 
         //list all sprites in some UI
@@ -137,8 +137,11 @@ class TestGame : Core
         spritesLo.AddLayoutter(new UI.Layout.ExpandToParentSize(UI.Layout.Mode.Horizontal));
         spritesLo.AddLayoutter(new UI.Layout.AlignRelativeToParent(1,1));
         spritesLo.AddLayoutter(new UI.Layout.LayoutChildren(UI.Layout.Mode.Horizontal));
-        foreach (Sheet.ID id in System.Enum.GetValues(typeof(Sheet.ID)).Cast<Sheet.ID>())
-            spritesLo.AddChild(new SpriteUIRect(0, 0, 56, 32, id));
+
+        foreach (var sprite in Sheet.Sprites)
+        {
+            spritesLo.AddChild(new SpriteUIRect(0, 0, 56, 32, sprite.Key));
+        }
 
         //some help UI
         UI.RootRect.AddChild(new UI.TextRect(0,0,200,10,
@@ -172,12 +175,11 @@ class TestGame : Core
         {
             interval_ = 0;
             Vector2 position = new Vector2(Randy.Range(20, 40), Randy.Range(6, 20));
-            Sheet.ID spriteId = Sheet.ID.enemy1;
-            CreateWorldSprite(position, spriteId);
+            CreateWorldSprite(position, Atlas.enemyA);
         }
     }
 
-    private static void CreateWorldSprite(Vector2 position, Sheet.ID spriteId)
+    private static void CreateWorldSprite(Vector2 position, int spriteId)
     {
         var entity = new Entity(position);
         new StaticBody(entity).CreateCollider(new rectangleColliderData(Vector2.One * 2));
@@ -187,18 +189,18 @@ class TestGame : Core
 
     class SpriteUIRect : UI.DraggableButton
     {
-        public readonly Sheet.ID sprite;
+        public readonly int sprite;
         
-        public SpriteUIRect(int x, int y, int w, int h, Sheet.ID sprite) : base(x, y, w, h, null)
+        public SpriteUIRect(int x, int y, int w, int h, int sprite) : base(x, y, w, h, null)
         {
             this.sprite = sprite;
-            var rptRect = sprite.GetRect().UvToPixels();
+            var rptRect = Sheet.Get(sprite).UvToPixels();
             AddChild(new UI.Image(2, 2, rptRect.Width, rptRect.Height, atlas, Color.White, rptRect));
         }
 
         public override void DrawDraggingImage(Point mousePosition)
         {
-            Rectangle sourceRectangle = sprite.GetRect().UvToPixels();
+            Rectangle sourceRectangle = Sheet.Get(sprite).UvToPixels();
             UIBatch.Draw(atlas,
                 mousePosition.ToVector2()-new Vector2(sourceRectangle.Width/2, sourceRectangle.Height/2),
                 sourceRectangle, Color.White, 0f, Vector2.Zero, 1, SpriteEffects.None, 0);

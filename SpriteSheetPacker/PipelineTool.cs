@@ -11,6 +11,7 @@ using System.Linq;
 using System.Reflection;
 using System.Runtime.Serialization;
 using System.Runtime.Serialization.Formatters.Binary;
+using System.Text;
 using System.Text.RegularExpressions;
 using System.Threading;
 using Microsoft.CSharp;
@@ -127,7 +128,8 @@ public partial class PipelineTool
         protected readonly string exportExtension;
         public string Id { protected get; set; }
 
-        //TODO this is mostly stateless, staticize most stuff
+        //TODO create disposable object for transitive states (data flow objects)
+        //TODO this is a bit stateless, staticize stuff
 
         protected bool ImportsExtension(string path)
         {
@@ -248,10 +250,26 @@ public partial class PipelineTool
             }
         }
 
-//        protected void GenerateCodeForFileList(string )
-//        {
-//            
-//        }
+        protected string GenerateClassCodeForFileList(string[] finalFiles, string extraMembers = "")
+        {
+            var c = new StringBuilder();
+            
+            c.AppendLine($"public static class {Id} {{");
+            foreach (string finalFile in finalFiles)
+            {
+                var name = Path.GetFileNameWithoutExtension(finalFile);
+
+                string ext = exportExtension;
+                if (exportExtension == null)
+                    ext = Path.GetExtension(finalFile).Replace(".","");
+
+                c.AppendLine($" public const string {name} = \"{name}.{ext}\";");
+            }
+            c.AppendLine(extraMembers);
+            c.AppendLine("}");
+
+            return c.ToString();
+        }
 
     }
 
@@ -284,16 +302,83 @@ public partial class PipelineTool
             foreach (var pair in correspondents)
             {
                 Dbg.Write($"copying {pair.Key} into {pair.Value}");
-                File.Copy(pair.Key, pair.Value);
+                File.Copy(pair.Key, pair.Value, true);
             }
             DeleteAllFiles(orphans);
+
+            string outcode = GenerateClassCodeForFileList(correspondents.Values.ToArray());
+            File.WriteAllText(Path.Combine(DirectoryWidget.GetPathOf(OUTCD), Id+".cs"), outcode);
         }
     }
 
-    public class ShaderImporter : Importer
+    public class FileCopierTypedImporter : Importer
     {
-        public ShaderImporter(string[] extensions, string exportExtension) : base(extensions, exportExtension)
-        {}
+        private readonly string typeName_;
+        private readonly string typeImport_;
+
+        public FileCopierTypedImporter(string[] extensions, string exportExtension, string typeName, string typeImport) : base(extensions, exportExtension)
+        {
+            typeName_ = typeName;
+            typeImport_ = typeImport;
+        }
+
+        protected string GenerateClassCodeForTypedAsset(string[] values)
+        {
+            var c = new StringBuilder();
+
+            c.AppendLine($"using {typeImport_};");
+            c.AppendLine($"public static class {Id} {{");
+            c.AppendLine("public static class Cache {");
+            foreach (string finalFile in values)
+            {
+                var name = Path.GetFileNameWithoutExtension(finalFile);
+
+                string ext = exportExtension;
+                if (exportExtension == null)
+                    ext = Path.GetExtension(finalFile).Replace(".", "");
+
+                c.AppendLine($"  public static {typeName_} {name} = PipelineAssets.LoadAsset<{typeName_}>(\"{name}.{ext}\");");
+            }
+            c.AppendLine("}");
+            foreach (string finalFile in values)
+            {
+                var name = Path.GetFileNameWithoutExtension(finalFile);
+
+                string ext = exportExtension;
+                if (exportExtension == null)
+                    ext = Path.GetExtension(finalFile).Replace(".", "");
+
+                c.AppendLine($" public static string {name} = \"{name}.{ext}\";");
+            }
+            c.AppendLine("}");
+            return c.ToString();
+        }
+
+        protected override void ImportHighLevel(Dictionary<string, string> correspondents, List<string> orphans)
+        {
+            foreach (var pair in correspondents)
+            {
+                Dbg.Write($"copying {pair.Key} into {pair.Value}");
+                File.Copy(pair.Key, pair.Value, true);
+            }
+            DeleteAllFiles(orphans);
+            
+            string code = GenerateClassCodeForTypedAsset(correspondents.Values.ToArray());
+            File.WriteAllText(Path.Combine(DirectoryWidget.GetPathOf(OUTCD), Id+".cs"), code);
+        }
+    }
+
+    public class ShaderImporter : FileCopierTypedImporter
+    {
+        private static string[] BUILT_IN_SHADERS =
+        {
+            "ExtrudeShadows",
+            "ShadowsBlur",
+        };
+
+        public ShaderImporter(string[] extensions, string exportExtension, string typeName, string typeImport) : base(extensions, exportExtension, typeName, typeImport)
+        {
+        }
 
         protected override void ImportHighLevel(Dictionary<string, string> correspondents, List<string> orphans)
         {
@@ -304,7 +389,7 @@ public partial class PipelineTool
                 {
                     Process process = new Process();
                     process.StartInfo.FileName = DirectoryWidget.GetPathOf(DXCPL);
-                    process.StartInfo.Arguments = $"/T fx_2_0 5 \"{correspondent.Key}\" /Fo \"{correspondent.Value}\"";
+                    process.StartInfo.Arguments = $"/T fx_2_0 \"{correspondent.Key}\" /Fo \"{correspondent.Value}\"";
                     process.StartInfo.RedirectStandardOutput = true;
                     process.StartInfo.RedirectStandardError = true;
                     process.StartInfo.UseShellExecute = false;
@@ -317,9 +402,42 @@ public partial class PipelineTool
                     Dbg.Write("ERROR COMPILING SHADERS!: "+e.Message);
                 }
             }
-            DeleteAllFiles(orphans);
+
+            foreach (string file in orphans)
+            {
+                foreach (string bis in BUILT_IN_SHADERS)
+                {
+                    if (file.Contains(bis))
+                    {
+                        Dbg.Write("SKIPPING BUILT-IN ORPHAN: "+file);
+                        goto SKIP1;
+                    }
+                }
+                Dbg.Write("DELETING ORPHAN: "+file);
+                File.Delete(file);
+                SKIP1:;
+            }
+
+            string outcode = GenerateClassCodeForTypedAsset(correspondents.Values.ToArray());
+            File.WriteAllText(Path.Combine(DirectoryWidget.GetPathOf(OUTCD), Id+".cs"), outcode);
+
         }
     }
+
+    public class AtlasImporter : Importer
+    {
+        public AtlasImporter(string[] extensions, string exportExtension) : base(extensions, exportExtension)
+        {}
+
+        public override void Import(string inputPath, string[] changedFilesFull, string outputBins, string outputCode, Func<string, string> namer)
+        {
+            Dbg.Write("IMPORTING ATLAS FROM: "+inputPath);
+            Dbg.Write("IMPORTING ATLAS INTO: "+outputBins);
+            int res = Packer.Pack(inputPath, outputBins, outputCode, namer);
+            Dbg.Write("ATLAS PACKED FINISHED WITH RESULT: "+res);
+        }
+    }
+
 }
 
 
@@ -769,13 +887,13 @@ You have to return a string that will be used as the name your asset resource.
         int c = 2;
         new SaneLabel(this, "Source Paths").SaneCoords.SanePosition(1,c++);
         
-        new AssetDirectoryMonitorWidget(this, ATLAS, new DebugPrinterImporter(new []{"png",}, "png"), tabs).SaneCoords.SanePosition(0, c++);
-        new AssetDirectoryMonitorWidget(this, SOUND, new FileCopierImporter(new []{"wav",}, "wav"), tabs).SaneCoords.SanePosition(0, c++);
-        new AssetDirectoryMonitorWidget(this, MUSIC, new FileCopierImporter(new []{"ogg",}, "ogg"), tabs).SaneCoords.SanePosition(0, c++);
+        new AssetDirectoryMonitorWidget(this, ATLAS, new AtlasImporter(new []{"png",}, null), tabs).SaneCoords.SanePosition(0, c++);
+        new AssetDirectoryMonitorWidget(this, SOUND, new FileCopierTypedImporter(new []{"wav",}, "wav", "SoundEffect", "Microsoft.Xna.Framework.Audio"), tabs).SaneCoords.SanePosition(0, c++);
+        new AssetDirectoryMonitorWidget(this, MUSIC, new FileCopierTypedImporter(new []{"ogg",}, "ogg", "Song", "Microsoft.Xna.Framework.Media"), tabs).SaneCoords.SanePosition(0, c++);
         new AssetDirectoryMonitorWidget(this, FONTS, new DebugPrinterImporter(new []{"xnb",}, "xnb"), tabs).SaneCoords.SanePosition(0, c++);//TODO
-        new AssetDirectoryMonitorWidget(this, SHADR, new ShaderImporter(new []{"hlsl",}, "fxb"), tabs).SaneCoords.SanePosition(0, c++);
+        new AssetDirectoryMonitorWidget(this, SHADR, new ShaderImporter(new []{"hlsl",}, "fxb", "Effect", "Microsoft.Xna.Framework.Graphics"), tabs).SaneCoords.SanePosition(0, c++);
         new AssetDirectoryMonitorWidget(this, MESHS, new DebugPrinterImporter(new []{"",},""), tabs).SaneCoords.SanePosition(0, c++);
-        new AssetDirectoryMonitorWidget(this, OTHER, new FileCopierImporter(new string[]{},null), tabs).SaneCoords.SanePosition(0, c++);//empty array = catch all
+        new AssetDirectoryMonitorWidget(this, OTHER, new FileCopierImporter(new string[]{}, null), tabs).SaneCoords.SanePosition(0, c++);//empty array = catch all
 
         c++;
         new SaneLabel(this, "Binaries").SaneCoords.SanePosition(1,c++);
@@ -802,7 +920,7 @@ You have to return a string that will be used as the name your asset resource.
         // ticker
         ticker_ = new Timer();
         ticker_.Tick += (sender, args) => { GlobalTick?.Invoke(); };
-        ticker_.Interval = 500;//todo 1000
+        ticker_.Interval = 500;//todo 1000?
         ticker_.Start();
 
         GlobalTick += Dbg.Tick;

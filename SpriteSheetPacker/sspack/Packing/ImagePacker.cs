@@ -84,12 +84,15 @@ namespace sspack
 			imagePlacement.Clear();
 
 			// get the sizes of all the images
-			foreach (var image in files)
+			foreach (var filePath in files)
 			{
-				Bitmap bitmap = Bitmap.FromFile(image) as Bitmap;
-				if (bitmap == null)
-					return -1;
-				imageSizes.Add(image, bitmap.Size);
+			    Bitmap bitmap;
+			    using (var b = new Bitmap(filePath))
+			    {
+			        bitmap = new Bitmap(b); //FIXED! DARN NOOBS LOCKING MY FILESS!!!!! :trollface: - Alan, May 21, 3199BC
+                    b.Dispose();
+			    }
+			    imageSizes.Add(filePath, bitmap.Size);
 			}
 
 			// sort our files by file size so we place large sprites first
@@ -290,10 +293,22 @@ namespace sspack
 			foreach (var image in files)
 			{
 				Rectangle location = imagePlacement[image];
-				Bitmap bitmap = Bitmap.FromFile(image) as Bitmap;
-				if (bitmap == null)
-					return null;
 
+
+
+                //BUGFIX
+                //WUUUUUUUUUUUUUUTTTTTTTTTTTT??? what kinda code is this that reads shit twice? :(
+                //TODO: fix all this sucky shit!
+			    Bitmap bitmap;
+			    using (var b = new Bitmap(image))
+			    {
+			        bitmap = new Bitmap(b); //FIXED! DARN NOOBS LOCKING MY FILESS!!!!! :trollface: - Alan, May 21, 3199BC
+			        b.Dispose(); 
+			    }
+                //END WUUUUUUUUTTTTTTT
+
+
+                
 				// copy pixels over to avoid antialiasing or any other side effects of drawing
 				// the subimages to the output image using Graphics
 				for (int x = 0; x < bitmap.Width; x++)

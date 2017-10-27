@@ -83,7 +83,7 @@ public abstract partial class Core : Game
         // init content
         ContentManager = Content;
         ContentManager.RootDirectory = "Content";
-        atlas = Content.Load<Texture2D>("atlas");
+        atlas = Content.Load<Texture2D>("Atlas");
         ATLAS_TO_WORLD = atlas.Width / PPU;
         LightProjector.LoadContent();
 

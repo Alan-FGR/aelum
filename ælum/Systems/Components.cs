@@ -40,7 +40,7 @@ public static class ComponentFactory
             case ComponentTypes.QuadComponent: return new Quad(entity, componentData.serialData);
             case ComponentTypes.EntityContainer: return new EntityContainer(entity, componentData.serialData);
             case ComponentTypes.TileMapChunk: return new TileMapOfEntities(entity, componentData.serialData);
-//            case ComponentTypes.SoundPlayer: return new SoundPlayer(entity, );
+            case ComponentTypes.SoundPlayer: return new SoundPlayer(entity, componentData.serialData);
         }
 
         //scripts
