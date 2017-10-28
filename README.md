@@ -1,9 +1,11 @@
 # Project Status: WIP - [![Build status](https://ci.appveyor.com/api/projects/status/gfmeiefkf3dnffie/branch/master?svg=true)](https://ci.appveyor.com/project/Alan-FGR/aelum/branch/master) [![License](http://img.shields.io/:license-mit-blue.svg)](http://doge.mit-license.org) [![Since](https://img.shields.io/badge/since-3200BC-lightgray.svg)](https://github.com/Alan-FGR/aelum/blob/master/LICENSE)
 
-### How to build test game:
+![logo anim](Docs/aelum.gif)
+
+### How to build the test game:
 1. Clone repository recursively  
 3. Open Solution in VS2017
-3. Setup FNA binaries (deps)
+3. Setup Pipeline and FNA binaries (deps)
 7. Cross fingers and hit Build :trollface:
 
 **NOTE:** 3rd step is required because it generates code that describes the assets, easiest way to rebuild your assets is to build and run in a new instance so you don't have to switch to the project. You can also automate that to automatically rebuild whenever files in your assets directories change.
