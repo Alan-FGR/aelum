@@ -1,0 +1,6 @@
+D:\FNA\Aelum\SpriteSheetPacker\bin\Sprite Sheet Packer.dll.config
+D:\FNA\Aelum\SpriteSheetPacker\bin\Sprite Sheet Packer.dll
+D:\FNA\Aelum\SpriteSheetPacker\bin\Sprite Sheet Packer.pdb
+D:\FNA\Aelum\SpriteSheetPacker\obj\Debug\SpriteSheetPacker.csprojResolveAssemblyReference.cache
+D:\FNA\Aelum\SpriteSheetPacker\obj\Debug\Sprite Sheet Packer.dll
+D:\FNA\Aelum\SpriteSheetPacker\obj\Debug\Sprite Sheet Packer.pdb
