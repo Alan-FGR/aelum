@@ -19,7 +19,7 @@ public class SampleScript : Script
 {
     public SampleScript(Entity entity) : base(entity)
     {
-        // INITIALIZATION, you can access entity here
+        // INITIALIZATION, code here can already access any component/entity member
     }
 
     public override void Update()
@@ -49,24 +49,22 @@ public class PersistentScript : Script
         someData_ = RetrieveScriptData<float>("someKey");
     }
 
-    // data is (de)serialized automatically, but use this to know when script is being serialized
+    // data is (de/)serialized automatically, but use this to know when script is being serialized
     // so you can update the data before that if necessary (not required)
     protected override void BeforeSerialization()
     {
         StoreScriptData("someKey", someData_);
     }
-
-    public override void Update(){}
 }
 ```
-The script above will automatically persist in the entity, it will be saved to disk when the chunk is being serialized, and loaded again when it's being deserialized. All primitive types are supported along with collections and some core types like Vectors and Rectangles.
+The script above will automatically persist in the entity, it will be saved to disk when the chunk is being serialized, and loaded again when it's being deserialized. All primitive types are supported by Store/RetrieveScriptData, along with collections and some core types like Vectors, Rectangles and Colors.
 
 
 # Pipeline
 
 ### Graphical Pipeline Tool (currently Windows only)
 
-ælum comes with a GUI pipeline tool to make your life easier, ideal usage is to configure it to monitor your asset source folders and keep it running in the background while you develop your game, new assets will be automatically imported and copied into the configured output folder, while code will be generated into your project for easy usage.
+ælum has a GUI pipeline tool to make your life easier, the ideal usage is to configure it to monitor your asset source folders and keep it running in the background while you develop your game, so new assets will be automatically imported and copied into the configured output folder, while code will be generated into your project for easy usage.
 
 #### Overview
 ![Pipeline Tool](Docs/pipeline.png)
@@ -76,17 +74,17 @@ The script above will automatically persist in the entity, it will be saved to d
   - Build Active: immediately builds all assets in active folders (green)
   - Build All: immediately builds all assets, even from inactive folders
 - **Source Paths**
-  - Click the left button on each path to de/activate it, the "Browse" button allows you to select a folder in your filesystem that contains the path to the asset sources. Only active paths are monitored for changes. When folders are being monitored for changes a number cycles in the switch button.
+  - Click the left button on each path to de/activate it, the "Browse" button allows you to select a folder in your filesystem that contains the path to the asset sources. Only active paths are monitored for changes, and only when the 'Import on Change' button is on. When folders are being monitored for changes a number cycles in the switch button as an indication of that.
 - **Binaries**
   - Allow you to select binaries that are used in the pipeline (currently only DX compiler is used)
 - **Output Directories**
-  - Should be self-explanatory, it's the folders where output files will be copied to
+  - Should be self-explanatory, they are the folders where output files will be copied to
 
 The pipeline tool is a minimal application (30kb) that loads settings from the working folder at startup and saves them upon exit, so you can keep it in your working directories with no problems and can add the binary in any repository. Full source code is included but it's not necessary to compile it to use the engine.
 
 #### Naming functions
 
-The pipeline is a powerful tool and allow you to code naming functions for your assets, think of them like shaders but in C# and for paths, you get three string vars as the input:
+The pipeline is a powerful tool and allows you to code naming functions for your assets, think of them like shaders but in C# and for paths, you get three string vars as the input:
 
 - 'file' which contains the filename without extension
 - 'path' which contains the full path to the file
@@ -120,7 +118,7 @@ Upon a closer look at the sources, the attentive coder will certainly notice tha
 - There's no `Entity.AddComponent(new MyComponent())`:
 	- We do this in order to reduce complexity by using the constructor for the components initialization as opposed to having separate initialization routines. We don't have a real ECS but rather a plugin system. Most engines out there don't have a real ECS too, including but not limited to Unity, Nez, Otter and Duality; in all of these engines the component stores a reference to the entity, as we do, but that's much more clear when you're passing the entity in the component constructor too. So we don't hide that from you nor pretend we got a [real ECS](https://github.com/nem0/LumixEngine/tree/master/src/engine) under the hood.
 - Why sprites are hardcoded? [This is not the 80s :trollface:!](https://gitter.im/nem0/LumixEngine?at=59ec9d075c40c1ba79d07a43)
-	- It's true that sucks, but by doing that as opposed to a true data-driven approach we got 'free' stable and efficient serialization, and code tools works for them like autocompletion, refactoring, and compile-time safety checks. That being said it's not an ideal solution by any means, and [we have plans to change that](https://github.com/Alan-FGR/aelum/issues/3). [This is the 80s though!!1!](https://gfycat.com/gifs/detail/WarlikeScornfulBlackfish) :trollface:
+	- It's true that sucks, but by doing that as opposed to a true data-driven approach we got 'free' stable and efficient serialization, and code tools works for them like autocompletion, refactoring, and compile-time safety checks. That being said it's not an ideal solution by any means, and [we have plans to change that](https://github.com/Alan-FGR/aelum/issues/3). [This is the 80s though!!1!](https://gfycat.com/gifs/detail/WarlikeScornfulBlackfish) :trollface: - Update: this was fixed! Sprites now are stored in a Dictionary and have int keys for faster lookup, pipeline still generates code for easy referencing, but that's not necessary at all, and you can easily modify the importer to generate JSON for example.
 - Why so much constructor piping?
     - We [didn't have that once](https://github.com/Alan-FGR/aelum/commit/e3cc8f360f4be1e89b74a2f9bc16332124d1a6ef), but the implications were too bad for a minor annoyance in the user code, so we decided it's not worthy it.
 
