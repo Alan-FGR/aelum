@@ -138,4 +138,4 @@ Too few badges?
 [![have all](http://img.shields.io/:have-all-green.svg)](https://github.com/Alan-FGR/BogusBadges)
 [![them badges](http://img.shields.io/:them-badges-yellowgreen.svg)](https://github.com/Alan-FGR/BogusBadges)
 [![if we really](http://img.shields.io/:if_we-really-yellow.svg)](https://github.com/Alan-FGR/BogusBadges)
-[![wanted ◕‿◕](http://img.shields.io/:wanted-◕‿◕-blue.svg)](https://github.com/Alan-FGR/BogusBadges)
+[![wanted (° ͜ʖ°)](https://img.shields.io/:wanted-(%C2%B0%20%CD%9C%CA%96%C2%B0)-blue.svg)](https://github.com/Alan-FGR/BogusBadges)
