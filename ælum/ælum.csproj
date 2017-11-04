@@ -138,7 +138,7 @@
   </ItemGroup>
   <Import Project="$(MSBuildToolsPath)\Microsoft.CSharp.targets" />
   <PropertyGroup>
-    <PreBuildEvent>"C:\Program Files (x86)\Windows Kits\8.1\bin\x64\fxc.exe" /T fx_2_0 $(ProjectDir)Content\ExtrudeShadows.hlsl /Fo $(ProjectDir)Content\ExtrudeShadows.fxb
-"C:\Program Files (x86)\Windows Kits\8.1\bin\x64\fxc.exe" /T fx_2_0 $(ProjectDir)Content\ShadowsBlur.hlsl /Fo $(ProjectDir)Content\ShadowsBlur.fxb</PreBuildEvent>
+    <PreBuildEvent>
+    </PreBuildEvent>
   </PropertyGroup>
 </Project>

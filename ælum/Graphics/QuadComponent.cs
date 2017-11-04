@@ -88,8 +88,9 @@ public class Quad : ManagedChunkedComponent<Quad>
     {
         verts.Clear();
         
-        foreach (Quad quad in GetComponentsInRect(rect))
-            quad.Draw();
+        //broadphase culling (https://github.com/Alan-FGR/aelum/issues/17)
+        foreach (Quad quad in GetComponentsInRect(rect.InflateClone(CHUNK_SIZE,CHUNK_SIZE)))
+            quad.Draw(rect);
 
         BuildBuffersAndRender();
     }
@@ -108,7 +109,16 @@ public class Quad : ManagedChunkedComponent<Quad>
 
     public static List<VertexPositionTexture> verts = new List<VertexPositionTexture>();
 
-    public virtual void Draw()
+    public static RectF GetAABB(Vector3 corner0, Vector3 corner1, Vector3 corner2, Vector3 corner3)
+    {
+        float minX = MathUtils.Min(corner0.X, corner1.X, corner2.X, corner3.X);
+        float maxX = MathUtils.Max(corner0.X, corner1.X, corner2.X, corner3.X);
+        float minY = MathUtils.Min(corner0.Y, corner1.Y, corner2.Y, corner3.Y);
+        float maxY = MathUtils.Max(corner0.Y, corner1.Y, corner2.Y, corner3.Y);
+        return new RectF(minX, minY, maxX-minX, maxY-minY);
+    }
+
+    public virtual void Draw(RectF cullRect)
     {
         float entX = Core.SnapToPixel(entity.Position.X);
         float entY = Core.SnapToPixel(entity.Position.Y);
@@ -155,8 +165,14 @@ public class Quad : ManagedChunkedComponent<Quad>
             corner3 = new Vector3(entX+scaleX-originX,entY-originY+rightShear,entZ);
         }
 
+        //narrowphase culling
+        RectF aabb = GetAABB(corner0, corner1, corner2, corner3);
+        if(!cullRect.Intersects(aabb)) return;
+        DebugHelper.AddDebugRect(aabb.InflateClone(1,1), Color.Yellow);
+
+
         //TODO: get verts positions and uv from quaddata method?
-        
+
         Vector2 corner0uv = new Vector2(quadData.atlasTile.X,quadData.atlasTile.Bottom);
         Vector2 corner1uv = new Vector2(quadData.atlasTile.X,quadData.atlasTile.Y);
         Vector2 corner2uv = new Vector2(quadData.atlasTile.Right,quadData.atlasTile.Y);

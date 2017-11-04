@@ -390,6 +390,16 @@ static class MathUtils
         return value < min ? min : value > max ? max : value;  
     }
 
+    public static float Min(float a, float b, float c, float d)
+    {
+        return Math.Min(a, Math.Min(b, Math.Min(c, d)));
+    }
+
+    public static float Max(float a, float b, float c, float d)
+    {
+        return Math.Max(a, Math.Max(b, Math.Max(c, d)));
+    }
+
 }
 
 

@@ -8,7 +8,7 @@ public struct RectF
     // member fields
     [Key(0)] public float X;
     [Key(1)] public float Y;
-    [Key(2)] public float width;
+    [Key(2)] public float width; //TODO get convention right :(
     [Key(3)] public float height;
 
     // properties
@@ -27,6 +27,7 @@ public struct RectF
         this.height = height;
     }
     public RectF(Rectangle r) : this(r.X, r.Y, r.Width, r.Height){}
+    public RectF(RectF r) : this(r.X, r.Y, r.width, r.height){}
 
     // convenience
     [IgnoreMember]
@@ -63,10 +64,24 @@ public struct RectF
     
     public bool Intersects(RectF other)
     {
-        return other.Left <= Right &&
-               Left <= other.Right &&
-               other.Top <= Bottom &&
-               Top <= other.Bottom;
+        return other.Left <= Right && other.Right >= Left && other.Top <= Bottom && other.Bottom >= Top;
+    }
+
+    //manipulations - in place
+    public void Inflate(float w, float h)
+    {
+        X -= w;
+        Y -= h;
+        width += w * 2;
+        height += h * 2;
+    }
+
+    //manipulations - clone
+    public RectF InflateClone(float w, float h)
+    {
+        RectF nr = new RectF(this);
+        nr.Inflate(w,h);
+        return nr;
     }
 
     // obj overrides

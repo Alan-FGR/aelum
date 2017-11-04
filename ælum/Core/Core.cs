@@ -51,7 +51,7 @@ public abstract partial class Core : Game
     public static Camera mainCam;
     public static GameTime lastGameTime { get; private set; } = new GameTime(TimeSpan.Zero, TimeSpan.Zero);
     public static float lastDT = 1/60f;
-
+    
     // hooks
     public Action OnBeforeInputUpdate;
     public Action OnBeforeLogicUpdate;
@@ -147,7 +147,7 @@ public abstract partial class Core : Game
 
         mainCam.UpdateBeforeDrawing();
 
-        float cullOverScan = Keys.Z.IsDown() ? -3 : 3;
+        float cullOverScan = Keys.Z.IsDown() ? -3 : 0;
         Matrix globalMatrix = mainCam.GetGlobalViewMatrix();
 
         GraphicsDevice.SetRenderTarget(mainCam.RT(0));
@@ -169,7 +169,7 @@ public abstract partial class Core : Game
         Sprite.DrawAllInRect(spriteBatch, mainCam.GetCullRect(cullOverScan), mainCam.GetSpritesViewMatrix());
 
         //render 2d lighting
-        var lights = LightProjector.DrawAllInRect(mainCam.GetCullRect(20), globalMatrix);
+//        var lights = LightProjector.DrawAllInRect(mainCam.GetCullRect(20), globalMatrix);
 
 
         //render UI
@@ -183,7 +183,7 @@ public abstract partial class Core : Game
         RenderToScreen(mainCam.RT(0), BlendState.Opaque);
         
         //render lights and shadows
-        RenderToScreen(lights.texture, lightsBlendMode);
+//        RenderToScreen(lights.texture, lightsBlendMode);
 
         //render UI
         spriteBatch.Begin(SpriteSortMode.Immediate, BlendState.AlphaBlend, SamplerState.PointClamp, DepthStencilState.Default, RasterizerState.CullCounterClockwise);
