@@ -117,6 +117,23 @@ public class SaneToggleButton : SaneButton
 }
 
 [DesignerCategory("")] // we don't want useless tools
+public class SaneTick : CheckBox, ISaneCoords
+{
+    public readonly object userData;
+    public SaneTick(Control parent, string text, int width = 1, object userData = null)
+    {
+        SaneCoords = new SaneCoords(this);
+        Text = text;
+        Parent = parent;
+        SaneCoords.SaneScale(width, 1);
+        
+        this.userData = userData;
+    }
+    
+    public SaneCoords SaneCoords { get; }
+}
+
+[DesignerCategory("")] // we don't want useless tools
 public class SanePanel : Panel, ISaneCoords
 {
     public SanePanel(Control parent, int width = 7, int height = 1)

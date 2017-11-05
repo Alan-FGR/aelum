@@ -429,7 +429,13 @@ public partial class PipelineTool
         public AtlasImporter(string[] extensions, string exportExtension) : base(extensions, exportExtension)
         {}
 
-        public override void Import(string inputPath, string[] changedFilesFull, string outputBins, string outputCode, Func<string, string> namer)
+        public override void Import(string inputPath, string[] changedFilesFull,
+            string outputBins, string outputCode, Func<string, string> namer)
+        {
+            Dbg.Write("use import with option");
+        }
+
+        public void ImportWithOption(string inputPath, string[] changedFilesFull, string outputBins, string outputCode, Func<string, string> namer, bool option)
         {
             Dbg.Write("IMPORTING ATLAS FROM: "+inputPath);
             Dbg.Write("IMPORTING ATLAS INTO: "+outputBins);
@@ -570,7 +576,7 @@ public partial class PipelineTool : Form
         }
     }
 
-    class NamerProcessor
+    public class NamerProcessor
     {
         public NamerProcessor(string code)
         {
@@ -615,7 +621,7 @@ public partial class PipelineTool : Form
         private SaneTextBox namerPreviewBox_;
 
         private FileChangesBuffer monitorBuffer_;
-        private Importer importer_;
+        protected Importer importer_;
         private int ticks_;
 
         public AssetDirectoryMonitorWidget(Control parent, string id, Importer importer, SaneTabs namerTabs, int width = 14, int height = 1) : base(parent, id, width, height)
@@ -717,6 +723,11 @@ public partial class PipelineTool : Form
                 return;
             }
 
+            ImportAssets(filesToBuild, proc);
+        }
+
+        protected virtual void ImportAssets(string[] filesToBuild, NamerProcessor proc)
+        {
             //todo get paths in importer?
             importer_.Import(path_, filesToBuild, GetPathOf(OUTBN), GetPathOf(OUTCD), proc.RunProcessor);
         }
@@ -818,12 +829,38 @@ public partial class PipelineTool : Form
 
     }
 
+    public class AssetDirectoryMonitorWidgetWithOption : AssetDirectoryMonitorWidget
+    {
+        private readonly SaneTick multiTick_;
+
+        public AssetDirectoryMonitorWidgetWithOption(Control parent, string id, Importer importer, SaneTabs namerTabs, int width = 14, int height = 1) : base(parent, id, importer, namerTabs, width, height)
+        {
+            label_.SaneCoords.SanePosition(4, 0);
+            label_.SaneCoords.SaneScale(8, 1);
+
+            multiTick_ = new SaneTick(this, "multi", 2);
+            multiTick_.Left = (int) (SaneCoords.STD_SIZE * 2.2f);
+            multiTick_.Width = (int) (SaneCoords.STD_SIZE * 1.8f);
+            multiTick_.Height = (int) (SaneCoords.STD_SIZE * 0.9f);
+        }
+
+        protected override void ImportAssets(string[] filesToBuild, NamerProcessor proc)
+        {
+            AtlasImporter importer = importer_ as AtlasImporter; //TODO use base importer that takes option, not atlas importer
+            if (importer != null)
+            {
+                importer.ImportWithOption(path_, filesToBuild, GetPathOf(OUTBN), GetPathOf(OUTCD), proc.RunProcessor, multiTick_.Checked);
+            }
+        }
+    }
+
     private Timer ticker_;
 
     public PipelineTool()
     {
         Text = "Pipeline Tool";
-        FormBorderStyle = FormBorderStyle.FixedToolWindow;
+        FormBorderStyle = FormBorderStyle.FixedDialog;
+        MaximizeBox = false;
         
 
         //right column area (FIRST FOR DBG)
@@ -887,7 +924,7 @@ You have to return a string that will be used as the name your asset resource.
         int c = 2;
         new SaneLabel(this, "Source Paths").SaneCoords.SanePosition(1,c++);
         
-        new AssetDirectoryMonitorWidget(this, ATLAS, new AtlasImporter(new []{"png",}, null), tabs).SaneCoords.SanePosition(0, c++);
+        new AssetDirectoryMonitorWidgetWithOption(this, ATLAS, new AtlasImporter(new []{"png",}, null), tabs).SaneCoords.SanePosition(0, c++);
         new AssetDirectoryMonitorWidget(this, SOUND, new FileCopierTypedImporter(new []{"wav",}, "wav", "SoundEffect", "Microsoft.Xna.Framework.Audio"), tabs).SaneCoords.SanePosition(0, c++);
         new AssetDirectoryMonitorWidget(this, MUSIC, new FileCopierTypedImporter(new []{"ogg",}, "ogg", "Song", "Microsoft.Xna.Framework.Media"), tabs).SaneCoords.SanePosition(0, c++);
         new AssetDirectoryMonitorWidget(this, FONTS, new DebugPrinterImporter(new []{"xnb",}, "xnb"), tabs).SaneCoords.SanePosition(0, c++);//TODO
