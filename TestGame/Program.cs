@@ -21,6 +21,8 @@ public class PlayerScript : Script {
         float multiplier = Keys.LeftShift.IsDown() ? 2 : 0.5f;
         entity.Position += new Vector2(dbgmovement*Core.lastDT*multiplier,movement * multiplier * Core.lastDT);
 
+        entity.Rotation += Keys.Q.IsDown() ? 0.03f : Keys.E.IsDown() ? -0.03f : 0; //TODO this is dbg
+
         if (Input.LMB.WasPressed())
         {
             entity.GetComponent<SoundPlayer>()?.Play(); //you'll want to cache this
@@ -95,7 +97,8 @@ class TestGame : Core
 
         //create our player
         Entity player = new Entity(new Vector2(8,15));
-        new Quad(player, new QuadData(Atlas.player));
+//        new Quad(player, new QuadData(Atlas.player));
+        new Sprite(player, new SpriteData(Vector2.One*8, Color.White, Atlas.player.GetSprite().UvToPixels()));
         new PlayerScript(player);
         new LightOccluder(player, LightOccluder.OccluderShape.Horizontal, 2f);
         new SoundPlayer(player, Sound.laser); //jesus christ :(
@@ -110,7 +113,7 @@ class TestGame : Core
 
 
         //create some rotating lights
-        clearColor = Color.Black;
+        clearColor = Color.DarkGray;
         lightsBlendMode = BlendState.Additive;
         LightProjector.blendState_ = BlendState.Additive;
         LightOccluder.SHADOW_BIAS = 0;

@@ -248,6 +248,7 @@ public static partial class Extensions
         }
     }
 
+    
 
     public static T ElementAt2D<T>(this T[,] a, Point pos)
     {
@@ -306,6 +307,15 @@ public static partial class Extensions
         return atlasRect;
     }
 
+    public static RectF PixelsToWorld(this Rectangle r)
+    {
+        return new RectF(
+            r.X * Core.PX_TO_WORLD,
+            r.Y * Core.PX_TO_WORLD,
+            r.Width * Core.PX_TO_WORLD,
+            r.Height * Core.PX_TO_WORLD
+            );
+    }
 
 
 }
@@ -378,13 +388,18 @@ static class MathUtils
         );
     }
 
-    public static Vector2 RotateRadians(this Vector2 v, float radians)
+    public static Vector2 RotateVector(Vector2 v, float radians)
     {
         float sin = (float) Math.Sin(radians);
         float cos = (float) Math.Cos(radians);
-        return new Vector2(cos*v.X - sin*v.Y, sin*v.X + cos*v.Y);
+        return new Vector2(cos * v.X - sin * v.Y, sin * v.X + cos * v.Y);
     }
 
+    public static Vector2 RotateRadians(this Vector2 v, float radians)
+    {
+        return RotateVector(v, radians);
+    }
+    
     public static int ClampInt(int value, int min, int max = Int32.MaxValue)  
     {  
         return value < min ? min : value > max ? max : value;  
