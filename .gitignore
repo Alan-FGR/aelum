@@ -17,3 +17,6 @@ TestGame/obj/
 TestGameAssets/bin/
 TestGameAssets/obj/
 ælum/Generated/
+Pipeline/obj/
+*.pdb
+Pipeline/bin/ToolConf
