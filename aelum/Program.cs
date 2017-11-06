@@ -16,8 +16,7 @@ namespace aelum
          bgQuads.AddPlugin(new Quad(n));
       }
    }
-
-
+   
    class Scene
    {
       private List<Node> nodes;
@@ -39,11 +38,11 @@ namespace aelum
 
    }
 
-   abstract class PluginSystemUntyped
+   public abstract class PluginSystemUntyped
    {
    }
 
-   abstract class PluginSystem<TPlugin> : PluginSystemUntyped where TPlugin : Plugin
+   public abstract class PluginSystem<TPlugin> : PluginSystemUntyped where TPlugin : Plugin
    {
       protected List<TPlugin> plugins;
 
@@ -58,34 +57,48 @@ namespace aelum
 
    }
 
-   abstract class SpatialPlugin<T> : Plugin where T : SpatialPlugin<T>
+   abstract class SpatialPlugin<TPlugin> : Plugin where TPlugin : SpatialPlugin<TPlugin>
    {
-      private SpatialPluginSystem<T> system_;
+      private SpatialPluginSystem<TPlugin> system_;
 
       protected SpatialPlugin(Node node) : base(node)
       {
       }
    }
 
-   class RenderableSystem<T> : PluginSystem<T> where T : RenderablePlugin
+
+   public class AudioSystem<TPlugin> : PluginSystem<TPlugin> where TPlugin : AudioPlugin
    {
 
    }
 
-   class RenderablePlugin : Plugin
+   public class AudioPlugin : Plugin
    {
-      public RenderablePlugin(Node node) : base(node)
+      public AudioPlugin(Node node) : base(node)
       {
       }
    }
 
 
-   class QuadSystem : PluginSystem<Quad>
+   public class RenderableSystem<TPlugin> : PluginSystem<TPlugin> where TPlugin : RenderablePlugin
    {
 
    }
 
-   class Quad : Plugin
+   public class RenderablePlugin : Plugin
+   {
+      public RenderablePlugin(Node node) : base(node)
+      {
+      }
+   }
+   
+
+   class QuadSystem : RenderableSystem<Quad>
+   {
+
+   }
+
+   class Quad : RenderablePlugin
    {
       public Quad(Node node) : base(node)
       {
@@ -100,8 +113,8 @@ namespace aelum
       internal Node(Vector2 position, float rotation, List<Plugin> plugins = null) // def constr
       {
 #if ORIGIN_SHIFT
-        LastPosition = new Vector2(float.MinValue, float.MaxValue);
-        #endif
+   LastPosition = new Vector2(float.MinValue, float.MaxValue);
+#endif
 
          position_ = position;
          rotation_ = rotation;
@@ -134,8 +147,8 @@ namespace aelum
          get => position_;
          set
          {
-#if ORIGIN_SHIFT      
-            LastPosition = position_;
+#if ORIGIN_SHIFT
+      LastPosition = position_;
 #endif
             position_ = value;
             InformSpatialChange();
@@ -161,8 +174,8 @@ namespace aelum
 
       public void SetPositionAndRotation(Vector2 position, float rotation)
       {
-#if ORIGIN_SHIFT      
-        LastPosition = position_;
+#if ORIGIN_SHIFT
+   LastPosition = position_;
 #endif
          position_ = position;
          rotation_ = rotation;
@@ -171,8 +184,8 @@ namespace aelum
 
       public void SetPositionAndDirection(Vector2 position, Vector2 direction)
       {
-#if ORIGIN_SHIFT      
-        LastPosition = position_;
+#if ORIGIN_SHIFT
+   LastPosition = position_;
 #endif
          position_ = position;
          Direction = direction; //this will call Rotation which will call InformSpatialChange
@@ -180,9 +193,9 @@ namespace aelum
 
       private void InformSpatialChange()
       {
-#if ORIGIN_SHIFT
-        EntityChunkRegionSystem.UpdateChunkSystemForEntity(this);
-#endif
+         #if ORIGIN_SHIFT
+         EntityChunkRegionSystem.UpdateChunkSystemForEntity(this);
+         #endif
          foreach (Plugin plugin in plugins)
             plugin.EntityChanged();
       }
@@ -224,13 +237,13 @@ namespace aelum
          plugin = GetPlugin<T>();
          return plugin != null;
       }
-      
+
       #endregion
 
 
       // uncommon members
       public bool persistent = true
-         ; // not all entities should be saved to disk, e.g.: parented entities are saved by their parents, bullets
+            ; // not all entities should be saved to disk, e.g.: parented entities are saved by their parents, bullets
 
    }
 
