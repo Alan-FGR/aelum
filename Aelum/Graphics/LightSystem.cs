@@ -83,8 +83,8 @@ public class LightOccluder : ManagedChunkedComponent<LightOccluder>
     }
 
     //TODO start with some reasonable numbers
-    public static IndexBuffer ib = new IndexBuffer(Core.GraphicsDevice, IndexElementSize.ThirtyTwoBits, 3, BufferUsage.WriteOnly);
-    public static DynamicVertexBuffer vb = new DynamicVertexBuffer(Core.GraphicsDevice,VertexPositionTexture.VertexDeclaration,2,BufferUsage.WriteOnly);
+    public static IndexBuffer ib = new IndexBuffer(Graphics.Device, IndexElementSize.ThirtyTwoBits, 3, BufferUsage.WriteOnly);
+    public static DynamicVertexBuffer vb = new DynamicVertexBuffer(Graphics.Device,VertexPositionTexture.VertexDeclaration,2,BufferUsage.WriteOnly);
     
     private readonly List<OccluderSegment> segments = new List<OccluderSegment>();
     private List<OccluderSegment> globalSegments;
@@ -126,8 +126,8 @@ public class LightOccluder : ManagedChunkedComponent<LightOccluder>
         {
             int newVtxQty = vb.VertexCount * 2;
             int newIdxQty = ib.IndexCount * 2;
-            vb = new DynamicVertexBuffer(Core.GraphicsDevice, OccluderVertexFormat.VertexDeclaration, newVtxQty, BufferUsage.WriteOnly);
-            ib = new IndexBuffer(Core.GraphicsDevice, IndexElementSize.ThirtyTwoBits, newIdxQty, BufferUsage.WriteOnly);
+            vb = new DynamicVertexBuffer(Graphics.Device, OccluderVertexFormat.VertexDeclaration, newVtxQty, BufferUsage.WriteOnly);
+            ib = new IndexBuffer(Graphics.Device, IndexElementSize.ThirtyTwoBits, newIdxQty, BufferUsage.WriteOnly);
             int[] indices = new int[newIdxQty];
             for (int i = 0, v=0; i < newIdxQty; i += 6, v+=4)
             {
@@ -164,13 +164,13 @@ public class LightOccluder : ManagedChunkedComponent<LightOccluder>
         vb.SetData(verts.ToArray()); // copy to gfx, once per draw call
 
         //don't draw, only set the buffers, we tweak the shader parameters and draw on the light component
-        Core.GraphicsDevice.Indices = ib;
-        Core.GraphicsDevice.SetVertexBuffer(vb);
+        Graphics.Device.Indices = ib;
+        Graphics.Device.SetVertexBuffer(vb);
     }
 
     public static void DrawBuffers()
     {
-        Core.GraphicsDevice.DrawIndexedPrimitives(PrimitiveType.TriangleList, 0, 0, allOccludersSegments.Count*4+4, 0, allOccludersSegments.Count*2+2);
+        Graphics.Device.DrawIndexedPrimitives(PrimitiveType.TriangleList, 0, 0, allOccludersSegments.Count*4+4, 0, allOccludersSegments.Count*2+2);
     }
 
     public override void EntityChanged()
@@ -209,8 +209,8 @@ public class LightProjector : ManagedChunkedComponent<LightProjector>
     
     public static void LoadContent()
     {
-        shadowsEffect = Core.ContentManager.Load<Effect>("ExtrudeShadows");
-        shadowsBlur = Core.ContentManager.Load<Effect>("ShadowsBlur");
+        shadowsEffect = Content.Manager.Load<Effect>("ExtrudeShadows");
+        shadowsBlur = Content.Manager.Load<Effect>("ShadowsBlur");
     }
     
     protected LightProjector(Entity entity) : base(entity)
@@ -238,7 +238,7 @@ public class LightProjector : ManagedChunkedComponent<LightProjector>
         {
             this.size = size;
             this.centerOffset = centerOffset;
-            this.lightTexture = Core.ContentManager.Load<Texture2D>(TextureName); //WTFH!!
+            this.lightTexture = Content.Manager.Load<Texture2D>(TextureName); //WTFH!!
             this.lightColor = lightColor;
         }
 
@@ -272,7 +272,7 @@ public class LightProjector : ManagedChunkedComponent<LightProjector>
     void InitRT()
     {
         renderTarget_?.Dispose();
-        renderTarget_ = new RenderTarget2D(Core.GraphicsDevice,Core.mainCam.RT(0).Width/shadowsQuality_,Core.mainCam.RT(0).Height/shadowsQuality_);
+        renderTarget_ = new RenderTarget2D(Graphics.Device,Core.mainCam.RT(0).Width/shadowsQuality_,Core.mainCam.RT(0).Height/shadowsQuality_);
     }
 
     public static Result DrawAllInRect(RectF rect, Matrix globalProjMatrix)
@@ -282,7 +282,7 @@ public class LightProjector : ManagedChunkedComponent<LightProjector>
         {
             sizeLastCheck = Core.mainCam.RT(0).Dimensions();
             accumulation_?.Dispose();
-            accumulation_ = new RenderTarget2D(Core.GraphicsDevice,Core.mainCam.RT(0).Width/shadowsQuality_,Core.mainCam.RT(0).Height/shadowsQuality_);
+            accumulation_ = new RenderTarget2D(Graphics.Device,Core.mainCam.RT(0).Width/shadowsQuality_,Core.mainCam.RT(0).Height/shadowsQuality_);
             foreach (LightProjector light in GetAllComponents())
             {
                 light.InitRT();
@@ -304,8 +304,8 @@ public class LightProjector : ManagedChunkedComponent<LightProjector>
         }
 
         //accumulate lights into a buffer
-        Core.GraphicsDevice.SetRenderTarget(accumulation_);
-        Core.GraphicsDevice.Clear(Color.Black);
+        Graphics.Device.SetRenderTarget(accumulation_);
+        Graphics.Device.Clear(Color.Black);
         float blurRadius = 2/3f;
         shadowsBlur.Parameters["pixelDimension"].SetValue(new Vector2(blurRadius/accumulation_.Width,blurRadius/accumulation_.Height));
         Core.spriteBatch.Begin(SpriteSortMode.Deferred, blendState_, SamplerState.PointWrap, DepthStencilState.None,
@@ -328,8 +328,8 @@ public class LightProjector : ManagedChunkedComponent<LightProjector>
 
     public virtual void Draw()
     {
-        Core.GraphicsDevice.SetRenderTarget(renderTarget_);
-        Core.GraphicsDevice.Clear(Color.Black);
+        Graphics.Device.SetRenderTarget(renderTarget_);
+        Graphics.Device.Clear(Color.Black);
 
         //set projector corners
         float sinT = (float) Math.Sin(entity.Rotation+Math.PI/4);

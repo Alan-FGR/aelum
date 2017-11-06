@@ -3,7 +3,7 @@ Microsoft Visual Studio Solution File, Format Version 12.00
 # Visual Studio 15
 VisualStudioVersion = 15.0.26430.6
 MinimumVisualStudioVersion = 10.0.40219.1
-Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "Farseer Physics ælum", "Farseer\Farseer Physics Engine 3.5\Farseer Physics ælum.csproj", "{0AAD36E3-51A5-4A07-AB60-5C8A66BD38B7}"
+Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "Farseer Physics Aelum", "Farseer\Farseer Physics Engine 3.5\Farseer Physics Aelum.csproj", "{0AAD36E3-51A5-4A07-AB60-5C8A66BD38B7}"
 EndProject
 Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "Farseer DebugView", "Farseer\Farseer Physics DebugView 3.5\Farseer DebugView.csproj", "{566F1803-90B5-4947-8730-57F092FBB002}"
 EndProject
@@ -11,7 +11,7 @@ Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "FNA", "FNA\FNA.csproj", "{3
 EndProject
 Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "PipelineTool", "Pipeline\PipelineTool.csproj", "{43886759-9276-4097-8892-2D33AB56D6E6}"
 EndProject
-Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "ælum", "ælum\ælum.csproj", "{653266D7-A4B5-41D3-8554-A41ED289F460}"
+Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "Aelum", "Aelum\Aelum.csproj", "{653266D7-A4B5-41D3-8554-A41ED289F460}"
 EndProject
 Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "TestGame", "TestGame\TestGame.csproj", "{55D4AADB-A980-4E5D-9516-BAFB8631FC06}"
 EndProject

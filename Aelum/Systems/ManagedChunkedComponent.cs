@@ -16,7 +16,7 @@ public abstract class ManagedChunkedComponent<T> : Component
 
     static ManagedChunkedComponent()
     {
-        DebugHelper.OnBeforeDrawing += DrawDebug;
+        DebugHelper.onBeforeDebugDrawing += DrawDebug;
     }
 
     protected static List<ManagedChunkedComponent<T>> GetChunkEntityList(Point key)

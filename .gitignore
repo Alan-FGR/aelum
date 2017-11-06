@@ -20,3 +20,5 @@ TestGameAssets/obj/
 Pipeline/obj/
 *.pdb
 Pipeline/bin/ToolConf
+Aelum/obj/
+Aelum/bin/

@@ -62,7 +62,7 @@ public class Sprite : ManagedChunkedComponent<Sprite>
     public virtual void Draw(SpriteBatch batcher, RectF drawRect)
     {
         RectF wr = spriteData.atlasTile.PixelsToWorld();
-        wr.Position = spriteData.origin * -Core.PX_TO_WORLD;
+        wr.Position = spriteData.origin * -Graphics.PixelsToWorld;
 
         float sin = (float) Math.Sin(entity.Rotation);
         float cos = (float) Math.Cos(entity.Rotation);
@@ -86,7 +86,7 @@ public class Sprite : ManagedChunkedComponent<Sprite>
         DebugHelper.AddDebugRect(finalRect, Color.GreenYellow, 1);
 
         batcher.Draw(Core.atlas,
-            entity.Position*Core.PPU,
+            entity.Position*Graphics.PixelsPerUnit,
             spriteData.atlasTile,
             spriteData.color,
             entity.Rotation,
