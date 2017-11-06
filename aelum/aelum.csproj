@@ -37,10 +37,21 @@
     <Reference Include="System.Core" />
   </ItemGroup>
   <ItemGroup>
+    <Compile Include="Node.cs" />
+    <Compile Include="Plugins\Audio\AudioSystem.cs" />
     <Compile Include="Engine.cs" />
+    <Compile Include="Math\RectF.cs" />
     <Compile Include="Math\Utils.cs" />
+    <Compile Include="Plugins\Abstract\BehaviorSystem.cs" />
+    <Compile Include="Plugins\Abstract\Plugin.cs" />
+    <Compile Include="Plugins\Abstract\PluginSystem.cs" />
+    <Compile Include="Plugins\Rendering\RenderableSystem.cs" />
     <Compile Include="Program.cs" />
     <Compile Include="Properties\AssemblyInfo.cs" />
+    <Compile Include="Plugins\Abstract\Consumer.cs" />
+    <Compile Include="Plugins\Rendering\QuadSystem.cs" />
+    <Compile Include="Scene.cs" />
+    <Compile Include="Plugins\Abstract\SpatialPluginSystem.cs" />
   </ItemGroup>
   <ItemGroup>
     <None Include="App.config" />
@@ -51,5 +62,6 @@
       <Name>FNA</Name>
     </ProjectReference>
   </ItemGroup>
+  <ItemGroup />
   <Import Project="$(MSBuildToolsPath)\Microsoft.CSharp.targets" />
 </Project>
