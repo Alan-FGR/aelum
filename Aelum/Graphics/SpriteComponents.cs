@@ -83,7 +83,7 @@ public class Sprite : ManagedChunkedComponent<Sprite>
             );
 
         if (!drawRect.Intersects(finalRect)) return;
-        DebugHelper.AddDebugRect(finalRect, Color.GreenYellow, 1);
+        Dbg.AddDebugRect(finalRect, Color.GreenYellow, 1);
 
         batcher.Draw(Core.atlas,
             entity.Position*Graphics.PixelsPerUnit,

@@ -168,7 +168,7 @@ public class Quad : ManagedChunkedComponent<Quad>
         //narrowphase culling
         RectF aabb = GetAABB(corner0, corner1, corner2, corner3);
         if(!cullRect.Intersects(aabb)) return;
-        DebugHelper.AddDebugRect(aabb, Color.Yellow, 0.5f);
+        Dbg.AddDebugRect(aabb, Color.Yellow, 0.5f);
 
 
         //TODO: get verts positions and uv from quaddata method?

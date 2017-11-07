@@ -16,7 +16,7 @@ public abstract class ManagedChunkedComponent<T> : Component
 
     static ManagedChunkedComponent()
     {
-        DebugHelper.onBeforeDebugDrawing += DrawDebug;
+        Dbg.onBeforeDebugDrawing += DrawDebug;
     }
 
     protected static List<ManagedChunkedComponent<T>> GetChunkEntityList(Point key)
@@ -149,9 +149,9 @@ public abstract class ManagedChunkedComponent<T> : Component
 
             //draw region square
             var regionRect = new Rectangle(pos.X*CHUNK_SIZE, pos.Y*CHUNK_SIZE, CHUNK_SIZE, CHUNK_SIZE);
-            DebugHelper.AddDebugRect(regionRect, debugColor, Randy.NextFloat(0.25f));
+            Dbg.AddDebugRect(regionRect, debugColor, Randy.NextFloat(0.25f));
 
-            DebugHelper.AddDebugText(comp.Count.ToString(), regionRect.Location.ToVector2(), debugColor);
+            Dbg.AddDebugText(comp.Count.ToString(), regionRect.Location.ToVector2(), debugColor);
 
             for (var index = 0; index < comp.Count; index++)
             {

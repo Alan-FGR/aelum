@@ -53,7 +53,6 @@ public abstract class Core : Game
    
    
    // actual systems and managers TODO - ALL OF THIS SUCKS
-   public static World physWorld;
    public static Texture2D atlas;//TODO move
    public static Texture2D pixel;
 
@@ -100,6 +99,10 @@ public abstract class Core : Game
       graphicsDeviceManager.PreferredBackBufferWidth = 1340;
       graphicsDeviceManager.PreferredBackBufferHeight = 720;
 
+      
+      
+      
+      
       // init content
       contentManager = Content;
       contentManager.RootDirectory = "Content";
@@ -123,12 +126,9 @@ public abstract class Core : Game
 
       Window.ClientSizeChanged += (o, e) => { UI.ScreenResize(); mainCam.UpdateRenderTargets(); };
       
-      // physics
-      physWorld = new World(Vector2.One);
-
-      // debug
-      if (DEBUG) new DebugHelper(physWorld);
-
+      //TODO fix this!
+      Physics.InitWorld();
+      Dbg.Init();
    }
 
    protected override void Update(GameTime gameTime)
@@ -148,7 +148,7 @@ public abstract class Core : Game
 
       // update physics stuff
       OnBeforePhysicsUpdate?.Invoke();
-      physWorld.Step(Math.Min((float)gameTime.ElapsedGameTime.TotalMilliseconds * 0.001f, 1f / 30f));//TODO
+      Physics.World.Step(lastDT);
       DynamicBody.UpdateAllBodies();
 
       OnEndUpdate?.Invoke();
@@ -192,9 +192,8 @@ public abstract class Core : Game
       Texture2D uiRender = UI.DrawUI();
 
       //debug rendering
-      if (DEBUG) DebugHelper.instance.DrawDebug(mainCam);
-
-
+      Texture2D debugRender = Dbg.RenderDebug(mainCam);
+      
       //render opaque stuff (quads, sprites, etc)
       RenderToScreen(mainCam.RT(0), BlendState.Opaque);
 
@@ -207,7 +206,7 @@ public abstract class Core : Game
       backBufferBatch_.End();
 
 
-      if (DEBUG) RenderToScreen(DebugHelper.instance.DbgRenderTarget, BlendState.NonPremultiplied, new Color(1, 1, 1, 0.75f));
+      if (DEBUG) RenderToScreen(debugRender, BlendState.NonPremultiplied, new Color(1, 1, 1, 0.75f));
 
 
       //audio TODO move from here

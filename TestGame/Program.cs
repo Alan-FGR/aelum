@@ -30,7 +30,7 @@ public class PlayerScript : Script {
             new Quad(bullet, new QuadData(Atlas.small_projectile)); //add quad to render bullet
             new Projectile(bullet, 60); // add projectile script to bullet
         }
-        DebugHelper.AddDebugLine(entity.Position, Core.mainCam.WorldMousePosition, Color.Green);
+        Dbg.AddDebugLine(entity.Position, Core.mainCam.WorldMousePosition, Color.Green);
     }
 }
 
@@ -50,8 +50,8 @@ public class Projectile : Script
         Vector2 lastPos = entity.Position;
         entity.Position += entity.Direction * speed_ * Core.lastDT;
         lifeTime_ += Core.lastDT;
-        DebugHelper.AddDebugLine(lastPos, entity.Position, Color.Yellow);
-        var hit = Core.physWorld.RayCastSingle(lastPos, entity.Position);
+        Dbg.AddDebugLine(lastPos, entity.Position, Color.Yellow);
+        var hit = Physics.World.RayCastSingle(lastPos, entity.Position);
         if (hit.Key != null)
         {
             hit.Key.GetPhysicalBody().entity.Destroy();

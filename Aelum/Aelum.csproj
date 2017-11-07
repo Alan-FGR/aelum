@@ -108,6 +108,7 @@
     <None Include="App.config" />
     <Content Include="Content\ShadowsBlur.hlsl" />
     <Content Include="Content\ExtrudeShadows.hlsl" />
+    <None Include="ClassDiagram1.cd" />
     <None Include="Content\ExtrudeShadows.fxb">
       <CopyToOutputDirectory>PreserveNewest</CopyToOutputDirectory>
     </None>
