@@ -69,17 +69,17 @@
     <None Include="App.config" />
   </ItemGroup>
   <ItemGroup>
-    <ProjectReference Include="..\Farseer\Farseer Physics Engine 3.5\Farseer Physics ælum.csproj">
+    <ProjectReference Include="..\Farseer\Farseer Physics Engine 3.5\Farseer Physics Aelum.csproj">
       <Project>{0AAD36E3-51A5-4A07-AB60-5C8A66BD38B7}</Project>
-      <Name>Farseer Physics ælum</Name>
+      <Name>Farseer Physics Aelum</Name>
     </ProjectReference>
     <ProjectReference Include="..\FNA\FNA.csproj">
       <Project>{35253CE1-C864-4CD3-8249-4D1319748E8F}</Project>
       <Name>FNA</Name>
     </ProjectReference>
-    <ProjectReference Include="..\ælum\ælum.csproj">
+    <ProjectReference Include="..\Aelum\Aelum.csproj">
       <Project>{653266d7-a4b5-41d3-8554-a41ed289f460}</Project>
-      <Name>ælum</Name>
+      <Name>Aelum</Name>
     </ProjectReference>
   </ItemGroup>
   <ItemGroup />

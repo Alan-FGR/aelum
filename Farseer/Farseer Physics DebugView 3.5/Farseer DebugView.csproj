@@ -86,9 +86,9 @@
       <Project>{35253ce1-c864-4cd3-8249-4d1319748e8f}</Project>
       <Name>FNA</Name>
     </ProjectReference>
-    <ProjectReference Include="..\Farseer Physics Engine 3.5\Farseer Physics ælum.csproj">
+    <ProjectReference Include="..\Farseer Physics Engine 3.5\Farseer Physics Aelum.csproj">
       <Project>{0aad36e3-51a5-4a07-ab60-5c8a66bd38b7}</Project>
-      <Name>Farseer Physics ælum</Name>
+      <Name>Farseer Physics Aelum</Name>
     </ProjectReference>
   </ItemGroup>
   <Import Project="$(MSBuildToolsPath)\Microsoft.CSharp.targets" />

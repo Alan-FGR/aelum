@@ -103,9 +103,9 @@ public class Quad : ManagedChunkedComponent<Quad>
     }
 
     public static IndexBuffer ib =
-        new IndexBuffer(Core.GraphicsDevice, IndexElementSize.ThirtyTwoBits, 3, BufferUsage.WriteOnly);
+        new IndexBuffer(Graphics.Device, IndexElementSize.ThirtyTwoBits, 3, BufferUsage.WriteOnly);
     public static DynamicVertexBuffer vb = 
-        new DynamicVertexBuffer(Core.GraphicsDevice,VertexPositionTexture.VertexDeclaration,2,BufferUsage.WriteOnly);
+        new DynamicVertexBuffer(Graphics.Device,VertexPositionTexture.VertexDeclaration,2,BufferUsage.WriteOnly);
 
     public static List<VertexPositionTexture> verts = new List<VertexPositionTexture>();
 
@@ -168,7 +168,7 @@ public class Quad : ManagedChunkedComponent<Quad>
         //narrowphase culling
         RectF aabb = GetAABB(corner0, corner1, corner2, corner3);
         if(!cullRect.Intersects(aabb)) return;
-        DebugHelper.AddDebugRect(aabb, Color.Yellow, 0.5f);
+        Dbg.AddDebugRect(aabb, Color.Yellow, 0.5f);
 
 
         //TODO: get verts positions and uv from quaddata method?
@@ -198,8 +198,8 @@ public class Quad : ManagedChunkedComponent<Quad>
             // each miss we double our buffers ;)
             int newVtxQty = vb.VertexCount * 2;
             int newIdxQty = ib.IndexCount * 2;
-            vb = new DynamicVertexBuffer(Core.GraphicsDevice, VertexPositionTexture.VertexDeclaration, newVtxQty, BufferUsage.WriteOnly);
-            ib = new IndexBuffer(Core.GraphicsDevice, IndexElementSize.ThirtyTwoBits, newIdxQty, BufferUsage.WriteOnly);
+            vb = new DynamicVertexBuffer(Graphics.Device, VertexPositionTexture.VertexDeclaration, newVtxQty, BufferUsage.WriteOnly);
+            ib = new IndexBuffer(Graphics.Device, IndexElementSize.ThirtyTwoBits, newIdxQty, BufferUsage.WriteOnly);
             int[] indices = new int[newIdxQty];
             for (int i = 0, v=0; i < newIdxQty; i += 6, v+=4)
             {
@@ -218,9 +218,9 @@ public class Quad : ManagedChunkedComponent<Quad>
         vb.SetData(verts.ToArray()); // copy to gfx, once per draw call
 
         //actually draw shit
-        Core.GraphicsDevice.Indices = ib;
-        Core.GraphicsDevice.SetVertexBuffer(vb);
-        Core.GraphicsDevice.DrawIndexedPrimitives(PrimitiveType.TriangleList, 0, 0, verts.Count, 0, verts.Count/2);
+        Graphics.Device.Indices = ib;
+        Graphics.Device.SetVertexBuffer(vb);
+        Graphics.Device.DrawIndexedPrimitives(PrimitiveType.TriangleList, 0, 0, verts.Count, 0, verts.Count/2);
 
     }
 

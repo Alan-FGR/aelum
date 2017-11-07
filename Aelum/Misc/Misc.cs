@@ -310,10 +310,10 @@ public static partial class Extensions
     public static RectF PixelsToWorld(this Rectangle r)
     {
         return new RectF(
-            r.X * Core.PX_TO_WORLD,
-            r.Y * Core.PX_TO_WORLD,
-            r.Width * Core.PX_TO_WORLD,
-            r.Height * Core.PX_TO_WORLD
+            r.X * Graphics.PixelsToWorld,
+            r.Y * Graphics.PixelsToWorld,
+            r.Width * Graphics.PixelsToWorld,
+            r.Height * Graphics.PixelsToWorld
             );
     }
 

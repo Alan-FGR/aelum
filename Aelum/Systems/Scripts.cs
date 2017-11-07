@@ -47,16 +47,6 @@ public abstract class Script : Behavior
         return default(T);
     }
 
-//    protected void Put(object variable)
-//    {
-//
-//    }
-//
-//    protected void Take<T>(ref T variable)
-//    {
-//
-//    }
-
     public sealed override ComponentData GetSerialData()
     {
         BeforeSerialization();
@@ -115,9 +105,9 @@ class PlayerController : Script
         //Entity.KeepOriginForPosition(entity.Position);
 
 
-        DebugHelper.AddDebugLine(entity.Position, Core.mainCam.WorldMousePosition, Color.Red);
-        DebugHelper.AddDebugLine(entity.Position, entity.Position+entity.Direction, Color.White);
-        DebugHelper.AddDebugText("PLAYER", entity.Position, Color.Green);
+        Dbg.AddDebugLine(entity.Position, Core.mainCam.WorldMousePosition, Color.Red);
+        Dbg.AddDebugLine(entity.Position, entity.Position+entity.Direction, Color.White);
+        Dbg.AddDebugText("PLAYER", entity.Position, Color.Green);
 
     }
 }
@@ -156,7 +146,7 @@ class Projectile : Script
 
         Vector2 curPos = entity.Position;
 
-        List<Fixture> cols = Core.physWorld.RayCast(lastPos, curPos);
+        List<Fixture> cols = Physics.World.RayCast(lastPos, curPos);
         if (cols.Count > 0)
         {
             entity.Destroy();
@@ -171,7 +161,7 @@ class Projectile : Script
             }
         }
         
-        DebugHelper.AddDebugLine(lastPos, curPos, Color.Red);
+        Dbg.AddDebugLine(lastPos, curPos, Color.Red);
 
         lastPos = curPos;
     }
@@ -231,7 +221,7 @@ class ICANHAZNAME : Script
 
     public override void Update()
     {
-        DebugHelper.AddDebugText(name, entity.Position, Color.White);
+        Dbg.AddDebugText(name, entity.Position, Color.White);
     }
 
     public override string ToString()

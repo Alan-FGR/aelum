@@ -19,7 +19,7 @@ public struct SpriteData
         this.effects = effects;
     }
 
-    public SpriteData(Color color) : this()
+    public SpriteData(Color color) : this() //TODO rem this
     {
         this.origin = Vector2.One*8;
         this.color = color;
@@ -28,31 +28,35 @@ public struct SpriteData
     }
 }
 
-public class Sprite : ManagedChunkedComponent<Sprite>
+public class SpriteSystem : ChunkedComponentSystem<Sprite, SpriteSystem>
 {
-    public static void DrawAll(SpriteBatch batcher)
-    {
-        foreach (KeyValuePair<Point, List<ManagedChunkedComponent<Sprite>>> chunk in chunks_)
-        {
-            foreach (Sprite sprite in chunk.Value)
-            {
-//                sprite.Draw(batcher);
-            }
-        }
-    }
+   private readonly SpriteBatch batch_ = new SpriteBatch(Graphics.Device);
 
-    // TODO calc sprites rects, we're currently just overscanning
-    public static void DrawAllInRect(SpriteBatch batcher, RectF rect, Matrix spritesMatrix)
-    {
-        batcher.Begin(SpriteSortMode.FrontToBack, BlendState.Opaque, SamplerState.PointClamp, DepthStencilState.None, RasterizerState.CullNone, null, spritesMatrix);
-        foreach (Sprite sprite in GetComponentsInRect(rect.InflateClone(CHUNK_SIZE,CHUNK_SIZE)))
-        {
-            sprite.Draw(batcher, rect);
-        }
-        batcher.End();
-    }
+   public void DrawAll(SpriteBatch batcher)
+   {
+      foreach (KeyValuePair<Point, List<Sprite>> chunk in chunks_)
+      {
+         foreach (Sprite sprite in chunk.Value)
+         {
+            //                sprite.Draw(batcher);//TODO
+         }
+      }
+   }
+   
+   public void DrawAllInRect(RectF rect, Matrix spritesMatrix)
+   {
+      batch_.Begin(SpriteSortMode.FrontToBack, BlendState.Opaque, SamplerState.PointClamp, DepthStencilState.None, RasterizerState.CullNone, null, spritesMatrix);
+      foreach (Sprite sprite in GetComponentsInRect(rect.InflateClone(CHUNK_SIZE,CHUNK_SIZE)))
+      {
+         sprite.Draw(batch_, rect);
+      }
+      batch_.End();
+   }
+}
 
-    public SpriteData spriteData;
+public class Sprite : ManagedChunkComponent<Sprite, SpriteSystem>
+{
+    private SpriteData spriteData;
     
     public Sprite(Entity entity, SpriteData spriteData) : base(entity)
     {
@@ -62,7 +66,7 @@ public class Sprite : ManagedChunkedComponent<Sprite>
     public virtual void Draw(SpriteBatch batcher, RectF drawRect)
     {
         RectF wr = spriteData.atlasTile.PixelsToWorld();
-        wr.Position = spriteData.origin * -Core.PX_TO_WORLD;
+        wr.Position = spriteData.origin * -Graphics.PixelsToWorld;
 
         float sin = (float) Math.Sin(entity.Rotation);
         float cos = (float) Math.Cos(entity.Rotation);
@@ -83,10 +87,10 @@ public class Sprite : ManagedChunkedComponent<Sprite>
             );
 
         if (!drawRect.Intersects(finalRect)) return;
-        DebugHelper.AddDebugRect(finalRect, Color.GreenYellow, 1);
+        Dbg.AddDebugRect(finalRect, Color.GreenYellow, 1);
 
         batcher.Draw(Core.atlas,
-            entity.Position*Core.PPU,
+            entity.Position*Graphics.PixelsPerUnit,
             spriteData.atlasTile,
             spriteData.color,
             entity.Rotation,

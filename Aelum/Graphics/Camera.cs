@@ -58,24 +58,24 @@ public class Camera
     public void UpdateRenderTargets()
     {
         SetRenderTargets();
-        scale_ = (float) renderTargets_[0].Height / Core.PPU;
+        scale_ = (float) renderTargets_[0].Height / Graphics.PixelsPerUnit;
     }
 
     private void SetRenderTargets()
     {
-        int width = Core.Viewport.Width / pixelSize;
-        int height = Core.Viewport.Height / pixelSize;
+        int width = Graphics.Viewport.Width / pixelSize;
+        int height = Graphics.Viewport.Height / pixelSize;
         for (var i = 0; i < renderTargets_.Count; i++)
         {
             Debug.WriteLine($"Initting RenderTarget on: {i}");
             renderTargets_[i]?.Dispose();
-            renderTargets_[i] = new RenderTarget2D(Core.GraphicsDevice, width, height, false, SurfaceFormat.Color, DepthFormat.Depth16);
+            renderTargets_[i] = new RenderTarget2D(Graphics.Device, width, height, false, SurfaceFormat.Color, DepthFormat.Depth16);
         }
     }
 
     public void UpdateBeforeDrawing()
     {
-        if (renderTargets_[0].Width != Core.Viewport.Width / pixelSize || renderTargets_[0].Height != Core.Viewport.Height / pixelSize)
+        if (renderTargets_[0].Width != Graphics.Viewport.Width / pixelSize || renderTargets_[0].Height != Graphics.Viewport.Height / pixelSize)
             SetPixelSize(pixelSize);
     }
     
@@ -109,8 +109,8 @@ public class Camera
          */
         float x = Core.SnapToPixel(position_.X);
         float y = Core.SnapToPixel(position_.Y);
-        float top = renderTargets_[0].Height + y * Core.PPU * INVDEBUGMULT; // we sum height to invert Y coords
-        float left = x * Core.PPU * INVDEBUGMULT;
+        float top = renderTargets_[0].Height + y * Graphics.PixelsPerUnit * INVDEBUGMULT; // we sum height to invert Y coords
+        float left = x * Graphics.PixelsPerUnit * INVDEBUGMULT;
         return Matrix.CreateOrthographicOffCenter(left, left+2, top+2, top, -10, 10);
     }
 
@@ -120,8 +120,8 @@ public class Camera
         {
             Vector2 screenPos = Input.MousePosition;
             Vector2 screenToWorldScaled = new Vector2(
-                screenPos.X/Core.Viewport.Width*scale_*aspectRatio,
-                (Core.Viewport.Height-screenPos.Y)/Core.Viewport.Height*scale_
+                screenPos.X/Graphics.Viewport.Width*scale_*aspectRatio,
+                (Graphics.Viewport.Height-screenPos.Y)/Graphics.Viewport.Height*scale_
                 );
             return position_ + screenToWorldScaled;
         }

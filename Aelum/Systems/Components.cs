@@ -39,7 +39,7 @@ public static class ComponentFactory
             case ComponentTypes.LightProjector: return new LightProjector(entity, componentData.serialData);
             case ComponentTypes.QuadComponent: return new Quad(entity, componentData.serialData);
             case ComponentTypes.EntityContainer: return new EntityContainer(entity, componentData.serialData);
-            case ComponentTypes.TileMapChunk: return new TileMapOfEntities(entity, componentData.serialData);
+//            case ComponentTypes.TileMapChunk: return new TileMapOfEntities(entity, componentData.serialData);
             case ComponentTypes.SoundPlayer: return new SoundPlayer(entity, componentData.serialData);
         }
 
@@ -50,7 +50,7 @@ public static class ComponentFactory
             return Activator.CreateInstance(Type.GetType(stad.ScriptType), new ScriptSerialData(entity, stad.ScriptData)) as Component;
         }
 
-        throw new Exception("component type couldn't be resolved; make sure to add all serializable types to this method");
+        throw new Exception("component type couldn't be resolved; make sure to add all component types to this method");
     }
 }
 
