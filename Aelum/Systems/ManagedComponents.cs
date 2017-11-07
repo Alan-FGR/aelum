@@ -1,39 +1,36 @@
 using System.Collections.Generic;
 
-public abstract class ManagedComponent<T> : Component // component that has a management system
+public abstract class ComponentSystem<T, TSystem>
+   where T : ManagedComponent<T, TSystem>
+   where TSystem : ComponentSystem<T, TSystem>, new()
 {
-    private static List<ManagedComponent<T>> systemComponents_ = new List<ManagedComponent<T>>();
-    
-    public ManagedComponent(Entity entity) : base(entity)
-    {
-        systemComponents_.Add(this);
-    }
-    
-    public override void FinalizeComponent()
-    {
-        systemComponents_.Remove(this);
-        base.FinalizeComponent();
-    }
-    protected static List<ManagedComponent<T>> GetAllComponents()
-    {
-        return systemComponents_;
-    }
+   private readonly List<T> components_ = new List<T>();
+   public List<T> Components => components_;
+
+   public void AddComponent(T component)
+   {
+      components_.Add(component);
+   }
+
+   public void RemoveComponent(T component)
+   {
+      components_.Remove(component);
+   }
 }
 
-public abstract class Behavior : ManagedComponent<Behavior>
+// component that has a management system
+public abstract class ManagedComponent<T, TSystem> : Component
+   where T : ManagedComponent<T, TSystem>
+   where TSystem : ComponentSystem<T, TSystem>, new()
 {
-    public Behavior(Entity entity) : base(entity)
-    {
-    }
+   public static readonly TSystem SYSTEM = new TSystem();
 
-    public abstract void Update();
-
-    public static void UpdateAll(float deltaTime)
-    {
-        for (var i = GetAllComponents().Count - 1; i >= 0; i--)
-        {
-            ManagedComponent<Behavior> managedComponent = GetAllComponents()[i];
-            ((Behavior) managedComponent).Update();
-        }
-    }
+   protected ManagedComponent(Entity entity) : base(entity)
+   {
+      SYSTEM.AddComponent((T)this);
+   }
+   public override void FinalizeComponent()
+   {
+      SYSTEM.RemoveComponent((T)this);
+   }
 }

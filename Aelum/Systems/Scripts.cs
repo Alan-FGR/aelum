@@ -47,16 +47,6 @@ public abstract class Script : Behavior
         return default(T);
     }
 
-//    protected void Put(object variable)
-//    {
-//
-//    }
-//
-//    protected void Take<T>(ref T variable)
-//    {
-//
-//    }
-
     public sealed override ComponentData GetSerialData()
     {
         BeforeSerialization();

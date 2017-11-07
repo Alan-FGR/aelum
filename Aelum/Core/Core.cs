@@ -5,6 +5,7 @@ using Microsoft.Xna.Framework.Input;
 using FarseerPhysics.Dynamics;
 using MessagePack.Resolvers;
 using Microsoft.Xna.Framework.Content;
+using Priority_Queue;
 
 //TODO offset half a pixel when origin is centered on objects of odd pixel dimension??? OR NOT? =/
 
@@ -126,10 +127,10 @@ public abstract class Core : Game
 
       Window.ClientSizeChanged += (o, e) => { UI.ScreenResize(); mainCam.UpdateRenderTargets(); };
       
-      //TODO fix this!
-      Physics.InitWorld();
-      Dbg.Init();
    }
+
+   //TODO this is overenginnering :(
+   public SimplePriorityQueue<Action> LogicUpdateQueue = new SimplePriorityQueue<Action>();
 
    protected override void Update(GameTime gameTime)
    {
@@ -144,7 +145,8 @@ public abstract class Core : Game
 
       // update our game logic
       OnBeforeLogicUpdate?.Invoke();
-      Behavior.UpdateAll(lastDT);
+      foreach (Action action in LogicUpdateQueue)
+         action?.Invoke();
 
       // update physics stuff
       OnBeforePhysicsUpdate?.Invoke();
@@ -181,8 +183,7 @@ public abstract class Core : Game
       Quad.DrawAllInRect(mainCam.GetCullRect(cullOverScan));
 
       //render sprite components
-      //TODO use private spritebatcher
-      Sprite.DrawAllInRect(backBufferBatch_, mainCam.GetCullRect(cullOverScan), mainCam.GetSpritesViewMatrix());
+      Sprite.SYSTEM.DrawAllInRect(mainCam.GetCullRect(cullOverScan), mainCam.GetSpritesViewMatrix());
 
       //render 2d lighting
       //        var lights = LightProjector.DrawAllInRect(mainCam.GetCullRect(20), globalMatrix);

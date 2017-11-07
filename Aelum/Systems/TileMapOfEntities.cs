@@ -4,7 +4,7 @@ using System.Diagnostics;
 using MessagePack;
 using Microsoft.Xna.Framework;
 using Microsoft.Xna.Framework.Graphics;
-
+/*
 public interface IDrawSprite
 {
     void DrawSprite(SpriteBatch batch);
@@ -304,4 +304,4 @@ public class TileMapOfEntities : ManagedChunkedComponent<TileMapOfEntities>
     {
         return new ComponentData(ComponentTypes.TileMapChunk, MessagePackSerializer.Serialize(tiles_));
     }
-}
+}*/

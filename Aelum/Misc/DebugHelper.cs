@@ -11,20 +11,19 @@ public static class Dbg
    private static DebugHelper helper_;
    public static Action onBeforeDebugDrawing;
 
-   public static void Init()
+   static Dbg()
    {
+      Log("DBG CCTOR");
       helper_ = new DebugHelper();
    }
-
+   
    public static void AddDebugText(string text, Vector2 position, Color color, int frames = 1)
    {
-      if (helper_ == null) return;
       helper_.dbgTexts_.Add(new DebugHelper.dbgText(text, Core.SnapToPixel(position), color, frames));
    }
 
    public static void AddDebugLine(Vector2 start, Vector2 end, Color color)
    {
-      if (helper_ == null) return;
       helper_.dbgLines_.Add(new VertexPositionColor(start.ToVector3(), color));
       helper_.dbgLines_.Add(new VertexPositionColor(end.ToVector3(), color));
    }
@@ -36,7 +35,6 @@ public static class Dbg
 
    public static void AddDebugRect(RectF rect, Color color, float inflate = 0)
    {
-      if (helper_ == null) return;
       Vector2 pos = rect.Position - Vector2.One * inflate / 2;
       Vector2 posbr = pos + Vector2.UnitX * (rect.width + inflate);
       Vector2 postl = pos + Vector2.UnitY * (rect.height + inflate);
@@ -54,20 +52,19 @@ public static class Dbg
 
    public static RenderTarget2D RenderDebug(Camera cam)
    {
-      if (helper_ == null) return null;
       helper_.DrawDebug(cam);
       return helper_.DbgRenderTarget;
    }
 
    private class DebugHelper
    {
-      private readonly DebugViewXNA dbgv_;
+      private DebugViewXNA dbgv_;
       private readonly SpriteFont dbgFont_;
       private readonly SpriteBatch textBatch_;
       private readonly BasicEffect dbgLinesEffect_;
 
       internal readonly List<VertexPositionColor> dbgLines_ = new List<VertexPositionColor>();
-      internal readonly List<dbgText> dbgTexts_ = new List<DebugHelper.dbgText>();
+      internal readonly List<dbgText> dbgTexts_ = new List<dbgText>();
 
       internal RenderTarget2D DbgRenderTarget { get; private set; }
 
@@ -85,9 +82,22 @@ public static class Dbg
             VertexColorEnabled = true
          };
 
+         TryInitPhysDbg();
+      }
+
+      private void TryInitPhysDbg()
+      {
+         if (Physics.World == null)
+         {
+            dbgv_?.Dispose();
+            return;
+         }
+
+         if (dbgv_ != null) return;
+
          dbgv_ = new DebugViewXNA(Physics.World);
          dbgv_.LoadContent(Graphics.Device, Content.Manager);
-         dbgv_.RemoveFlags((DebugViewFlags)Int32.MaxValue);
+         dbgv_.RemoveFlags((DebugViewFlags) Int32.MaxValue);
          //        dbgv_.AppendFlags(DebugViewFlags.AABB);
          dbgv_.AppendFlags(DebugViewFlags.CenterOfMass);
          //        dbgv_.AppendFlags(DebugViewFlags.ContactNormals);
@@ -98,7 +108,6 @@ public static class Dbg
          //        dbgv.AppendFlags(DebugViewFlags.PerformanceGraph);
          dbgv_.AppendFlags(DebugViewFlags.PolygonPoints);
          dbgv_.AppendFlags(DebugViewFlags.Shape);
-
       }
 
       public void DrawDebug(Camera cam)
@@ -113,11 +122,13 @@ public static class Dbg
       Entity.DebugDrawEntityChunks();
 #endif
 
-         Dbg.onBeforeDebugDrawing?.Invoke();
+         onBeforeDebugDrawing?.Invoke();
+
+         Matrix globalMatrix = cam.GetGlobalViewMatrix();
 
          //debug physx
-         Matrix globalMatrix = cam.GetGlobalViewMatrix();
-         dbgv_.RenderDebugData(ref globalMatrix);
+         TryInitPhysDbg();
+         dbgv_?.RenderDebugData(ref globalMatrix);
 
          //debug lines
          dbgLinesEffect_.View = globalMatrix;
@@ -155,24 +166,12 @@ public static class Dbg
 
          public bool Draw(SpriteBatch textSpriteBatch)
          {
-            textSpriteBatch.DrawString(Dbg.helper_.dbgFont_, text, position * Graphics.PixelsPerUnit * Camera.INVDEBUGMULT,
+            textSpriteBatch.DrawString(helper_.dbgFont_, text, position * Graphics.PixelsPerUnit * Camera.INVDEBUGMULT,
                color, 0, Vector2.Zero, Vector2.One, SpriteEffects.FlipVertically, 0);
             frames--;
             return frames <= 0;
          }
       }
    }
-
-
-
-
-
-
-
-
-
-
-
-
 }
 
