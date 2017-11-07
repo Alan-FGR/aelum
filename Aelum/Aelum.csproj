@@ -74,6 +74,7 @@
   <ItemGroup>
     <Compile Include="Core\Core.cs" />
     <Compile Include="Core\Input.cs" />
+    <Compile Include="Graphics\IRenderableSystem.cs" />
     <Compile Include="Pipeline\PipelineAssets.cs" />
     <Compile Include="Pipeline\SpriteSheet.cs" />
     <Compile Include="Graphics\Camera.cs" />

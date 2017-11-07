@@ -121,17 +121,14 @@ public abstract class Core : Game
       UI.Init(Graphics.Device, font, 2);
 
       // rendering
-      mainCam = new Camera(2, 2);
+      mainCam = new Camera(pixelSize: 2, renderTargetsAmount: 1);
       backBufferBatch_ = new SpriteBatch(Graphics.Device);
       backBufferEffect_ = new BasicEffect(Graphics.Device);
 
       Window.ClientSizeChanged += (o, e) => { UI.ScreenResize(); mainCam.UpdateRenderTargets(); };
       
    }
-
-   //TODO this is overenginnering :(
-   public SimplePriorityQueue<Action> LogicUpdateQueue = new SimplePriorityQueue<Action>();
-
+   
    protected override void Update(GameTime gameTime)
    {
       lastGameTime = gameTime;
@@ -145,8 +142,7 @@ public abstract class Core : Game
 
       // update our game logic
       OnBeforeLogicUpdate?.Invoke();
-      foreach (Action action in LogicUpdateQueue)
-         action?.Invoke();
+      Behavior.SYSTEM.Update();
 
       // update physics stuff
       OnBeforePhysicsUpdate?.Invoke();
@@ -156,6 +152,13 @@ public abstract class Core : Game
       OnEndUpdate?.Invoke();
       base.Update(gameTime);
    }
+
+   public class FinalRenderLayer
+   {
+      
+   }
+
+   public SimplePriorityQueue<FinalRenderLayer> renderLayers = new SimplePriorityQueue<FinalRenderLayer>();
 
    protected override void Draw(GameTime gameTime)
    {
@@ -168,7 +171,7 @@ public abstract class Core : Game
       float cullOverScan = Keys.Z.IsDown() ? -3 : 0;
       Matrix globalMatrix = mainCam.GetGlobalViewMatrix();
 
-      Graphics.Device.SetRenderTarget(mainCam.RT(0));
+      Graphics.Device.SetRenderTarget(mainCam.RenderTarget);
       Graphics.Device.SetStatesToDefault();
       Graphics.Device.Clear(clearColor);
 
@@ -183,7 +186,7 @@ public abstract class Core : Game
       Quad.DrawAllInRect(mainCam.GetCullRect(cullOverScan));
 
       //render sprite components
-      Sprite.SYSTEM.DrawAllInRect(mainCam.GetCullRect(cullOverScan), mainCam.GetSpritesViewMatrix());
+      Sprite.SYSTEM.DrawSystem(mainCam);
 
       //render 2d lighting
       //        var lights = LightProjector.DrawAllInRect(mainCam.GetCullRect(20), globalMatrix);
@@ -196,7 +199,7 @@ public abstract class Core : Game
       Texture2D debugRender = Dbg.RenderDebug(mainCam);
       
       //render opaque stuff (quads, sprites, etc)
-      RenderToScreen(mainCam.RT(0), BlendState.Opaque);
+      RenderToScreen(mainCam.RenderTarget, BlendState.Opaque);
 
       //render lights and shadows
       //        RenderToScreen(lights.texture, lightsBlendMode);

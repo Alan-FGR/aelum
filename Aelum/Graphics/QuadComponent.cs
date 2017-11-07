@@ -88,9 +88,8 @@ public class Quad : ManagedChunkedComponent<Quad>
     {
         verts.Clear();
         
-        //broadphase culling (https://github.com/Alan-FGR/aelum/issues/17)
         foreach (Quad quad in GetComponentsInRect(rect.InflateClone(CHUNK_SIZE,CHUNK_SIZE)))
-            quad.Draw(rect);
+            quad.PrepareVerts(rect);
 
         BuildBuffersAndRender();
     }
@@ -118,7 +117,7 @@ public class Quad : ManagedChunkedComponent<Quad>
         return new RectF(minX, minY, maxX-minX, maxY-minY);
     }
 
-    public virtual void Draw(RectF cullRect)
+    public virtual void PrepareVerts(RectF cullRect)
     {
         float entX = Core.SnapToPixel(entity.Position.X);
         float entY = Core.SnapToPixel(entity.Position.Y);
