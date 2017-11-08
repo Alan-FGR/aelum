@@ -2,6 +2,13 @@ using System.Collections.Generic;
 using System.Diagnostics;
 using Microsoft.Xna.Framework;
 using Microsoft.Xna.Framework.Graphics;
+using Priority_Queue;
+
+public class CameraRenderLayer
+{
+   public IRenderableSystem system;
+   public int renderTarget;
+}
 
 public class Camera
 {
@@ -33,6 +40,8 @@ public class Camera
         };
 #endif
    }
+
+//   public SimplePriorityQueue<>
 
    public void Render()
    {

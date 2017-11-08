@@ -121,7 +121,7 @@ public abstract class Core : Game
       UI.Init(Graphics.Device, font, 2);
 
       // rendering
-      mainCam = new Camera(pixelSize: 2, renderTargetsAmount: 1);
+      mainCam = new Camera(2);
       backBufferBatch_ = new SpriteBatch(Graphics.Device);
       backBufferEffect_ = new BasicEffect(Graphics.Device);
 
@@ -153,17 +153,10 @@ public abstract class Core : Game
       base.Update(gameTime);
    }
 
-   public class FinalRenderLayer
-   {
-      
-   }
-
-   public SimplePriorityQueue<FinalRenderLayer> renderLayers = new SimplePriorityQueue<FinalRenderLayer>();
+   
 
    protected override void Draw(GameTime gameTime)
    {
-      //lastDrawDT = gameTime.ElapsedGameTime.TotalSeconds.ToFloat();
-
       OnBeforeDraw?.Invoke();
 
       mainCam.UpdateBeforeDrawing();
@@ -180,8 +173,7 @@ public abstract class Core : Game
       backBufferEffect_.TextureEnabled = true;
       backBufferEffect_.CurrentTechnique.Passes[0].Apply();
 
-      //THIS ALL SUCKS!! WE NEED A PROPER COMPONENT_SYSTEMS HANDLING SYSTEM BASED ON EVENTS!
-
+      
       //render quads (and possibly meshes made of quads)
       Quad.DrawAllInRect(mainCam.GetCullRect(cullOverScan));
 
@@ -189,7 +181,7 @@ public abstract class Core : Game
       Sprite.SYSTEM.DrawSystem(mainCam);
 
       //render 2d lighting
-      //        var lights = LightProjector.DrawAllInRect(mainCam.GetCullRect(20), globalMatrix);
+      var lights = LightProjector.DrawAllInRect(mainCam.GetCullRect(20), globalMatrix);
 
 
       //render UI
@@ -202,7 +194,7 @@ public abstract class Core : Game
       RenderToScreen(mainCam.RenderTarget, BlendState.Opaque);
 
       //render lights and shadows
-      //        RenderToScreen(lights.texture, lightsBlendMode);
+      RenderToScreen(lights.texture, lightsBlendMode);
 
       //render UI
       backBufferBatch_.Begin(SpriteSortMode.Immediate, BlendState.AlphaBlend, SamplerState.PointClamp, DepthStencilState.Default, RasterizerState.CullCounterClockwise);
@@ -223,11 +215,7 @@ public abstract class Core : Game
       if (blendState == null) blendState = BlendState.AlphaBlend;
 
       Graphics.Device.SetRenderTarget(null);
-
-      //round dimensions to fit exact pixel size (the biggest multiple that fits on screen) TODO REM
-      //        int pixelRoundedWidth = Viewport.Width/mainCam.pixelSize*mainCam.pixelSize;
-      //        int pixelRoundedHeight = Viewport.Height/mainCam.pixelSize*mainCam.pixelSize;
-      //        Rectangle roundedRectangle = new Rectangle(0, 0, pixelRoundedWidth, pixelRoundedHeight);
+      
       Rectangle roundedRectangle = Graphics.Viewport.Size().FittingMultiple(mainCam.pixelSize).FromSize();
 
       backBufferBatch_.Begin(SpriteSortMode.Immediate, blendState, SamplerState.PointClamp, DepthStencilState.None, RasterizerState.CullNone, effect);

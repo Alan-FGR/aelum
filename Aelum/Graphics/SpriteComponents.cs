@@ -32,10 +32,15 @@ public class SpriteSystem : ChunkedComponentSystem<Sprite, SpriteSystem>, IRende
 {
    private readonly SpriteBatch batch_ = new SpriteBatch(Graphics.Device);
 
+   public GraphicsDeviceState drawState = new GraphicsDeviceState(
+      BlendState.AlphaBlend, SamplerState.PointClamp, DepthStencilState.None, RasterizerState.CullNone);
+   public Effect drawEffect;
+   public SpriteSortMode sortMode = SpriteSortMode.Texture;
+
    public void DrawSystem(Camera camera)
    {
-      batch_.Begin(SpriteSortMode.FrontToBack, BlendState.Opaque, SamplerState.PointClamp, DepthStencilState.None,
-         RasterizerState.CullNone, null, camera.GetSpritesViewMatrix());
+      batch_.Begin(sortMode, drawState.blendState, drawState.samplerState, drawState.depthStencilState,
+         drawState.rasterizerState, drawEffect, camera.GetSpritesViewMatrix());
       foreach (Sprite sprite in GetComponentsInRect(camera.GetCullRect(CHUNK_SIZE)))
       {
          sprite.Draw(batch_, camera.GetCullRect());
@@ -82,15 +87,15 @@ public class Sprite : ManagedChunkComponent<Sprite, SpriteSystem>
       Dbg.AddDebugRect(finalRect, Color.GreenYellow, 1);
 
       batcher.Draw(Core.atlas,
-          entity.Position * Graphics.PixelsPerUnit,
-          spriteData.atlasTile,
-          spriteData.color,
-          entity.Rotation,
-          spriteData.origin,
-          1,//TODO
-          spriteData.effects,
-          0//Core.mainCam.GetSpriteZ(entity.Position)//TODO
-          );
+         entity.Position * Graphics.PixelsPerUnit,
+         spriteData.atlasTile,
+         spriteData.color,
+         entity.Rotation,
+         spriteData.origin,
+         1, //TODO
+         spriteData.effects,
+         0//entity.Position.Y//Core.mainCam.GetSpriteZ(entity.Position)//TODO
+         );
    }
 
    public override ComponentData GetSerialData()
