@@ -1,14 +1,11 @@
+using System;
 using System.Collections.Generic;
 using System.Diagnostics;
 using Microsoft.Xna.Framework;
 using Microsoft.Xna.Framework.Graphics;
+using Microsoft.Xna.Framework.Input;
 using Priority_Queue;
 
-public class CameraRenderLayer
-{
-   public IRenderableSystem system;
-   public int renderTarget;
-}
 
 public class Camera
 {
@@ -18,12 +15,12 @@ public class Camera
 
    public float AspectRatio => RenderTarget != null ? RenderTarget.Width / (float)RenderTarget.Height : 1;
 
-   private readonly List<RenderTarget2D> renderTargets_ = new List<RenderTarget2D>();
+   private readonly List<CameraRenderTarget> renderTargets_ = new List<CameraRenderTarget>();
 
-   public RenderTarget2D RenderTarget => renderTargets_[0];
+   public CameraRenderTarget RenderTarget => renderTargets_[0];
    
-   public RenderTarget2D RenderTargets(int idx) { return renderTargets_[idx]; }
-
+   public CameraRenderTarget RenderTargets(int idx) { return renderTargets_[idx]; }
+   
    public Camera(int pixelSize = 1, int renderTargetsAmount = 1)
    {
       for (int i = 0; i < renderTargetsAmount; i++)
@@ -41,12 +38,74 @@ public class Camera
 #endif
    }
 
-//   public SimplePriorityQueue<>
+   public class RenderLayer
+   {
+      private readonly IRenderableSystem system_;
+      public int renderTargetIndex; //TODO FIXME
+      public RenderLayer(IRenderableSystem system, int renderTargetIndex)
+      {
+         system_ = system;
+         this.renderTargetIndex = renderTargetIndex;
+      }
+      public void Draw(Camera camera)
+      {
+         system_.Draw(camera, renderTargetIndex);
+      }
+   }
 
+   public class CameraRenderTarget : RenderTarget2D
+   {
+      public CameraRenderTarget(GraphicsDevice graphicsDevice, int width, int height) : base(graphicsDevice, width, height){}
+      public CameraRenderTarget(GraphicsDevice graphicsDevice, int width, int height, bool mipMap, SurfaceFormat preferredFormat, DepthFormat preferredDepthFormat) : base(graphicsDevice, width, height, mipMap, preferredFormat, preferredDepthFormat){}
+      public CameraRenderTarget(GraphicsDevice graphicsDevice, int width, int height, bool mipMap, SurfaceFormat preferredFormat, DepthFormat preferredDepthFormat, int preferredMultiSampleCount, RenderTargetUsage usage) : base(graphicsDevice, width, height, mipMap, preferredFormat, preferredDepthFormat, preferredMultiSampleCount, usage){}
+
+      public Color ClearColor = Color.Green;
+   }
+
+   private SimplePriorityQueue<RenderLayer> RenderLayers = new SimplePriorityQueue<RenderLayer>();
+
+   public void AddRenderLayer(IRenderableSystem system, int priority = 0, int layer = 0)
+   {
+      RenderLayers.Enqueue(new RenderLayer(system, layer), priority);
+   }
+
+   public Rectangle viewportRectangle = Graphics.Viewport.Bounds;
+   
    public void Render()
+   {
+      UpdateBeforeDrawing();
+
+      float cullOverScan = Keys.Z.IsDown() ? -3 : 0; //TODO FIXME DBG
+      Matrix globalMatrix = GetGlobalViewMatrix();
+
+      //render all targets
+      for (var index = 0; index < renderTargets_.Count; index++)
+      {
+         CameraRenderTarget target = renderTargets_[index];
+         Graphics.Device.SetRenderTarget(RenderTarget);
+         Graphics.Device.SetStatesToDefault();
+         Graphics.Device.Clear(target.ClearColor);
+         foreach (RenderLayer command in RenderLayers)
+         {
+            if(command.renderTargetIndex == index) //TODO optimize
+               command.Draw(this);
+         }
+      }
+
+
+//      backBufferEffect_.Projection = globalMatrix;
+//      backBufferEffect_.Texture = atlas;
+//      backBufferEffect_.TextureEnabled = true;
+//      backBufferEffect_.CurrentTechnique.Passes[0].Apply();
+
+   }
+
+   public void RenderToViewport()
    {
       
    }
+
+
 
    public void LerpCenterTo(Vector2 position, float t)
    {
@@ -85,7 +144,7 @@ public class Camera
       {
          Debug.WriteLine($"Initting RenderTarget on: {i}");
          renderTargets_[i]?.Dispose();
-         renderTargets_[i] = new RenderTarget2D(Graphics.Device, width, height, false, SurfaceFormat.Color, DepthFormat.Depth16);
+         renderTargets_[i] = new CameraRenderTarget(Graphics.Device, width, height, false, SurfaceFormat.Color, DepthFormat.Depth16);
       }
    }
 

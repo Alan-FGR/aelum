@@ -1,5 +1,5 @@
 public interface IRenderableSystem
 {
-   void DrawSystem(Camera camera);
+   void Draw(Camera camera, int renderTarget = 0);
    void DrawDebug();
 }

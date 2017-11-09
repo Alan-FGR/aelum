@@ -142,7 +142,7 @@ public abstract class ManagedChunkComponent<T, TSystem> : Component
    
    static ManagedChunkComponent()
    {
-      Dbg.onBeforeDebugDrawing += SYSTEM.DrawDebug;//TODO MOVE SYS
+      Dbg.onBeforeDebugDrawing += SYSTEM.DrawDebug;
    }
 
    private byte systemIndex = 0;

@@ -37,7 +37,7 @@ public class SpriteSystem : ChunkedComponentSystem<Sprite, SpriteSystem>, IRende
    public Effect drawEffect;
    public SpriteSortMode sortMode = SpriteSortMode.Texture;
 
-   public void DrawSystem(Camera camera)
+   public void Draw(Camera camera, int renderTarget = 0)
    {
       batch_.Begin(sortMode, drawState.blendState, drawState.samplerState, drawState.depthStencilState,
          drawState.rasterizerState, drawEffect, camera.GetSpritesViewMatrix());

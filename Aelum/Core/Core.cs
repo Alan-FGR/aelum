@@ -122,6 +122,7 @@ public abstract class Core : Game
 
       // rendering
       mainCam = new Camera(2);
+      mainCam.AddRenderLayer(Sprite.SYSTEM);
       backBufferBatch_ = new SpriteBatch(Graphics.Device);
       backBufferEffect_ = new BasicEffect(Graphics.Device);
 
@@ -152,57 +153,43 @@ public abstract class Core : Game
       OnEndUpdate?.Invoke();
       base.Update(gameTime);
    }
-
    
-
    protected override void Draw(GameTime gameTime)
    {
       OnBeforeDraw?.Invoke();
 
-      mainCam.UpdateBeforeDrawing();
 
-      float cullOverScan = Keys.Z.IsDown() ? -3 : 0;
-      Matrix globalMatrix = mainCam.GetGlobalViewMatrix();
-
-      Graphics.Device.SetRenderTarget(mainCam.RenderTarget);
-      Graphics.Device.SetStatesToDefault();
-      Graphics.Device.Clear(clearColor);
-
-      backBufferEffect_.Projection = globalMatrix;
-      backBufferEffect_.Texture = atlas;
-      backBufferEffect_.TextureEnabled = true;
-      backBufferEffect_.CurrentTechnique.Passes[0].Apply();
 
       
       //render quads (and possibly meshes made of quads)
-      Quad.DrawAllInRect(mainCam.GetCullRect(cullOverScan));
+//      Quad.DrawAllInRect(mainCam.GetCullRect(cullOverScan));
 
       //render sprite components
-      Sprite.SYSTEM.DrawSystem(mainCam);
+      mainCam.Render();
 
       //render 2d lighting
-      var lights = LightProjector.DrawAllInRect(mainCam.GetCullRect(20), globalMatrix);
+//      var lights = LightProjector.DrawAllInRect(mainCam.GetCullRect(20), globalMatrix);
 
 
       //render UI
-      Texture2D uiRender = UI.DrawUI();
+//      Texture2D uiRender = UI.DrawUI();
 
       //debug rendering
-      Texture2D debugRender = Dbg.RenderDebug(mainCam);
+//      Texture2D debugRender = Dbg.RenderDebug(mainCam);
       
       //render opaque stuff (quads, sprites, etc)
       RenderToScreen(mainCam.RenderTarget, BlendState.Opaque);
 
       //render lights and shadows
-      RenderToScreen(lights.texture, lightsBlendMode);
+//      RenderToScreen(lights.texture, lightsBlendMode);
 
       //render UI
-      backBufferBatch_.Begin(SpriteSortMode.Immediate, BlendState.AlphaBlend, SamplerState.PointClamp, DepthStencilState.Default, RasterizerState.CullCounterClockwise);
-      backBufferBatch_.Draw(uiRender, Graphics.Viewport.Size().FittingMultiple(UI.PixelSize).FromSize(), Color.White);
-      backBufferBatch_.End();
+//      backBufferBatch_.Begin(SpriteSortMode.Immediate, BlendState.AlphaBlend, SamplerState.PointClamp, DepthStencilState.Default, RasterizerState.CullCounterClockwise);
+//      backBufferBatch_.Draw(uiRender, Graphics.Viewport.Size().FittingMultiple(UI.PixelSize).FromSize(), Color.White);
+//      backBufferBatch_.End();
 
 
-      if (DEBUG) RenderToScreen(debugRender, BlendState.NonPremultiplied, new Color(1, 1, 1, 0.75f));
+//      if (DEBUG) RenderToScreen(debugRender, BlendState.NonPremultiplied, new Color(1, 1, 1, 0.75f));
 
 
       //audio TODO move from here
