@@ -53,6 +53,11 @@ public class Sprite : ManagedChunkComponent<Sprite, SpriteSystem>
 {
    private SpriteData spriteData;
 
+   static Sprite()
+   {
+      Camera.DefaultRenderPath.Enqueue(new Camera.RenderLayer(SYSTEM,0),100);
+   }
+
    public Sprite(Entity entity, SpriteData spriteData) : base(entity)
    {
       this.spriteData = spriteData;

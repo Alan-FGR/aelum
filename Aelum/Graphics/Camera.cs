@@ -21,6 +21,8 @@ public class Camera
    
    public CameraRenderTarget RenderTargets(int idx) { return renderTargets_[idx]; }
    
+   public static SimplePriorityQueue<RenderLayer> DefaultRenderPath = new SimplePriorityQueue<RenderLayer>();
+
    public Camera(int pixelSize = 1, int renderTargetsAmount = 1)
    {
       for (int i = 0; i < renderTargetsAmount; i++)
@@ -78,6 +80,8 @@ public class Camera
       float cullOverScan = Keys.Z.IsDown() ? -3 : 0; //TODO FIXME DBG
       Matrix globalMatrix = GetGlobalViewMatrix();
 
+
+
       //render all targets
       for (var index = 0; index < renderTargets_.Count; index++)
       {
@@ -85,7 +89,10 @@ public class Camera
          Graphics.Device.SetRenderTarget(RenderTarget);
          Graphics.Device.SetStatesToDefault();
          Graphics.Device.Clear(target.ClearColor);
-         foreach (RenderLayer command in RenderLayers)
+         
+         var layers = RenderLayers.Count > 0 ? RenderLayers : DefaultRenderPath;
+
+         foreach (RenderLayer command in layers)
          {
             if(command.renderTargetIndex == index) //TODO optimize
                command.Draw(this);

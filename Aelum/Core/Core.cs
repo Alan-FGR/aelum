@@ -28,6 +28,8 @@ public static class Graphics
       PixelsPerUnit = ppu;
       PixelsToWorld = 1f / ppu;
    }
+   
+
 }
 
 public static class Content
@@ -122,7 +124,7 @@ public abstract class Core : Game
 
       // rendering
       mainCam = new Camera(2);
-      mainCam.AddRenderLayer(Sprite.SYSTEM);
+      
       backBufferBatch_ = new SpriteBatch(Graphics.Device);
       backBufferEffect_ = new BasicEffect(Graphics.Device);
 
