@@ -27,7 +27,7 @@ public class PlayerScript : Script {
         {
             entity.GetComponent<SoundPlayer>()?.Play(); //you'll want to cache this
             var bullet = new Entity(entity.Position, Core.mainCam.WorldMousePosition - entity.Position);
-            new Quad(bullet, new QuadData(Atlas.small_projectile)); //add quad to render bullet
+            new QuadComponent(bullet, new QuadData(Atlas.small_projectile)); //add quad to render bullet
             new Projectile(bullet, 60); // add projectile script to bullet
         }
         Dbg.AddDebugLine(entity.Position, Core.mainCam.WorldMousePosition, Color.Green);
@@ -186,7 +186,7 @@ class TestGame : Core
     {
         var entity = new Entity(position);
         new StaticBody(entity).CreateCollider(new rectangleColliderData(Vector2.One * 2));
-        new Quad(entity, new QuadData(spriteId));
+        new QuadComponent(entity, new QuadData(spriteId));
         new LightOccluder(entity, LightOccluder.OccluderShape.Cross, 2);
     }
 

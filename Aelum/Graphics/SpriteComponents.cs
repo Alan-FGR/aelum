@@ -37,6 +37,11 @@ public class SpriteSystem : ChunkedComponentSystem<Sprite, SpriteSystem>, IRende
    public Effect drawEffect;
    public SpriteSortMode sortMode = SpriteSortMode.Texture;
 
+   static SpriteSystem()
+   {
+      //CHUNK_SIZE
+   }
+
    public void Draw(Camera camera, int renderTarget = 0)
    {
       batch_.Begin(sortMode, drawState.blendState, drawState.samplerState, drawState.depthStencilState,
@@ -55,7 +60,7 @@ public class Sprite : ManagedChunkComponent<Sprite, SpriteSystem>
 
    static Sprite()
    {
-      Camera.DefaultRenderPath.Enqueue(new Camera.RenderLayer(SYSTEM,0),100);
+      Camera.DefaultRenderPath.Enqueue(new Camera.RenderLayer(SYSTEM,0),200);
    }
 
    public Sprite(Entity entity, SpriteData spriteData) : base(entity)

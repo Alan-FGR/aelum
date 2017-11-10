@@ -37,7 +37,7 @@ public static class ComponentFactory
             case ComponentTypes.StaticBody: return new StaticBody(entity, componentData.serialData);
             case ComponentTypes.LightOccluder: return new LightOccluder(entity, componentData.serialData);
             case ComponentTypes.LightProjector: return new LightProjector(entity, componentData.serialData);
-            case ComponentTypes.QuadComponent: return new Quad(entity, componentData.serialData);
+            case ComponentTypes.QuadComponent: return new QuadComponent(entity, componentData.serialData);
             case ComponentTypes.EntityContainer: return new EntityContainer(entity, componentData.serialData);
 //            case ComponentTypes.TileMapChunk: return new TileMapOfEntities(entity, componentData.serialData);
             case ComponentTypes.SoundPlayer: return new SoundPlayer(entity, componentData.serialData);
