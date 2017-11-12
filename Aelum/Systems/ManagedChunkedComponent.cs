@@ -137,23 +137,26 @@ public abstract class ManagedChunkComponent<T, TSystem> : Component
    where T : ManagedChunkComponent<T, TSystem>
    where TSystem : ChunkedComponentSystem<T, TSystem>, new()
 {
-   public static readonly TSystem SYSTEM = new TSystem();
+   public static TSystem SYSTEM => SYSTEMS[0];
+   public static readonly List<TSystem> SYSTEMS = new List<TSystem>{new TSystem()};
    
    static ManagedChunkComponent()
    {
-      Dbg.onBeforeDebugDrawing += SYSTEM.DrawDebug;//TODO MOVE SYS
+      Dbg.onBeforeDebugDrawing += SYSTEM.DrawDebug;
    }
 
+   private byte systemIndex = 0;
    internal Point currentChunkPos_ = new Point(Int32.MaxValue, Int32.MaxValue);
 
-   protected ManagedChunkComponent(Entity entity) : base(entity)
+   protected ManagedChunkComponent(Entity entity, byte system = 0) : base(entity)
    {
+      systemIndex = system;
       UpdateChunk();
    }
 
    protected void UpdateChunk()
    {
-      SYSTEM.UpdateComponentChunk((T)this);
+      SYSTEMS[systemIndex].UpdateComponentChunk((T)this);
    }
    
    public override void EntityChanged()
@@ -164,7 +167,7 @@ public abstract class ManagedChunkComponent<T, TSystem> : Component
 
    public override void FinalizeComponent()
    {
-      SYSTEM.RemoveFromCurrentChunk((T)this);
+      SYSTEMS[systemIndex].RemoveFromCurrentChunk((T)this);
       base.FinalizeComponent();
    }
 }

@@ -275,17 +275,17 @@ public class LightProjector : ManagedChunkedComponent<LightProjector>
    void InitRT()
    {
       renderTarget_?.Dispose();
-      renderTarget_ = new RenderTarget2D(Graphics.Device, Core.mainCam.RT(0).Width / shadowsQuality_, Core.mainCam.RT(0).Height / shadowsQuality_);
+      renderTarget_ = new RenderTarget2D(Graphics.Device, Core.mainCam.RenderTargets(0).Width / shadowsQuality_, Core.mainCam.RenderTargets(0).Height / shadowsQuality_);
    }
 
    public static Result DrawAllInRect(RectF rect, Matrix globalProjMatrix)
    {
       //init/resize render buffer if necessary
-      if (Core.mainCam.RT(0).Dimensions() != sizeLastCheck)
+      if (Core.mainCam.RenderTargets(0).Dimensions() != sizeLastCheck)
       {
-         sizeLastCheck = Core.mainCam.RT(0).Dimensions();
+         sizeLastCheck = Core.mainCam.RenderTargets(0).Dimensions();
          accumulation_?.Dispose();
-         accumulation_ = new RenderTarget2D(Graphics.Device, Core.mainCam.RT(0).Width / shadowsQuality_, Core.mainCam.RT(0).Height / shadowsQuality_);
+         accumulation_ = new RenderTarget2D(Graphics.Device, Core.mainCam.RenderTargets(0).Width / shadowsQuality_, Core.mainCam.RenderTargets(0).Height / shadowsQuality_);
          foreach (LightProjector light in GetAllComponents())
          {
             light.InitRT();

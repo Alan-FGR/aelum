@@ -152,8 +152,13 @@ public sealed partial class Entity
         return this;
     }
 
+    private bool destroying_ = false;
     public void Destroy() // no way to have reliable deterministic finalization :(
     {
+      //don't destroy twice
+       if (destroying_) return;
+        destroying_ = true;
+
         entities_.Remove(this);
 #if ORIGIN_SHIFT
         EntityChunkRegionSystem.RemoveEntityFromSystem(this);
@@ -161,20 +166,16 @@ public sealed partial class Entity
         // we use this so we don't have to use weakrefs in the systems
         foreach (Component component in components)
             component.FinalizeComponent();
+    }
 
 #if DEBUG
-        isDestroyed = true;
-    }
-    public bool isDestroyed { get; private set; } = false;
     ~Entity()
     {
-        if (!isDestroyed)
+        if (!destroying_)
             throw new Exception("entity was finalized (by GC probably) without being destroyed");
         //Q: why can't we just do this for release so when entity isn't destroyed manually it's destroyed here (dtor)?
         //A: because this isn't deterministic (i.e.: unreliable) so we gotta make sure to destroy entities manually
         //what we could do however is use weak references, but that's slow and unpleasant to deal with
-    }
-#else
     }
 #endif
 

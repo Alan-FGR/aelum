@@ -23,12 +23,16 @@ public class PlayerScript : Script {
 
         entity.Rotation += Keys.Q.IsDown() ? 0.03f : Keys.E.IsDown() ? -0.03f : 0; //TODO this is dbg
 
-        if (Input.LMB.WasPressed())
+        if (Input.LMB.IsDown())
         {
             entity.GetComponent<SoundPlayer>()?.Play(); //you'll want to cache this
-            var bullet = new Entity(entity.Position, Core.mainCam.WorldMousePosition - entity.Position);
-            new Quad(bullet, new QuadData(Atlas.small_projectile)); //add quad to render bullet
-            new Projectile(bullet, 60); // add projectile script to bullet
+
+           for (int i = 0; i < 32; i++)
+           {
+              var bullet = new Entity(entity.Position+Randy.UnitCircle(), Core.mainCam.WorldMousePosition - (entity.Position+Randy.UnitCircle()));
+              new QuadComponent(bullet, new QuadData(Atlas.small_projectile)); //add quad to render bullet
+              new Projectile(bullet, 60); // add projectile script to bullet
+           }
         }
         Dbg.AddDebugLine(entity.Position, Core.mainCam.WorldMousePosition, Color.Green);
     }
@@ -186,7 +190,7 @@ class TestGame : Core
     {
         var entity = new Entity(position);
         new StaticBody(entity).CreateCollider(new rectangleColliderData(Vector2.One * 2));
-        new Quad(entity, new QuadData(spriteId));
+        new QuadComponent(entity, new QuadData(spriteId));
         new LightOccluder(entity, LightOccluder.OccluderShape.Cross, 2);
     }
 
