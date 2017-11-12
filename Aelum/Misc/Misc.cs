@@ -91,6 +91,11 @@ public static partial class Extensions
       return new Vector2(p.X, p.Y);
    }
 
+   public static Vector2 Normalized(this Vector2 v)
+   {
+      v.Normalize(); return v;
+   }
+
 
    public static Point ToPoint(this Cardinal c)
    {
@@ -392,7 +397,7 @@ static class MathUtils
           (float)Math.Cos(radians)
       );
    }
-
+   
    public static Vector2 RotateVector(Vector2 v, float radians)
    {
       float sin = (float)Math.Sin(radians);

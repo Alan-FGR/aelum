@@ -61,42 +61,77 @@ public struct QuadData
 
 }
 
-
+[StructLayout(LayoutKind.Sequential, Pack = 1)]
+public struct QuadSpec : IVertexType
+{
+   public const int REAL_STRIDE = 96;
+   VertexDeclaration IVertexType.VertexDeclaration => throw new NotImplementedException();
+   public Vector3 Position0; public Color Color0; public Vector2 TextureCoordinate0;
+   public Vector3 Position1; public Color Color1; public Vector2 TextureCoordinate1;
+   public Vector3 Position2; public Color Color2; public Vector2 TextureCoordinate2;
+   public Vector3 Position3; public Color Color3; public Vector2 TextureCoordinate3;
+   public QuadSpec(
+      Vector3 position0, Vector3 position1, Vector3 position2, Vector3 position3,
+      Vector2 textureCoordinate0, Vector2 textureCoordinate1, Vector2 textureCoordinate2, Vector2 textureCoordinate3,
+      Color color0, Color color1, Color color2, Color color3)
+   {
+      Position0 = position0;
+      Position1 = position1;
+      Position2 = position2;
+      Position3 = position3;
+      TextureCoordinate0 = textureCoordinate0;
+      TextureCoordinate1 = textureCoordinate1;
+      TextureCoordinate2 = textureCoordinate2;
+      TextureCoordinate3 = textureCoordinate3;
+      Color0 = color0;
+      Color1 = color1;
+      Color2 = color2;
+      Color3 = color3;
+   }
+}
 
 public class QuadSystem : ChunkedComponentSystem<QuadComponent, QuadSystem>, IRenderableSystem
 {
-   public IndexBuffer ib = new IndexBuffer(Graphics.Device, IndexElementSize.ThirtyTwoBits, 3, BufferUsage.WriteOnly);
-   public DynamicVertexBuffer vb = new DynamicVertexBuffer(Graphics.Device, VertexPositionTexture.VertexDeclaration, 2, BufferUsage.WriteOnly);
+   private IndexBuffer ib = 
+      new IndexBuffer(Graphics.Device, IndexElementSize.ThirtyTwoBits, 3, BufferUsage.WriteOnly);
+   private DynamicVertexBuffer vb = 
+      new DynamicVertexBuffer(Graphics.Device, VertexPositionColorTexture.VertexDeclaration, 2, BufferUsage.WriteOnly);
 
-   private readonly BasicEffect backBufferEffect_;
+   private readonly BasicEffect effect_;
 
-   public List<VertexPositionTexture> verts = new List<VertexPositionTexture>();
+   private QuadSpec[] quadsArray_ = new QuadSpec[64];
+   private int quadCount_ = 0;
+   public Texture2D Texture { get; }
 
    public QuadSystem()
    {
-      backBufferEffect_ = new BasicEffect(Graphics.Device);
+      effect_ = new BasicEffect(Graphics.Device);
+      Texture = Core.atlas;
    }
-
+   
    public void Draw(Camera camera, int renderTarget = 0)
    {
-      verts.Clear();
-      
-      foreach (QuadComponent quad in GetComponentsInRect(camera.GetCullRect(CHUNK_SIZE)))
-         quad.PrepareVerts(camera.GetCullRect()); //TODO return the verts
+      quadCount_ = 0;
 
-//      BuildBuffersAndRender();
-//   }
-//
-//   public void BuildBuffersAndRender()
-//   {
-      while (verts.Count > vb.VertexCount)
+      //collect all quads
+      foreach (QuadComponent quad in GetComponentsInRect(camera.GetCullRect(CHUNK_SIZE)))
+         if (quad.PrepareQuad(camera.GetCullRect(), out QuadSpec quadSpec))
+         {
+            if(quadsArray_.Length <= quadCount_)
+               Array.Resize(ref quadsArray_, quadsArray_.Length*2);
+            quadsArray_[quadCount_] = quadSpec;
+            quadCount_++;
+         }
+
+      //Build Buffers And Render
+      while (quadCount_*4 > vb.VertexCount)
       {
          // each miss we double our buffers ;)
          int newVtxQty = vb.VertexCount * 2;
          int newIdxQty = ib.IndexCount * 2;
-         vb = new DynamicVertexBuffer(Graphics.Device, VertexPositionTexture.VertexDeclaration, newVtxQty, BufferUsage.WriteOnly);
+         vb = new DynamicVertexBuffer(Graphics.Device, VertexPositionColorTexture.VertexDeclaration, newVtxQty, BufferUsage.WriteOnly);
          ib = new IndexBuffer(Graphics.Device, IndexElementSize.ThirtyTwoBits, newIdxQty, BufferUsage.WriteOnly);
-         int[] indices = new int[newIdxQty];
+         int[] indices = new int[newIdxQty]; //we could reuse old indices here probably
          for (int i = 0, v = 0; i < newIdxQty; i += 6, v += 4)
          {
             indices[i + 0] = v + 0;
@@ -109,40 +144,24 @@ public class QuadSystem : ChunkedComponentSystem<QuadComponent, QuadSystem>, IRe
          ib.SetData(indices); // copy to gfx, create actual IBO, once per resize
       }
 
-      if (verts.Count < 1) return; // bugfix
-
-      vb.SetData(verts.ToArray()); // copy to gfx, once per draw call
+      if (quadCount_ < 1) return;
 
       //actually draw shit
-
-      backBufferEffect_.Projection = camera.GetGlobalViewMatrix();
-      backBufferEffect_.Texture = Core.atlas;
-      backBufferEffect_.TextureEnabled = true;
-      backBufferEffect_.CurrentTechnique.Passes[0].Apply();
+      vb.SetData(0,quadsArray_,0,quadCount_,QuadSpec.REAL_STRIDE,SetDataOptions.None);
       
+      effect_.Projection = camera.GetGlobalViewMatrix();
+      effect_.Texture = Texture;
+      effect_.TextureEnabled = true;
+      effect_.CurrentTechnique.Passes[0].Apply();
+
       Graphics.Device.Indices = ib;
       Graphics.Device.SetVertexBuffer(vb);
-      Graphics.Device.DrawIndexedPrimitives(PrimitiveType.TriangleList, 0, 0, verts.Count, 0, verts.Count / 2);
+      Graphics.Device.DrawIndexedPrimitives(PrimitiveType.TriangleList, 0, 0, quadCount_*4, 0, quadCount_*2);
    }
 }
 
 public class QuadComponent : ManagedChunkComponent<QuadComponent, QuadSystem>
 {
-   //    [StructLayout(LayoutKind.Sequential, Pack = 1)]
-   //    private struct VertexTexture4 : IVertexType
-   //    {
-   //        public const int RealStride = 96;
-   //        VertexDeclaration IVertexType.VertexDeclaration => throw new NotImplementedException();
-   //        public Vector3 Position0;
-   //        public Vector2 TextureCoordinate0;
-   //        public Vector3 Position1;
-   //        public Vector2 TextureCoordinate1;
-   //        public Vector3 Position2;
-   //        public Vector2 TextureCoordinate2;
-   //        public Vector3 Position3;
-   //        public Vector2 TextureCoordinate3;
-   //    } //TODO USE THIS?
-
    public QuadData quadData;
 
    static QuadComponent()
@@ -167,7 +186,7 @@ public class QuadComponent : ManagedChunkComponent<QuadComponent, QuadSystem>
       return new ComponentData(ComponentTypes.QuadComponent, MessagePackSerializer.Serialize(quadData));
    }
 
-   public virtual void PrepareVerts(RectF cullRect)
+   public virtual bool PrepareQuad(RectF cullRect, out QuadSpec quad)
    {
       float entX = Core.SnapToPixel(entity.Position.X);
       float entY = Core.SnapToPixel(entity.Position.Y);
@@ -216,10 +235,14 @@ public class QuadComponent : ManagedChunkComponent<QuadComponent, QuadSystem>
 
       //narrowphase culling
       RectF aabb = MathUtils.AABBFromCorners(corner0, corner1, corner2, corner3);
-      if (!cullRect.Intersects(aabb)) return;
+      if (!cullRect.Intersects(aabb))
+      {
+         quad = new QuadSpec();
+         return false;
+      }
+
       Dbg.AddDebugRect(aabb, Color.Yellow, 0.5f);
-
-
+      
       //TODO: get verts positions and uv from quaddata method?
 
       Vector2 corner0uv = new Vector2(quadData.atlasTile.X, quadData.atlasTile.Bottom);
@@ -233,11 +256,12 @@ public class QuadComponent : ManagedChunkComponent<QuadComponent, QuadSystem>
          GeneralUtils.Swap(ref corner1uv, ref corner2uv);
       }
 
-      SYSTEMS[0].verts.Add(new VertexPositionTexture(corner0, corner0uv));
-      SYSTEMS[0].verts.Add(new VertexPositionTexture(corner1, corner1uv));
-      SYSTEMS[0].verts.Add(new VertexPositionTexture(corner2, corner2uv));
-      SYSTEMS[0].verts.Add(new VertexPositionTexture(corner3, corner3uv));
-
+      quad = new QuadSpec(
+         corner0,corner1,corner2,corner3,
+         corner0uv,corner1uv,corner2uv,corner3uv,
+         Color.White,Color.White,Color.White,Color.White
+         );
+      return true;
    }
 
 }

@@ -46,6 +46,11 @@ public static class Randy
         return min + new Vector2(NextFloat(max.X - min.X), NextFloat(max.Y - min.Y));
     }
 
+   public static Vector2 UnitCircle()
+   {
+      return Range(new Vector2(-1,-1), new Vector2(1,1)).Normalized();
+   }
+
     public static T PickOne<T>(IList<T> collection)
     {
         return collection[NextInt(collection.Count)];
