@@ -9,7 +9,6 @@ using Priority_Queue;
 
 //TODO offset half a pixel when origin is centered on objects of odd pixel dimension??? OR NOT? =/
 
-
 public static class Graphics
 {
    // convenience acessors
@@ -28,8 +27,6 @@ public static class Graphics
       PixelsPerUnit = ppu;
       PixelsToWorld = 1f / ppu;
    }
-   
-
 }
 
 public static class Content
@@ -47,7 +44,6 @@ public abstract class Core : Game
 
    // stuff to actually render to window/screen
    private readonly SpriteBatch backBufferBatch_;
-   private readonly BasicEffect backBufferEffect_;
    
 
 
@@ -126,7 +122,6 @@ public abstract class Core : Game
       mainCam = new Camera(2);
       
       backBufferBatch_ = new SpriteBatch(Graphics.Device);
-      backBufferEffect_ = new BasicEffect(Graphics.Device);
 
       Window.ClientSizeChanged += (o, e) => { UI.ScreenResize(); mainCam.UpdateRenderTargets(); };
       
@@ -177,7 +172,7 @@ public abstract class Core : Game
 //      Texture2D uiRender = UI.DrawUI();
 
       //debug rendering
-//      Texture2D debugRender = Dbg.RenderDebug(mainCam);
+      Texture2D debugRender = Dbg.RenderDebug(mainCam);
       
       //render opaque stuff (quads, sprites, etc)
       RenderToScreen(mainCam.RenderTarget, BlendState.Opaque);
@@ -185,13 +180,14 @@ public abstract class Core : Game
       //render lights and shadows
 //      RenderToScreen(lights.texture, lightsBlendMode);
 
+
       //render UI
 //      backBufferBatch_.Begin(SpriteSortMode.Immediate, BlendState.AlphaBlend, SamplerState.PointClamp, DepthStencilState.Default, RasterizerState.CullCounterClockwise);
 //      backBufferBatch_.Draw(uiRender, Graphics.Viewport.Size().FittingMultiple(UI.PixelSize).FromSize(), Color.White);
 //      backBufferBatch_.End();
 
 
-//      if (DEBUG) RenderToScreen(debugRender, BlendState.NonPremultiplied, new Color(1, 1, 1, 0.75f));
+      if (DEBUG) RenderToScreen(debugRender, BlendState.NonPremultiplied, new Color(1, 1, 1, 0.5f));
 
 
       //audio TODO move from here

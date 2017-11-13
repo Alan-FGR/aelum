@@ -37,82 +37,34 @@ struct OccluderVertexFormat
    );
 }
 
-public class LightOccluder : ManagedChunkedComponent<LightOccluder>
+public class OccluderSystem : ChunkedComponentSystem<LightOccl, OccluderSystem>
 {
-   public static float SHADOW_BIAS = 0.00005f;
-
-   static LightOccluder(){}
-
-   protected LightOccluder(Entity entity) : base(entity){}
-
-   public enum OccluderShape { Cross, Vertical, Horizontal }
-
-   public LightOccluder(Entity entity, OccluderShape shape, float occluderSize) : this(entity)
-   {
-      if (shape == OccluderShape.Cross)
-      {
-         segments.Add(new OccluderSegment(-Vector2.UnitX * occluderSize / 2, Vector2.UnitX * occluderSize / 2));
-         segments.Add(new OccluderSegment(-Vector2.UnitY * occluderSize / 2, Vector2.UnitY * occluderSize / 2));
-         return;
-      }
-      if (shape == OccluderShape.Horizontal)
-      {
-         segments.Add(new OccluderSegment(-Vector2.UnitX * occluderSize / 2, Vector2.UnitX * occluderSize / 2));
-         return;
-      }
-      segments.Add(new OccluderSegment(-Vector2.UnitY * occluderSize / 2, Vector2.UnitY * occluderSize / 2));
-   }
-
-   public LightOccluder(Entity entity, List<OccluderSegment> occluderSegments) : this(entity)
-   {
-      segments = occluderSegments;
-   }
-
-   public LightOccluder(Entity entity, byte[] sd) : this(entity, MessagePackSerializer.Deserialize<List<OccluderSegment>>(sd))
-   { }
-
-   public override ComponentData GetSerialData()
-   {
-      return new ComponentData(ComponentTypes.LightOccluder, MessagePackSerializer.Serialize(segments));
-   }
+   public float shadowBias = 0.00005f;
 
    //TODO start with some reasonable numbers
-   public static IndexBuffer ib = new IndexBuffer(Graphics.Device, IndexElementSize.ThirtyTwoBits, 3, BufferUsage.WriteOnly);
-   public static DynamicVertexBuffer vb = new DynamicVertexBuffer(Graphics.Device, VertexPositionTexture.VertexDeclaration, 2, BufferUsage.WriteOnly);
+   private IndexBuffer ib = new IndexBuffer(Graphics.Device, IndexElementSize.ThirtyTwoBits, 3, BufferUsage.WriteOnly);
+   private DynamicVertexBuffer vb = new DynamicVertexBuffer(Graphics.Device, VertexPositionTexture.VertexDeclaration, 2, BufferUsage.WriteOnly);
 
-   private readonly List<OccluderSegment> segments = new List<OccluderSegment>();
-   private List<OccluderSegment> globalSegments;
-   public List<OccluderSegment> GlobalSegments
+   private RectF lastRectF_;
+   private bool isDirty_; //TODO
+   private List<OccluderSegment> allOccludersSegments = new List<OccluderSegment>();
+   
+   public Tuple<int, IndexBuffer, DynamicVertexBuffer> GetOccludersBuffers(RectF rect)
    {
-      get
+      if (!isDirty_ && rect.Equals(lastRectF_)) //TODO rectf ==, TODO mark dirty when occluders change/ctor
       {
-         if (globalSegments == null)
-            UpdateGlobalSegments(); //TODO FIX THIS
-         return globalSegments;
+         Dbg.Log("returning cached occluders data");
+         goto ReturnData;
       }
-      set => globalSegments = value;
-   }
+      
+      isDirty_ = false;
 
-   private void UpdateGlobalSegments()
-   {
-      globalSegments = new List<OccluderSegment>(segments.Count);
-      foreach (OccluderSegment segment in segments)
-      {
-         //TODO apply rotation too (sin/cos)
-         globalSegments.Add(new OccluderSegment(entity.Position + segment.A, entity.Position + segment.B));
-      }
-   }
-
-   private static List<OccluderSegment> allOccludersSegments = new List<OccluderSegment>();
-
-   public static void PrepareOccludersBuffers(RectF rect) //CALL this BEFORE rendering lights
-   {
-      allOccludersSegments.Clear();
+      allOccludersSegments.Clear(); //TODO use array - low/med prior
 
       //collect all occluders segments in range
-      foreach (LightOccluder occluder in GetComponentsInRect(rect))
+      foreach (LightOccl occluder in GetComponentsInRect(rect))
       {
-         allOccludersSegments.AddRange(occluder.GlobalSegments);
+         allOccludersSegments.AddRange(occluder.GlobalSegments); //TODO slooooow, pass list?
       }
 
       int verticesNeeded = allOccludersSegments.Count * 4 + 4; //each segment is a quad in vbo, PLUS the projector (first 4)
@@ -148,35 +100,99 @@ public class LightOccluder : ManagedChunkedComponent<LightOccluder>
       //add shadow casters
       foreach (OccluderSegment segment in allOccludersSegments)
       {
-         verts.Add(new OccluderVertexFormat(segment.A.ToVector3(), SHADOW_BIAS)); //shadow biasing
-         verts.Add(new OccluderVertexFormat(segment.B.ToVector3(), SHADOW_BIAS));
+         verts.Add(new OccluderVertexFormat(segment.A.ToVector3(), shadowBias));
+         verts.Add(new OccluderVertexFormat(segment.B.ToVector3(), shadowBias));
          verts.Add(new OccluderVertexFormat(segment.B.ToVector3(), 1));
          verts.Add(new OccluderVertexFormat(segment.A.ToVector3(), 1));
 
          Dbg.AddDebugLine(segment.A, segment.B, Color.Cyan);
-
       }
 
       vb.SetData(verts.ToArray()); // copy to gfx, once per draw call
 
+      ReturnData:
+      return new Tuple<int, IndexBuffer, DynamicVertexBuffer>(allOccludersSegments.Count, ib, vb);
+
       //don't draw, only set the buffers, we tweak the shader parameters and draw on the light component
-      Graphics.Device.Indices = ib;
-      Graphics.Device.SetVertexBuffer(vb);
+//      Graphics.Device.Indices = ib;
+//      Graphics.Device.SetVertexBuffer(vb);
+//
+//      //draw in projector
+//      Graphics.Device.DrawIndexedPrimitives(PrimitiveType.TriangleList, 0, 0, allOccludersSegments.Count * 4 + 4, 0, allOccludersSegments.Count * 2 + 2);
+
    }
 
-   public static void DrawBuffers()
+
+}
+
+public class LightOccl : ManagedChunkComponent<LightOccl, OccluderSystem>
+{
+   public enum OccluderShape { Cross, Vertical, Horizontal }
+
+   private readonly List<OccluderSegment> segments = new List<OccluderSegment>();
+   private List<OccluderSegment> globalSegments;
+   --todo
+   public List<OccluderSegment> GlobalSegments
    {
-      Graphics.Device.DrawIndexedPrimitives(PrimitiveType.TriangleList, 0, 0, allOccludersSegments.Count * 4 + 4, 0, allOccludersSegments.Count * 2 + 2);
+      get
+      {
+         if (globalSegments == null)
+            UpdateGlobalSegments(); //TODO FIX THIS
+         return globalSegments;
+      }
+      set => globalSegments = value;
    }
+
+   private void UpdateGlobalSegments()
+   {
+      globalSegments = new List<OccluderSegment>(segments.Count);
+      foreach (OccluderSegment segment in segments)
+      {
+         //TODO apply rotation too (sin/cos)
+         globalSegments.Add(new OccluderSegment(entity.Position + segment.A, entity.Position + segment.B));
+      }
+   }
+
+   public LightOccl(Entity entity, byte system = 0) : base(entity, system)
+   {}
+
+   public LightOccl(Entity entity, OccluderShape shape, float occluderSize) : this(entity) //TODO system
+   {
+      if (shape == OccluderShape.Cross)
+      {
+         segments.Add(new OccluderSegment(-Vector2.UnitX * occluderSize / 2, Vector2.UnitX * occluderSize / 2));
+         segments.Add(new OccluderSegment(-Vector2.UnitY * occluderSize / 2, Vector2.UnitY * occluderSize / 2));
+         return;
+      }
+      if (shape == OccluderShape.Horizontal)
+      {
+         segments.Add(new OccluderSegment(-Vector2.UnitX * occluderSize / 2, Vector2.UnitX * occluderSize / 2));
+         return;
+      }
+      segments.Add(new OccluderSegment(-Vector2.UnitY * occluderSize / 2, Vector2.UnitY * occluderSize / 2));
+   }
+
+   public LightOccl(Entity entity, List<OccluderSegment> occluderSegments) : this(entity) //TODO system
+   {
+      segments = occluderSegments;
+   }
+
+   public LightOccl(Entity entity, byte[] sd) : this(entity, MessagePackSerializer.Deserialize<List<OccluderSegment>>(sd))
+   { }
 
    public override void EntityChanged()
    {
       base.EntityChanged();
       UpdateGlobalSegments();
    }
+
+   public override ComponentData GetSerialData()
+   {
+      throw new NotImplementedException();
+   }
 }
 
-public class LightProjector : ManagedChunkedComponent<LightProjector>
+public class LightProj : LightingSystemObject
 {
    private RenderTarget2D renderTarget_;
 
@@ -190,6 +206,12 @@ public class LightProjector : ManagedChunkedComponent<LightProjector>
       AlphaBlendFunction = BlendFunction.Add
    };
 
+   public struct Result
+   {
+      public Texture2D texture;
+      public Effect lastBlurEffect;
+   }
+   
    private static RenderTarget2D accumulation_;
    private static SpriteBatch accumulationBatch_;
    public static BlendState blendState_ = Max; //TODO FIXME
@@ -198,32 +220,27 @@ public class LightProjector : ManagedChunkedComponent<LightProjector>
    private static Effect shadowsEffect;
    private static Effect shadowsBlur;
 
-   static LightProjector()
+   static LightProj()
    {
-      CHUNK_SIZE = 16;
       accumulationBatch_ = new SpriteBatch(Graphics.Device);
    }
 
-   public struct Result
+   public LightProj(Entity entity, byte system = 0) : base(entity, system)
+   {}
+   
+   public LightProj(Entity entity, float size, float centerOffset, Texture2D lightTexture, Color? color = null) : this(entity)
    {
-      public Texture2D texture;
-      public Effect lastBlurEffect;
+      cfg.size = size;
+      cfg.centerOffset = centerOffset;
+      cfg.lightTexture = lightTexture;
+      cfg.lightColor = color ?? Color.White;
+      InitRT();
    }
 
    public static void LoadContent()
    {
       shadowsEffect = Content.Manager.Load<Effect>("ExtrudeShadows");
       shadowsBlur = Content.Manager.Load<Effect>("ShadowsBlur");
-   }
-
-   protected LightProjector(Entity entity) : base(entity)
-   {
-   }
-
-   public LightProjector(Entity entity, byte[] serialData) : this(entity)
-   {
-      cfg = MessagePackSerializer.Deserialize<LightProjectorConfig>(serialData);
-      InitRT();
    }
 
    [MessagePackObject]
@@ -241,7 +258,7 @@ public class LightProjector : ManagedChunkedComponent<LightProjector>
       {
          this.size = size;
          this.centerOffset = centerOffset;
-         this.lightTexture = Content.Manager.Load<Texture2D>(TextureName); //WTFH!!
+         this.lightTexture = Content.Manager.Load<Texture2D>(TextureName); //WTFH!! TODO
          this.lightColor = lightColor;
       }
 
@@ -255,28 +272,26 @@ public class LightProjector : ManagedChunkedComponent<LightProjector>
    }
    public LightProjectorConfig cfg;
 
-   public LightProjector(Entity entity, float size, float centerOffset, Texture2D lightTexture, Color? color = null) : this(entity)
+   public LightProj(Entity entity, byte[] serialData) : this(entity)
    {
-      cfg.size = size;
-      cfg.centerOffset = centerOffset;
-      cfg.lightTexture = lightTexture;
-      cfg.lightColor = color ?? Color.White;
+      cfg = MessagePackSerializer.Deserialize<LightProjectorConfig>(serialData);
       InitRT();
    }
-
-   //    public LightProjector(Entity entity, Texture2D lightTexture, float size, Color? lightColor = null, float centerOffset = 0) : base()
-   //    {
-   //        lightTexture_ = lightTexture;
-   //        size_ = size;
-   //        centerOffset_ = centerOffset;
-   //        lightColor_ = lightColor ?? Color.White;
-   //    }
 
    void InitRT()
    {
       renderTarget_?.Dispose();
       renderTarget_ = new RenderTarget2D(Graphics.Device, Core.mainCam.RenderTargets(0).Width / shadowsQuality_, Core.mainCam.RenderTargets(0).Height / shadowsQuality_);
    }
+
+
+
+
+
+
+
+
+
 
    public static Result DrawAllInRect(RectF rect, Matrix globalProjMatrix)
    {
@@ -312,7 +327,7 @@ public class LightProjector : ManagedChunkedComponent<LightProjector>
       float blurRadius = 2 / 3f;
       shadowsBlur.Parameters["pixelDimension"].SetValue(new Vector2(blurRadius / accumulation_.Width, blurRadius / accumulation_.Height));
       accumulationBatch_.Begin(SpriteSortMode.Deferred, blendState_, SamplerState.PointWrap, DepthStencilState.None,
-          RasterizerState.CullNone, shadowsBlur);
+         RasterizerState.CullNone, shadowsBlur);
       foreach (LightProjector light in GetComponentsInRect(rect))
       {
          light.Accumulate();
@@ -370,7 +385,20 @@ public class LightProjector : ManagedChunkedComponent<LightProjector>
    {
       return new ComponentData(ComponentTypes.LightProjector, MessagePackSerializer.Serialize(cfg));
    }
+
+
+
+
+
+
+
+
+
+
+
+   
 }
+
 
 
 
