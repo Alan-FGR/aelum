@@ -120,7 +120,7 @@ class TestGame : Core
         clearColor = Color.DarkGray;
         lightsBlendMode = BlendState.Additive;
         LightProjector.blendState_ = BlendState.Additive;
-        LightOccluder.SHADOW_BIAS = 0;
+//        LightOccluder.SHADOW_BIAS = 0;
         for (int i = 1; i < 4; i++)
         {
             for (int j = 0; j < 2; j++)

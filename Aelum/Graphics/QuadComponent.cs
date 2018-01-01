@@ -92,10 +92,8 @@ public struct QuadSpec : IVertexType
 
 public class QuadSystem : ChunkedComponentSystem<QuadComponent, QuadSystem>, IRenderableSystem
 {
-   private IndexBuffer ib = 
-      new IndexBuffer(Graphics.Device, IndexElementSize.ThirtyTwoBits, 3, BufferUsage.WriteOnly);
-   private DynamicVertexBuffer vb = 
-      new DynamicVertexBuffer(Graphics.Device, VertexPositionColorTexture.VertexDeclaration, 2, BufferUsage.WriteOnly);
+   private IndexBuffer ib = new IndexBuffer(Graphics.Device, IndexElementSize.ThirtyTwoBits, 3, BufferUsage.WriteOnly);
+   private DynamicVertexBuffer vb = new DynamicVertexBuffer(Graphics.Device, VertexPositionColorTexture.VertexDeclaration, 2, BufferUsage.WriteOnly);
 
    private readonly BasicEffect effect_;
 

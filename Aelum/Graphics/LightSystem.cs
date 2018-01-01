@@ -54,7 +54,7 @@ public class OccluderSystem : ChunkedComponentSystem<LightOccl, OccluderSystem>
       if (!isDirty_ && rect.Equals(lastRectF_)) //TODO rectf ==, TODO mark dirty when occluders change/ctor
       {
          Dbg.Log("returning cached occluders data");
-         goto ReturnData;
+         goto ReturnData; //TODO
       }
       
       isDirty_ = false;
@@ -128,19 +128,22 @@ public class OccluderSystem : ChunkedComponentSystem<LightOccl, OccluderSystem>
 public class LightOccl : ManagedChunkComponent<LightOccl, OccluderSystem>
 {
    public enum OccluderShape { Cross, Vertical, Horizontal }
-
+   
+   //segments of this occluder
    private readonly List<OccluderSegment> segments = new List<OccluderSegment>();
+
+   //segments of this occluder in world space
    private List<OccluderSegment> globalSegments;
-   --todo
+   
    public List<OccluderSegment> GlobalSegments
    {
       get
       {
-         if (globalSegments == null)
-            UpdateGlobalSegments(); //TODO FIX THIS
+//         if (globalSegments == null)
+//            UpdateGlobalSegments(); //TODO FIX THIS
          return globalSegments;
       }
-      set => globalSegments = value;
+      //set => globalSegments = value;
    }
 
    private void UpdateGlobalSegments()
@@ -154,7 +157,9 @@ public class LightOccl : ManagedChunkComponent<LightOccl, OccluderSystem>
    }
 
    public LightOccl(Entity entity, byte system = 0) : base(entity, system)
-   {}
+   {
+      UpdateGlobalSegments();
+   }
 
    public LightOccl(Entity entity, OccluderShape shape, float occluderSize) : this(entity) //TODO system
    {
@@ -192,7 +197,8 @@ public class LightOccl : ManagedChunkComponent<LightOccl, OccluderSystem>
    }
 }
 
-public class LightProj : LightingSystemObject
+
+public class LightProj : ManagedChunkComponent<LightOccl, OccluderSystem>
 {
    private RenderTarget2D renderTarget_;
 

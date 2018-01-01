@@ -32,8 +32,7 @@ public class SpriteSystem : ChunkedComponentSystem<Sprite, SpriteSystem>, IRende
 {
    private readonly SpriteBatch batch_ = new SpriteBatch(Graphics.Device);
 
-   public GraphicsDeviceState drawState = new GraphicsDeviceState(
-      BlendState.AlphaBlend, SamplerState.PointClamp, DepthStencilState.None, RasterizerState.CullNone);
+   public GraphicsDeviceState drawState = new GraphicsDeviceState(BlendState.AlphaBlend, SamplerState.PointClamp, DepthStencilState.None, RasterizerState.CullNone);
    public Effect drawEffect;
    public SpriteSortMode sortMode = SpriteSortMode.Texture;
 

@@ -176,6 +176,14 @@ public abstract class ManagedChunkComponent<T, TSystem> : Component
 
 
 
+
+
+
+
+
+
+
+
 //TODO REMOVE THIS CLASS, rename above one
 public abstract class ManagedChunkedComponent<T> : Component
 {
