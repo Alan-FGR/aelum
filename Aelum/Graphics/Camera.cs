@@ -105,7 +105,14 @@ public class Camera
          
          var layers = renderLayers_.Count > 0 ? renderLayers_ : DEFAULT_RENDER_PATH;
 
-         foreach (RenderLayer command in layers)
+         //can't get ordered ienumerator :( TODO make extension or subclass
+         var queue = new SimplePriorityQueue<RenderLayer>();
+         foreach (RenderLayer layer in layers)
+         {
+            queue.Enqueue(layer, layers.GetPriority(layer));
+         }
+
+         while (queue.TryDequeue(out var command))
          {
             if(command.renderTargetIndex == index) //TODO optimize
                command.Draw(this);

@@ -222,6 +222,7 @@ public class LightSystem : ChunkedComponentSystem<LightProjector, LightSystem>, 
    
    public void Draw(Camera camera, RenderTarget2D renderTarget)
    {
+      return;
       var globalProjMatrix = camera.GetGlobalViewMatrix();
       var viewRect = camera.GetCullRect();
 
@@ -288,7 +289,7 @@ public class LightProjector : ManagedChunkComponent<LightProjector, LightSystem>
 
    static LightProjector()
    {
-      Camera.DEFAULT_RENDER_PATH.Enqueue(new Camera.RenderLayer(SYSTEM,1), 500);
+      Camera.DEFAULT_RENDER_PATH.Enqueue(new Camera.RenderLayer(SYSTEM,0), 500);
    }
    
    public LightProjector(Entity entity, byte system = 0) : base(entity, system)
