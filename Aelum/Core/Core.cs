@@ -107,7 +107,7 @@ public abstract class Core : Game
       contentManager.RootDirectory = "Content";
       atlas = Content.Load<Texture2D>("Atlas");
       ATLAS_TO_WORLD = atlas.Width / Graphics.PixelsPerUnit;
-      LightProjector.LoadContent();
+      LightProjector.SYSTEM.LoadContent();//TODO HIGH PRIORITY 
 
       pixel = new Texture2D(base.GraphicsDevice, 1, 1);
       pixel.SetData(new[] { Color.White });

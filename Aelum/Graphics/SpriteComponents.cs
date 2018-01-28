@@ -41,10 +41,9 @@ public class SpriteSystem : ChunkedComponentSystem<Sprite, SpriteSystem>, IRende
       //CHUNK_SIZE
    }
 
-   public void Draw(Camera camera, int renderTarget = 0)
+   public void Draw(Camera camera, RenderTarget2D renderTarget)
    {
-      batch_.Begin(sortMode, drawState.blendState, drawState.samplerState, drawState.depthStencilState,
-         drawState.rasterizerState, drawEffect, camera.GetSpritesViewMatrix());
+      batch_.Begin(sortMode, drawState.blendState, drawState.samplerState, drawState.depthStencilState, drawState.rasterizerState, drawEffect, camera.GetSpritesViewMatrix());
       foreach (Sprite sprite in GetComponentsInRect(camera.GetCullRect(CHUNK_SIZE)))
       {
          sprite.DrawSprite(batch_, camera.GetCullRect());
@@ -59,7 +58,7 @@ public class Sprite : ManagedChunkComponent<Sprite, SpriteSystem>
 
    static Sprite()
    {
-      Camera.DefaultRenderPath.Enqueue(new Camera.RenderLayer(SYSTEM,0),200);
+      Camera.DEFAULT_RENDER_PATH.Enqueue(new Camera.RenderLayer(SYSTEM,0),200);
    }
 
    public Sprite(Entity entity, SpriteData spriteData) : base(entity)

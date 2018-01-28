@@ -6,22 +6,32 @@ using Microsoft.Xna.Framework.Graphics;
 using Microsoft.Xna.Framework.Input;
 using Priority_Queue;
 
-
 public class Camera
 {
+   
+   #region Members
+   
    private Vector2 position_;
    private float scale_ = 50;
    public int pixelSize { get; private set; } = -1;
-
+   
+   //Rendering
    public float AspectRatio => RenderTarget != null ? RenderTarget.Width / (float)RenderTarget.Height : 1;
-
-   private readonly List<CameraRenderTarget> renderTargets_ = new List<CameraRenderTarget>();
-
    public CameraRenderTarget RenderTarget => renderTargets_[0];
+   public CameraRenderTarget GetRenderTarget(int idx) { return renderTargets_[idx]; }
+
+   private readonly List<CameraRenderTarget> renderTargets_ = new List<CameraRenderTarget>(); //Camera render buffers
+   private readonly SimplePriorityQueue<RenderLayer> renderLayers_ = new SimplePriorityQueue<RenderLayer>();
+
+   public static readonly SimplePriorityQueue<RenderLayer> DEFAULT_RENDER_PATH = new SimplePriorityQueue<RenderLayer>();
    
-   public CameraRenderTarget RenderTargets(int idx) { return renderTargets_[idx]; }
-   
-   public static SimplePriorityQueue<RenderLayer> DefaultRenderPath = new SimplePriorityQueue<RenderLayer>();
+   //Debug stuff
+   public static float DEBUGMULT = 1;//5;
+   public static float INVDEBUGMULT = 1;//1/5f;
+
+   #endregion
+
+   #region Constructors
 
    public Camera(int pixelSize = 1, int renderTargetsAmount = 1)
    {
@@ -40,6 +50,19 @@ public class Camera
 #endif
    }
 
+   #endregion
+
+   #region Rendering Objects
+
+   public class CameraRenderTarget : RenderTarget2D
+   {
+      public CameraRenderTarget(GraphicsDevice graphicsDevice, int width, int height) : base(graphicsDevice, width, height){}
+      public CameraRenderTarget(GraphicsDevice graphicsDevice, int width, int height, bool mipMap, SurfaceFormat preferredFormat, DepthFormat preferredDepthFormat) : base(graphicsDevice, width, height, mipMap, preferredFormat, preferredDepthFormat){}
+      public CameraRenderTarget(GraphicsDevice graphicsDevice, int width, int height, bool mipMap, SurfaceFormat preferredFormat, DepthFormat preferredDepthFormat, int preferredMultiSampleCount, RenderTargetUsage usage) : base(graphicsDevice, width, height, mipMap, preferredFormat, preferredDepthFormat, preferredMultiSampleCount, usage){}
+
+      public Color ClearColor = Color.Green;
+   }
+
    public class RenderLayer
    {
       private readonly IRenderableSystem system_;
@@ -51,37 +74,27 @@ public class Camera
       }
       public void Draw(Camera camera)
       {
-         system_.Draw(camera, renderTargetIndex);
+         system_.Draw(camera, camera.GetRenderTarget(renderTargetIndex));
       }
    }
 
-   public class CameraRenderTarget : RenderTarget2D
-   {
-      public CameraRenderTarget(GraphicsDevice graphicsDevice, int width, int height) : base(graphicsDevice, width, height){}
-      public CameraRenderTarget(GraphicsDevice graphicsDevice, int width, int height, bool mipMap, SurfaceFormat preferredFormat, DepthFormat preferredDepthFormat) : base(graphicsDevice, width, height, mipMap, preferredFormat, preferredDepthFormat){}
-      public CameraRenderTarget(GraphicsDevice graphicsDevice, int width, int height, bool mipMap, SurfaceFormat preferredFormat, DepthFormat preferredDepthFormat, int preferredMultiSampleCount, RenderTargetUsage usage) : base(graphicsDevice, width, height, mipMap, preferredFormat, preferredDepthFormat, preferredMultiSampleCount, usage){}
+   #endregion
 
-      public Color ClearColor = Color.Green;
-   }
+   #region Rendering
 
-   private SimplePriorityQueue<RenderLayer> RenderLayers = new SimplePriorityQueue<RenderLayer>();
-
+   /// <summary> Adding layers will invalidate the default layers (fallback) </summary>
    public void AddRenderLayer(IRenderableSystem system, int priority = 0, int layer = 0)
    {
-      RenderLayers.Enqueue(new RenderLayer(system, layer), priority);
+      renderLayers_.Enqueue(new RenderLayer(system, layer), priority);
    }
 
-   public Rectangle viewportRectangle = Graphics.Viewport.Bounds;
-   
    public void Render()
    {
       UpdateBeforeDrawing();
 
       float cullOverScan = Keys.Z.IsDown() ? -3 : 0; //TODO FIXME DBG
       Matrix globalMatrix = GetGlobalViewMatrix();
-
-
-
+      
       //render all targets
       for (var index = 0; index < renderTargets_.Count; index++)
       {
@@ -90,7 +103,7 @@ public class Camera
          Graphics.Device.SetStatesToDefault();
          Graphics.Device.Clear(target.ClearColor);
          
-         var layers = RenderLayers.Count > 0 ? RenderLayers : DefaultRenderPath;
+         var layers = renderLayers_.Count > 0 ? renderLayers_ : DEFAULT_RENDER_PATH;
 
          foreach (RenderLayer command in layers)
          {
@@ -98,49 +111,18 @@ public class Camera
                command.Draw(this);
          }
       }
-
-
-//      backBufferEffect_.Projection = globalMatrix;
-//      backBufferEffect_.Texture = atlas;
-//      backBufferEffect_.TextureEnabled = true;
-//      backBufferEffect_.CurrentTechnique.Passes[0].Apply();
-
-   }
-
-   public void RenderToViewport()
-   {
       
+      //      backBufferEffect_.Projection = globalMatrix;
+      //      backBufferEffect_.Texture = atlas;
+      //      backBufferEffect_.TextureEnabled = true;
+      //      backBufferEffect_.CurrentTechnique.Passes[0].Apply();
+
    }
 
-
-
-   public void LerpCenterTo(Vector2 position, float t)
+   public void UpdateBeforeDrawing()
    {
-      Center = MathUtils.Lerp(Center, position, t);
-   }
-
-   public Vector2 Center
-   {
-      get => position_ + new Vector2(scale_ / 2 * AspectRatio, scale_ / 2f);
-      set => position_ = value - new Vector2(scale_ / 2 * AspectRatio, scale_ / 2f);
-   }
-
-   public void SetPixelSize(int size, bool recenter = true)
-   {
-      Vector2 oldCenter = recenter ? Center : Vector2.Zero; //skip getting center
-
-      int newPixelSize = MathUtils.ClampInt(size, 1, 10000);
-      if (pixelSize == newPixelSize) return;
-      pixelSize = newPixelSize;
-      UpdateRenderTargets();
-      if (recenter)
-         Center = oldCenter;
-   }
-
-   public void UpdateRenderTargets()
-   {
-      SetRenderTargets();
-      scale_ = (float)RenderTarget.Height / Graphics.PixelsPerUnit;
+      if (RenderTarget.Width != Graphics.Viewport.Width / pixelSize || RenderTarget.Height != Graphics.Viewport.Height / pixelSize)
+         SetPixelSize(pixelSize);
    }
 
    private void SetRenderTargets()
@@ -155,11 +137,15 @@ public class Camera
       }
    }
 
-   public void UpdateBeforeDrawing()
+   public void UpdateRenderTargets()
    {
-      if (RenderTarget.Width != Graphics.Viewport.Width / pixelSize || RenderTarget.Height != Graphics.Viewport.Height / pixelSize)
-         SetPixelSize(pixelSize);
+      SetRenderTargets();
+      scale_ = (float)RenderTarget.Height / Graphics.PixelsPerUnit;
    }
+
+   #endregion
+
+   #region Geometrics
 
    public RectF GetCullRect(float overscan = 0)
    {
@@ -171,13 +157,10 @@ public class Camera
       float x = Core.SnapToPixel(position_.X);
       float y = Core.SnapToPixel(position_.Y);
       return Matrix.CreateOrthographicOffCenter(
-          x, x + scale_ * AspectRatio * DEBUGMULT, //FIXME TODO
-          y, y + scale_ * DEBUGMULT,
-          -10, 10f);
+         x, x + scale_ * AspectRatio * DEBUGMULT, //FIXME TODO
+         y, y + scale_ * DEBUGMULT,
+         -10, 10f);
    }
-
-   public static float DEBUGMULT = 1;//5;
-   public static float INVDEBUGMULT = 1;//1/5f;
 
    public Matrix GetSpritesViewMatrix() //TODO invert y
    {
@@ -196,15 +179,42 @@ public class Camera
       return Matrix.CreateOrthographicOffCenter(left, left + 2, top + 2, top, -10, 10);
    }
 
+   public void SetPixelSize(int size, bool recenter = true)
+   {
+      Vector2 oldCenter = recenter ? Center : Vector2.Zero; //skip getting center
+
+      int newPixelSize = MathUtils.ClampInt(size, 1, 10000);
+      if (pixelSize == newPixelSize) return;
+      pixelSize = newPixelSize;
+      UpdateRenderTargets();
+      if (recenter)
+         Center = oldCenter;
+   }
+
+   #endregion
+
+   #region Positional
+
+   public Vector2 Center
+   {
+      get => position_ + new Vector2(scale_ / 2 * AspectRatio, scale_ / 2f);
+      set => position_ = value - new Vector2(scale_ / 2 * AspectRatio, scale_ / 2f);
+   }
+
+   public void LerpCenterTo(Vector2 position, float t)
+   {
+      Center = MathUtils.Lerp(Center, position, t);
+   }
+
    public Vector2 WorldMousePosition
    {
       get
       {
          Vector2 screenPos = Input.MousePosition;
          Vector2 screenToWorldScaled = new Vector2(
-             screenPos.X / Graphics.Viewport.Width * scale_ * AspectRatio,
-             (Graphics.Viewport.Height - screenPos.Y) / Graphics.Viewport.Height * scale_
-             );
+            screenPos.X / Graphics.Viewport.Width * scale_ * AspectRatio,
+            (Graphics.Viewport.Height - screenPos.Y) / Graphics.Viewport.Height * scale_
+         );
          return position_ + screenToWorldScaled;
       }
    }
@@ -215,5 +225,7 @@ public class Camera
       float x = (pos.X - position_.X) / scale_ * AspectRatio;
       return new Vector2(x, y);
    }
+
+   #endregion
 
 }

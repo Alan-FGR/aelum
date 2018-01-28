@@ -206,9 +206,6 @@ public class LightSystem : ChunkedComponentSystem<LightProjector, LightSystem>, 
 
    public BlendState BlendState { get; set; } = BlendStateExtra.Max;
 
-   private RenderTarget2D accumulation_;
-   private int shadowsQuality_ = 1;
-//   private Point sizeLastCheck = Point.Zero;
    private Effect shadowsEffect;
    private Effect shadowsBlur;
 
@@ -223,10 +220,12 @@ public class LightSystem : ChunkedComponentSystem<LightProjector, LightSystem>, 
       shadowsBlur = Content.Manager.Load<Effect>("ShadowsBlur");
    }
    
-   public void Draw(Camera camera, int renderTarget = 0)
+   public void Draw(Camera camera, RenderTarget2D renderTarget)
    {
       var globalProjMatrix = camera.GetGlobalViewMatrix();
       var viewRect = camera.GetCullRect();
+
+      
 
       //init/resize render buffer if necessary
       
@@ -256,27 +255,30 @@ public class LightSystem : ChunkedComponentSystem<LightProjector, LightSystem>, 
       }
  
       //accumulate lights into a buffer
-      Graphics.Device.SetRenderTarget(accumulation_);
-      Graphics.Device.Clear(Color.Black);
-      float blurRadius = 2 / 3f;
-      shadowsBlur.Parameters["pixelDimension"].SetValue(new Vector2(blurRadius / accumulation_.Width, blurRadius / accumulation_.Height));
-      accumulationBatch_.Begin(SpriteSortMode.Deferred, BlendState, SamplerState.PointWrap, DepthStencilState.None, RasterizerState.CullNone, shadowsBlur);
-      foreach (LightProjector light in GetComponentsInRect(viewRect)) //TODO make a list of projs to render
-      {
-         light.Accumulate();
-      }
-      accumulationBatch_.End();
+//      Graphics.Device.SetRenderTarget(accumulation_);
+//      Graphics.Device.Clear(Color.Black);
+//      float blurRadius = 2 / 3f;
+//      shadowsBlur.Parameters["pixelDimension"].SetValue(new Vector2(blurRadius / accumulation_.Width, blurRadius / accumulation_.Height));
+//      accumulationBatch_.Begin(SpriteSortMode.Deferred, BlendState, SamplerState.PointWrap, DepthStencilState.None, RasterizerState.CullNone, shadowsBlur);
+//      foreach (LightProjector light in GetComponentsInRect(viewRect)) //TODO make a list of projs to render
+//      {
+//         light.Accumulate(accumulationBatch_);
+//      }
+//      accumulationBatch_.End();
  
       //shadowsBlur.Parameters["pixelDimension"].SetValue(new Vector2(1f/Core.mainCam.RT(0).Width,1f/Core.mainCam.RT(0).Height));
- 
-      return new Result { texture = accumulation_, lastBlurEffect = shadowsBlur };
+      //return new Result { texture = accumulation_, lastBlurEffect = shadowsBlur };
+
+
+
    }
 
 }   
 
 public class LightProjector : ManagedChunkComponent<LightProjector, LightSystem>
 {
-   private RenderTarget2D renderTarget_;
+   private RenderTarget2D lightProjectorRT_;
+   private int shadowsQuality_ = 1;
 
 //   public struct Result
 //   {
@@ -284,6 +286,11 @@ public class LightProjector : ManagedChunkComponent<LightProjector, LightSystem>
 //      public Effect lastBlurEffect;
 //   }
 
+   static LightProjector()
+   {
+      Camera.DEFAULT_RENDER_PATH.Enqueue(new Camera.RenderLayer(SYSTEM,1), 500);
+   }
+   
    public LightProjector(Entity entity, byte system = 0) : base(entity, system)
    {}
    
@@ -293,7 +300,7 @@ public class LightProjector : ManagedChunkComponent<LightProjector, LightSystem>
       cfg.centerOffset = centerOffset;
       cfg.lightTexture = lightTexture;
       cfg.lightColor = color ?? Color.White;
-      InitRT();
+      InitProjectorRT();
    }
    
    [MessagePackObject]
@@ -328,28 +335,27 @@ public class LightProjector : ManagedChunkComponent<LightProjector, LightSystem>
    public LightProjector(Entity entity, byte[] serialData) : this(entity)
    {
       cfg = MessagePackSerializer.Deserialize<LightProjectorConfig>(serialData);
-      InitRT();
+      InitProjectorRT();
    }
 
-   void InitRT()
+   void InitProjectorRT()
    {
-      renderTarget_?.Dispose();
-      renderTarget_ = new RenderTarget2D(Graphics.Device, Core.mainCam.RenderTargets(0).Width / shadowsQuality_, Core.mainCam.RenderTargets(0).Height / shadowsQuality_);
+      lightProjectorRT_?.Dispose();
+      lightProjectorRT_ = new RenderTarget2D(Graphics.Device, Core.mainCam.GetRenderTarget(0).Width / shadowsQuality_, Core.mainCam.GetRenderTarget(0).Height / shadowsQuality_);
    }
 
 
    
 
 
-
-   public void Accumulate()
+   public void Accumulate(SpriteBatch accumulationBatch)
    {
-      accumulationBatch_.Draw(renderTarget_, new Vector2(0, 0), cfg.lightColor);
+      accumulationBatch.Draw(lightProjectorRT_, new Vector2(0, 0), cfg.lightColor);
    }
 
    public virtual void RenderProjector(Effect shadowsEffect)
    {
-      Graphics.Device.SetRenderTarget(renderTarget_);
+      Graphics.Device.SetRenderTarget(lightProjectorRT_);
       Graphics.Device.Clear(Color.Black);
 
       //set projector corners
@@ -380,7 +386,7 @@ public class LightProjector : ManagedChunkComponent<LightProjector, LightSystem>
 
    public override void FinalizeComponent()
    {
-      renderTarget_.Dispose();
+      lightProjectorRT_.Dispose();
       base.FinalizeComponent();
    }
 

@@ -119,7 +119,7 @@ class TestGame : Core
         //create some rotating lights
         clearColor = Color.DarkGray;
         lightsBlendMode = BlendState.Additive;
-        LightProjector.blendState_ = BlendState.Additive;
+        LightProjector.SYSTEM.BlendState = BlendState.Additive;
 //        LightOccluder.SHADOW_BIAS = 0;
         for (int i = 1; i < 4; i++)
         {

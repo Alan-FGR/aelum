@@ -107,7 +107,7 @@ public class QuadSystem : ChunkedComponentSystem<QuadComponent, QuadSystem>, IRe
       Texture = Core.atlas;
    }
    
-   public void Draw(Camera camera, int renderTarget = 0)
+   public void Draw(Camera camera, RenderTarget2D renderTarget)
    {
       quadCount_ = 0;
 
@@ -164,7 +164,7 @@ public class QuadComponent : ManagedChunkComponent<QuadComponent, QuadSystem>
 
    static QuadComponent()
    {
-      Camera.DefaultRenderPath.Enqueue(new Camera.RenderLayer(SYSTEM,0),100);
+      Camera.DEFAULT_RENDER_PATH.Enqueue(new Camera.RenderLayer(SYSTEM,0),100);
    }
 
    public QuadComponent(Entity entity, QuadData quadData) : base(entity)

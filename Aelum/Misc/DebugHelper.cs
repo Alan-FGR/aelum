@@ -134,8 +134,8 @@ public static class Dbg
 
       public void DrawDebug(Camera cam)
       {
-         if (DbgRenderTarget == null || DbgRenderTarget.Width != cam.RenderTargets(0).Width || DbgRenderTarget.Height != cam.RenderTargets(0).Height)
-            DbgRenderTarget = new RenderTarget2D(Graphics.Device, cam.RenderTargets(0).Width, cam.RenderTargets(0).Height);
+         if (DbgRenderTarget == null || DbgRenderTarget.Width != cam.GetRenderTarget(0).Width || DbgRenderTarget.Height != cam.GetRenderTarget(0).Height)
+            DbgRenderTarget = new RenderTarget2D(Graphics.Device, cam.GetRenderTarget(0).Width, cam.GetRenderTarget(0).Height);
 
          Graphics.Device.SetRenderTarget(DbgRenderTarget);
          Graphics.Manager.GraphicsDevice.Clear(Color.Transparent);
