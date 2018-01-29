@@ -137,15 +137,16 @@ public abstract class ManagedChunkComponent<T, TSystem> : Component
    where T : ManagedChunkComponent<T, TSystem>
    where TSystem : ChunkedComponentSystem<T, TSystem>, new()
 {
-   public static TSystem SYSTEM => SYSTEMS[0];
+   public static TSystem DEFAULT_SYSTEM => SYSTEMS[0];
    public static readonly List<TSystem> SYSTEMS = new List<TSystem>{new TSystem()};
    
    static ManagedChunkComponent()
    {
-      Dbg.onBeforeDebugDrawing += SYSTEM.DrawDebug;
+      Dbg.onBeforeDebugDrawing += DEFAULT_SYSTEM.DrawDebug;
    }
 
    private byte systemIndex = 0;
+   public TSystem System => SYSTEMS[systemIndex];
    internal Point currentChunkPos_ = new Point(Int32.MaxValue, Int32.MaxValue);
 
    protected ManagedChunkComponent(Entity entity, byte system = 0) : base(entity)

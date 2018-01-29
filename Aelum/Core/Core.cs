@@ -107,9 +107,9 @@ public abstract class Core : Game
       contentManager.RootDirectory = "Content";
       atlas = Content.Load<Texture2D>("Atlas");
       ATLAS_TO_WORLD = atlas.Width / Graphics.PixelsPerUnit;
-      LightProjector.SYSTEM.LoadContent();//TODO HIGH PRIORITY 
+      LightProjector.DEFAULT_SYSTEM.LoadContent();//TODO HIGH PRIORITY 
 
-      pixel = new Texture2D(base.GraphicsDevice, 1, 1);
+      pixel = new Texture2D(GraphicsDevice, 1, 1);
       pixel.SetData(new[] { Color.White });
 
       //UI
@@ -123,7 +123,7 @@ public abstract class Core : Game
       
       backBufferBatch_ = new SpriteBatch(Graphics.Device);
 
-      Window.ClientSizeChanged += (o, e) => { UI.ScreenResize(); mainCam.UpdateRenderTargets(); };
+      Window.ClientSizeChanged += (o, e) => { UI.ScreenResize();}; //TODO
       
    }
    
@@ -135,7 +135,8 @@ public abstract class Core : Game
       // update our input
       OnBeforeInputUpdate?.Invoke();
       Input.Update();
-      //UI
+
+      // update the UI
       UI.UpdateUI();
 
       // update our game logic
@@ -155,18 +156,10 @@ public abstract class Core : Game
    {
       OnBeforeDraw?.Invoke();
 
-
-
-      
-      //render quads (and possibly meshes made of quads)
-//      Quad.DrawAllInRect(mainCam.GetCullRect(cullOverScan));
-
-      //render sprite components
       mainCam.Render();
 
       //render 2d lighting
 //      var lights = LightProjector.DrawAllInRect(mainCam.GetCullRect(20), globalMatrix);
-
 
       //render UI
 //      Texture2D uiRender = UI.DrawUI();
@@ -175,7 +168,11 @@ public abstract class Core : Game
       Texture2D debugRender = Dbg.RenderDebug(mainCam);
       
       //render opaque stuff (quads, sprites, etc)
-      RenderToScreen(mainCam.RenderTarget, BlendState.Opaque);
+      RenderToScreen(mainCam.MainRenderTarget, BlendState.Opaque);
+      RenderToScreen(mainCam.GetRenderTarget(1).renderTarget, lightsBlendMode);
+      
+//      RenderToScreen(LightProjector.DEFAULT_SYSTEM.GetAllComponents()[0].lightProjectorRT_);
+
 
       //render lights and shadows
 //      RenderToScreen(lights.texture, lightsBlendMode);

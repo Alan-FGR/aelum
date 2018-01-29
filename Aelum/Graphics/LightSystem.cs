@@ -2,6 +2,7 @@ using System;
 using System.Collections.Generic;
 using System.Diagnostics;
 using System.Diagnostics.CodeAnalysis;
+using System.Linq;
 using FarseerPhysics.Collision;
 using FarseerPhysics.Collision.Shapes;
 using FarseerPhysics.Dynamics;
@@ -63,8 +64,7 @@ public class OccluderSystem : ChunkedComponentSystem<LightOccluder, OccluderSyst
       allOccludersSegments.Clear(); //TODO use array - low/med prior
 
       //collect all occluders segments in range
-      foreach (LightOccluder occluder in GetAllComponents())
-//      foreach (LightOccluder occluder in GetComponentsInRect(rect))
+      foreach (LightOccluder occluder in GetComponentsInRect(rect))
       {
          allOccludersSegments.AddRange(occluder.GlobalSegments); //TODO slooooow, pass list?
       }
@@ -114,13 +114,6 @@ public class OccluderSystem : ChunkedComponentSystem<LightOccluder, OccluderSyst
 
       ReturnData:
       return new Tuple<int, IndexBuffer, DynamicVertexBuffer>(allOccludersSegments.Count, ib, vb); //TODO descriptive object
-
-      //don't draw, only set the buffers, we tweak the shader parameters and draw on the light component
-//      Graphics.Device.Indices = ib;
-//      Graphics.Device.SetVertexBuffer(vb);
-//
-//      //draw in projector
-//      Graphics.Device.DrawIndexedPrimitives(PrimitiveType.TriangleList, 0, 0, allOccludersSegments.Count * 4 + 4, 0, allOccludersSegments.Count * 2 + 2);
 
    }
    
@@ -205,48 +198,44 @@ public class LightSystem : ChunkedComponentSystem<LightProjector, LightSystem>, 
 {
    private static SpriteBatch accumulationBatch_;
 
-   public OccluderSystem OccluderSystem { get; set; } = LightOccluder.SYSTEM;
+   public OccluderSystem OccluderSystem { get; set; } = LightOccluder.DEFAULT_SYSTEM;
 
    public BlendState BlendState { get; set; } = BlendStateExtra.Max;
 
-   private Effect shadowsEffect;
-   private Effect shadowsBlur;
+   private Effect shadowsEffect_;
+   private Effect shadowsBlur_;
+//   private RenderTarget2D accumulation_;
+   public int shadowsQuality = 1;
 
    static LightSystem()
    {
       accumulationBatch_ = new SpriteBatch(Graphics.Device);
    }
 
+   public LightSystem()
+   {
+
+   }
+
    public void LoadContent() //TODO
    {
-      shadowsEffect = Content.Manager.Load<Effect>("ExtrudeShadows");
-      shadowsBlur = Content.Manager.Load<Effect>("ShadowsBlur");
+      shadowsEffect_ = Content.Manager.Load<Effect>("ExtrudeShadows");
+      shadowsBlur_ = Content.Manager.Load<Effect>("ShadowsBlur");
    }
    
    public void Draw(Camera camera, RenderTarget2D renderTarget)
    {
       var globalProjMatrix = camera.GetGlobalViewMatrix();
       var viewRect = camera.GetCullRect();
-
       
-
-      //init/resize render buffer if necessary
+      var occludersBuffers = OccluderSystem.GetOccludersBuffers(viewRect);
       
-//      if (Core.mainCam.RenderTargets(0).Dimensions() != sizeLastCheck)
-//      {
-//         sizeLastCheck = Core.mainCam.RenderTargets(0).Dimensions();
-//         accumulation_?.Dispose();
-//         accumulation_ = new RenderTarget2D(Graphics.Device, Core.mainCam.RenderTargets(0).Width / shadowsQuality_, Core.mainCam.RenderTargets(0).Height / shadowsQuality_);
-//         foreach (LightProjector light in GetAllComponents())
-//         {
-//            light.InitRT();
-//         }
-//      }
+      //don't draw, only set the buffers, we tweak the shader parameters and draw on the light component
+      Graphics.Device.Indices = occludersBuffers.Item2;
+      Graphics.Device.SetVertexBuffer(occludersBuffers.Item3);
+      var occludersSegmentsCount = occludersBuffers.Item1;
 
-      var geoBuffers = OccluderSystem.GetOccludersBuffers(viewRect);
-      return;
- 
-      shadowsEffect.Parameters["Projection"].SetValue(globalProjMatrix);
+      shadowsEffect_.Parameters["Projection"].SetValue(globalProjMatrix);
  
       //        Core.device.RasterizerState = RasterizerState.CullNone;
       //        Core.device.BlendState = BlendState.Opaque;
@@ -254,25 +243,32 @@ public class LightSystem : ChunkedComponentSystem<LightProjector, LightSystem>, 
  
       foreach (LightProjector light in GetComponentsInRect(viewRect))
       {
-         // render single light into a buffer
-         light.RenderProjector(shadowsEffect);
+         // render single light into its buffer
+         light.RenderProjector(shadowsEffect_, occludersSegmentsCount);
       }
  
       //accumulate lights into a buffer
-//      Graphics.Device.SetRenderTarget(accumulation_);
-//      Graphics.Device.Clear(Color.Black);
-//      float blurRadius = 2 / 3f;
-//      shadowsBlur.Parameters["pixelDimension"].SetValue(new Vector2(blurRadius / accumulation_.Width, blurRadius / accumulation_.Height));
-//      accumulationBatch_.Begin(SpriteSortMode.Deferred, BlendState, SamplerState.PointWrap, DepthStencilState.None, RasterizerState.CullNone, shadowsBlur);
-//      foreach (LightProjector light in GetComponentsInRect(viewRect)) //TODO make a list of projs to render
-//      {
-//         light.Accumulate(accumulationBatch_);
-//      }
-//      accumulationBatch_.End();
+      Graphics.Device.SetRenderTarget(renderTarget);
+      Graphics.Device.Clear(Color.Black);
+
+      float blurRadius = 2 / 3f;
+      shadowsBlur_.Parameters["pixelDimension"].SetValue(new Vector2(blurRadius / renderTarget.Width, blurRadius / renderTarget.Height));
+      //accumulationBatch_.Begin(SpriteSortMode.Deferred, BlendState, SamplerState.PointWrap, DepthStencilState.None, RasterizerState.CullNone, shadowsBlur_);
+      accumulationBatch_.Begin(SpriteSortMode.Deferred, BlendState, SamplerState.PointWrap, DepthStencilState.None, RasterizerState.CullNone, null);
+      foreach (LightProjector light in GetComponentsInRect(viewRect)) //TODO make a list of projs to render
+      {
+         light.Accumulate(accumulationBatch_);
+      }
+      accumulationBatch_.End();
  
       //shadowsBlur.Parameters["pixelDimension"].SetValue(new Vector2(1f/Core.mainCam.RT(0).Width,1f/Core.mainCam.RT(0).Height));
       //return new Result { texture = accumulation_, lastBlurEffect = shadowsBlur };
-
+      
+//      Graphics.Device.SetRenderTarget(renderTarget);
+//
+//
+//
+//      Graphics.Device.Clear(Color.White);
 
 
    }
@@ -282,7 +278,6 @@ public class LightSystem : ChunkedComponentSystem<LightProjector, LightSystem>, 
 public class LightProjector : ManagedChunkComponent<LightProjector, LightSystem>
 {
    private RenderTarget2D lightProjectorRT_;
-   private int shadowsQuality_ = 1;
 
 //   public struct Result
 //   {
@@ -292,7 +287,7 @@ public class LightProjector : ManagedChunkComponent<LightProjector, LightSystem>
 
    static LightProjector()
    {
-      Camera.DEFAULT_RENDER_PATH.Enqueue(new Camera.RenderLayer(SYSTEM,0), 500);
+      Camera.DEFAULT_RENDER_PATH.Enqueue(new Camera.RenderLayer(DEFAULT_SYSTEM,1), 500);
    }
    
    public LightProjector(Entity entity, byte system = 0) : base(entity, system)
@@ -342,22 +337,18 @@ public class LightProjector : ManagedChunkComponent<LightProjector, LightSystem>
       InitProjectorRT();
    }
 
-   void InitProjectorRT()
+   public void InitProjectorRT()
    {
       lightProjectorRT_?.Dispose();
-      lightProjectorRT_ = new RenderTarget2D(Graphics.Device, Core.mainCam.GetRenderTarget(0).Width / shadowsQuality_, Core.mainCam.GetRenderTarget(0).Height / shadowsQuality_);
+      lightProjectorRT_ = new RenderTarget2D(Graphics.Device, Core.mainCam.MainRenderTarget.Width / System.shadowsQuality, Core.mainCam.MainRenderTarget.Height / System.shadowsQuality);
    }
-
-
    
-
-
    public void Accumulate(SpriteBatch accumulationBatch)
    {
-      accumulationBatch.Draw(lightProjectorRT_, new Vector2(0, 0), cfg.lightColor);
+      accumulationBatch.Draw(lightProjectorRT_, Vector2.Zero, cfg.lightColor);
    }
 
-   public virtual void RenderProjector(Effect shadowsEffect)
+   public virtual void RenderProjector(Effect shadowsEffect, int occludersSegmentsCount)
    {
       Graphics.Device.SetRenderTarget(lightProjectorRT_);
       Graphics.Device.Clear(Color.Black);
@@ -384,7 +375,7 @@ public class LightProjector : ManagedChunkComponent<LightProjector, LightSystem>
 
       //Core.GraphicsDevice.SamplerStates[0] = SamplerState.PointWrap;
 
-//      LightOccluder.DrawBuffers();
+      Graphics.Device.DrawIndexedPrimitives(PrimitiveType.TriangleList, 0, 0, occludersSegmentsCount * 4 + 4, 0, occludersSegmentsCount * 2 + 2);
 
    }
 

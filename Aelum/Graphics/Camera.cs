@@ -16,8 +16,8 @@ public class Camera
    public int pixelSize { get; private set; } = -1;
    
    //Rendering
-   public float AspectRatio => RenderTarget != null ? RenderTarget.Width / (float)RenderTarget.Height : 1;
-   public CameraRenderTarget RenderTarget => renderTargets_[0];
+   public float AspectRatio => MainRenderTarget != null ? MainRenderTarget.Width / (float)MainRenderTarget.Height : 1;
+   public RenderTarget2D MainRenderTarget => renderTargets_[0].renderTarget;
    public CameraRenderTarget GetRenderTarget(int idx) { return renderTargets_[idx]; }
 
    private readonly List<CameraRenderTarget> renderTargets_ = new List<CameraRenderTarget>(); //Camera render buffers
@@ -33,11 +33,11 @@ public class Camera
 
    #region Constructors
 
-   public Camera(int pixelSize = 1, int renderTargetsAmount = 1)
+   public Camera(int pixelSize = 1, int renderTargetsAmount = 2)
    {
       for (int i = 0; i < renderTargetsAmount; i++)
       {
-         renderTargets_.Add(null);
+         renderTargets_.Add(new CameraRenderTarget(Color.Green));
       }
 
       SetPixelSize(pixelSize, false); //this also inits targets
@@ -54,13 +54,36 @@ public class Camera
 
    #region Rendering Objects
 
-   public class CameraRenderTarget : RenderTarget2D
+   public class CameraRenderTarget
    {
-      public CameraRenderTarget(GraphicsDevice graphicsDevice, int width, int height) : base(graphicsDevice, width, height){}
-      public CameraRenderTarget(GraphicsDevice graphicsDevice, int width, int height, bool mipMap, SurfaceFormat preferredFormat, DepthFormat preferredDepthFormat) : base(graphicsDevice, width, height, mipMap, preferredFormat, preferredDepthFormat){}
-      public CameraRenderTarget(GraphicsDevice graphicsDevice, int width, int height, bool mipMap, SurfaceFormat preferredFormat, DepthFormat preferredDepthFormat, int preferredMultiSampleCount, RenderTargetUsage usage) : base(graphicsDevice, width, height, mipMap, preferredFormat, preferredDepthFormat, preferredMultiSampleCount, usage){}
+      public Color clearColor;
+      public int cameraTargetPixelSize;
+      public RenderTarget2D renderTarget;
 
-      public Color ClearColor = Color.Green;
+      public CameraRenderTarget(Color clearColor, int cameraTargetPixelSize = 1)
+      {
+         this.clearColor = clearColor;
+         this.cameraTargetPixelSize = cameraTargetPixelSize;
+      }
+
+      public void PrepareForDrawing(Point baseSize, bool clear = true)
+      {
+         if (renderTarget == null || renderTarget.Dimensions() != baseSize.DividedBy(cameraTargetPixelSize))
+            InitRT(baseSize);
+
+         Graphics.Device.SetRenderTarget(renderTarget);
+         Graphics.Device.SetStatesToDefault();
+         Graphics.Device.Clear(clearColor);
+      }
+
+      public static int inc = 0; //todo remove this
+      public void InitRT(Point baseSize)
+      {
+         Debug.WriteLine("Initting RenderTarget");
+         renderTarget?.Dispose();
+         renderTarget = new RenderTarget2D(Graphics.Device, baseSize.X / cameraTargetPixelSize, baseSize.Y / cameraTargetPixelSize, false, SurfaceFormat.Color, DepthFormat.Depth16);
+         renderTarget.Name = inc++.ToString();
+      }
    }
 
    public class RenderLayer
@@ -74,7 +97,7 @@ public class Camera
       }
       public void Draw(Camera camera)
       {
-         system_.Draw(camera, camera.GetRenderTarget(renderTargetIndex));
+         system_.Draw(camera, camera.GetRenderTarget(renderTargetIndex).renderTarget);
       }
    }
 
@@ -92,16 +115,14 @@ public class Camera
    {
       UpdateBeforeDrawing();
 
-      float cullOverScan = Keys.Z.IsDown() ? -3 : 0; //TODO FIXME DBG
-      Matrix globalMatrix = GetGlobalViewMatrix();
-      
+      var viewportSize = Graphics.Viewport.Size().DividedBy(pixelSize);
+
       //render all targets
       for (var index = 0; index < renderTargets_.Count; index++)
       {
          CameraRenderTarget target = renderTargets_[index];
-         Graphics.Device.SetRenderTarget(RenderTarget);
-         Graphics.Device.SetStatesToDefault();
-         Graphics.Device.Clear(target.ClearColor);
+         
+         target.PrepareForDrawing(viewportSize);
          
          var layers = renderLayers_.Count > 0 ? renderLayers_ : DEFAULT_RENDER_PATH;
 
@@ -128,26 +149,19 @@ public class Camera
 
    public void UpdateBeforeDrawing()
    {
-      if (RenderTarget.Width != Graphics.Viewport.Width / pixelSize || RenderTarget.Height != Graphics.Viewport.Height / pixelSize)
+      if (MainRenderTarget.Width != Graphics.Viewport.Width / pixelSize || MainRenderTarget.Height != Graphics.Viewport.Height / pixelSize)
          SetPixelSize(pixelSize);
-   }
-
-   private void SetRenderTargets()
-   {
-      int width = Graphics.Viewport.Width / pixelSize;
-      int height = Graphics.Viewport.Height / pixelSize;
-      for (var i = 0; i < renderTargets_.Count; i++)
-      {
-         Debug.WriteLine($"Initting RenderTarget on: {i}");
-         renderTargets_[i]?.Dispose();
-         renderTargets_[i] = new CameraRenderTarget(Graphics.Device, width, height, false, SurfaceFormat.Color, DepthFormat.Depth16);
-      }
    }
 
    public void UpdateRenderTargets()
    {
-      SetRenderTargets();
-      scale_ = (float)RenderTarget.Height / Graphics.PixelsPerUnit;
+      var viewportSize = Graphics.Viewport.Size().DividedBy(pixelSize);
+      foreach (CameraRenderTarget rt in renderTargets_)
+      {
+         rt.InitRT(viewportSize);
+      }
+
+      scale_ = (float)MainRenderTarget.Height / Graphics.PixelsPerUnit;
    }
 
    #endregion
@@ -181,7 +195,7 @@ public class Camera
        */
       float x = Core.SnapToPixel(position_.X);
       float y = Core.SnapToPixel(position_.Y);
-      float top = RenderTarget.Height + y * Graphics.PixelsPerUnit * INVDEBUGMULT; // we sum height to invert Y coords
+      float top = MainRenderTarget.Height + y * Graphics.PixelsPerUnit * INVDEBUGMULT; // we sum height to invert Y coords
       float left = x * Graphics.PixelsPerUnit * INVDEBUGMULT;
       return Matrix.CreateOrthographicOffCenter(left, left + 2, top + 2, top, -10, 10);
    }
