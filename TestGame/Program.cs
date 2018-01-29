@@ -177,7 +177,7 @@ class TestGame : Core
     private float interval_ = 3;
     public void SpawnEnemy()
     {
-        interval_ += Core.lastDT;
+        interval_ += lastDT;
         if (interval_ > 3)
         {
             interval_ = 0;

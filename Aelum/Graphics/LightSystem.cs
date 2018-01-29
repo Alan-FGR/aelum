@@ -63,7 +63,8 @@ public class OccluderSystem : ChunkedComponentSystem<LightOccluder, OccluderSyst
       allOccludersSegments.Clear(); //TODO use array - low/med prior
 
       //collect all occluders segments in range
-      foreach (LightOccluder occluder in GetComponentsInRect(rect))
+      foreach (LightOccluder occluder in GetAllComponents())
+//      foreach (LightOccluder occluder in GetComponentsInRect(rect))
       {
          allOccludersSegments.AddRange(occluder.GlobalSegments); //TODO slooooow, pass list?
       }
@@ -158,7 +159,6 @@ public class LightOccluder : ManagedChunkComponent<LightOccluder, OccluderSystem
 
    public LightOccluder(Entity entity, byte system = 0) : base(entity, system)
    {
-      UpdateGlobalSegments();
    }
 
    public LightOccluder(Entity entity, OccluderShape shape, float occluderSize) : this(entity) //TODO system
@@ -167,19 +167,22 @@ public class LightOccluder : ManagedChunkComponent<LightOccluder, OccluderSystem
       {
          segments.Add(new OccluderSegment(-Vector2.UnitX * occluderSize / 2, Vector2.UnitX * occluderSize / 2));
          segments.Add(new OccluderSegment(-Vector2.UnitY * occluderSize / 2, Vector2.UnitY * occluderSize / 2));
-         return;
       }
       if (shape == OccluderShape.Horizontal)
       {
          segments.Add(new OccluderSegment(-Vector2.UnitX * occluderSize / 2, Vector2.UnitX * occluderSize / 2));
-         return;
       }
-      segments.Add(new OccluderSegment(-Vector2.UnitY * occluderSize / 2, Vector2.UnitY * occluderSize / 2));
+      else
+      {
+         segments.Add(new OccluderSegment(-Vector2.UnitY * occluderSize / 2, Vector2.UnitY * occluderSize / 2));
+      }
+      UpdateGlobalSegments();
    }
 
    public LightOccluder(Entity entity, List<OccluderSegment> occluderSegments) : this(entity) //TODO system
    {
       segments = occluderSegments;
+      UpdateGlobalSegments();
    }
 
    public LightOccluder(Entity entity, byte[] sd) : this(entity, MessagePackSerializer.Deserialize<List<OccluderSegment>>(sd))
@@ -222,7 +225,6 @@ public class LightSystem : ChunkedComponentSystem<LightProjector, LightSystem>, 
    
    public void Draw(Camera camera, RenderTarget2D renderTarget)
    {
-      return;
       var globalProjMatrix = camera.GetGlobalViewMatrix();
       var viewRect = camera.GetCullRect();
 
@@ -242,6 +244,7 @@ public class LightSystem : ChunkedComponentSystem<LightProjector, LightSystem>, 
 //      }
 
       var geoBuffers = OccluderSystem.GetOccludersBuffers(viewRect);
+      return;
  
       shadowsEffect.Parameters["Projection"].SetValue(globalProjMatrix);
  
