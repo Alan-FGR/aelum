@@ -3,7 +3,6 @@ using System.Collections.Generic;
 using System.Diagnostics;
 using Microsoft.Xna.Framework;
 using Microsoft.Xna.Framework.Graphics;
-using Microsoft.Xna.Framework.Input;
 using Priority_Queue;
 
 public class Camera
@@ -37,7 +36,7 @@ public class Camera
    {
       for (int i = 0; i < renderTargetsAmount; i++)
       {
-         renderTargets_.Add(new CameraRenderTarget(Color.Green));
+         renderTargets_.Add(new CameraRenderTarget(Color.Black));
       }
 
       SetPixelSize(pixelSize, false); //this also inits targets
@@ -59,6 +58,7 @@ public class Camera
       public Color clearColor;
       public int cameraTargetPixelSize;
       public RenderTarget2D renderTarget;
+      public BlendState blendMode = BlendState.Opaque;
 
       public CameraRenderTarget(Color clearColor, int cameraTargetPixelSize = 1)
       {
@@ -81,7 +81,7 @@ public class Camera
       {
          Debug.WriteLine("Initting RenderTarget");
          renderTarget?.Dispose();
-         renderTarget = new RenderTarget2D(Graphics.Device, baseSize.X / cameraTargetPixelSize, baseSize.Y / cameraTargetPixelSize, false, SurfaceFormat.Color, DepthFormat.Depth16);
+         renderTarget = new RenderTarget2D(Graphics.Device, baseSize.X / cameraTargetPixelSize, baseSize.Y / cameraTargetPixelSize, false, SurfaceFormat.Color, DepthFormat.Depth16, 0, RenderTargetUsage.PreserveContents);
          renderTarget.Name = inc++.ToString();
       }
    }
@@ -111,11 +111,13 @@ public class Camera
       renderLayers_.Enqueue(new RenderLayer(system, layer), priority);
    }
 
-   public void Render()
+   public List<Tuple<Texture2D, BlendState>> Render()
    {
       UpdateBeforeDrawing();
 
       var viewportSize = Graphics.Viewport.Size().DividedBy(pixelSize);
+
+      List<Tuple<Texture2D, BlendState>> retList = new List<Tuple<Texture2D, BlendState>>();
 
       //render all targets
       for (var index = 0; index < renderTargets_.Count; index++)
@@ -138,8 +140,13 @@ public class Camera
             if(command.renderTargetIndex == index) //TODO optimize
                command.Draw(this);
          }
+
+         retList.Add(new Tuple<Texture2D, BlendState>(target.renderTarget, target.blendMode));
+
       }
-      
+
+      return retList;
+
       //      backBufferEffect_.Projection = globalMatrix;
       //      backBufferEffect_.Texture = atlas;
       //      backBufferEffect_.TextureEnabled = true;

@@ -1,3 +1,4 @@
+using System.Collections.Generic;
 using Microsoft.Xna.Framework;
 using Microsoft.Xna.Framework.Graphics;
 
@@ -11,7 +12,6 @@ public class LightSystem : ChunkedComponentSystem<LightProjector, LightSystem>, 
 
    private Effect shadowsEffect_;
    private Effect shadowsBlur_;
-//   private RenderTarget2D accumulation_;
    public int shadowsQuality = 1;
 
    static LightSystem()
@@ -37,45 +37,48 @@ public class LightSystem : ChunkedComponentSystem<LightProjector, LightSystem>, 
       
       var occludersBuffers = OccluderSystem.GetOccludersBuffers(viewRect);
       
-      //don't draw, only set the buffers, we tweak the shader parameters and draw on the light component
-      Graphics.Device.Indices = occludersBuffers.Item2;
-      Graphics.Device.SetVertexBuffer(occludersBuffers.Item3);
-      var occludersSegmentsCount = occludersBuffers.Item1;
-
       shadowsEffect_.Parameters["Projection"].SetValue(globalProjMatrix);
  
-      //        Core.device.RasterizerState = RasterizerState.CullNone;
-      //        Core.device.BlendState = BlendState.Opaque;
-      //        Core.device.DepthStencilState = DepthStencilState.Default;
- 
+      //temporary buffer to render each pass before accumulating into result
+      RenderTarget2D tempRawLight = new RenderTarget2D(Graphics.Device, renderTarget.Width, renderTarget.Height,
+         false, SurfaceFormat.Color, DepthFormat.None, 0, RenderTargetUsage.PreserveContents);
+
+      int c = 0;
       foreach (LightProjector light in GetComponentsInRect(viewRect))
       {
-         // render single light into its buffer
-         light.RenderProjector(shadowsEffect_, occludersSegmentsCount);
-      }
- 
-      //accumulate lights into a buffer
-      Graphics.Device.SetRenderTarget(renderTarget);
-      Graphics.Device.Clear(Color.Black);
+         Graphics.Device.SetRenderTarget(tempRawLight);
+         Graphics.Device.BlendState = BlendState.Opaque;
+         Graphics.Device.Clear(Color.Black);
+         
+         //don't draw, only set the buffers, we tweak the shader parameters and draw on the light component
+         occludersBuffers = OccluderSystem.GetOccludersBuffers(viewRect);
+         Graphics.Device.Indices = occludersBuffers.Item2;
+         Graphics.Device.SetVertexBuffer(occludersBuffers.Item3);
+         var occludersSegmentsCount = occludersBuffers.Item1;
 
-      float blurRadius = 2 / 3f;
-      shadowsBlur_.Parameters["pixelDimension"].SetValue(new Vector2(blurRadius / renderTarget.Width, blurRadius / renderTarget.Height));
-      //accumulationBatch_.Begin(SpriteSortMode.Deferred, BlendState, SamplerState.PointWrap, DepthStencilState.None, RasterizerState.CullNone, shadowsBlur_);
-      accumulationBatch_.Begin(SpriteSortMode.Deferred, BlendState, SamplerState.PointWrap, DepthStencilState.None, RasterizerState.CullNone, null);
-      foreach (LightProjector light in GetComponentsInRect(viewRect)) //TODO make a list of projs to render
-      {
-         light.Accumulate(accumulationBatch_);
+         // render single light
+         light.RenderProjector(shadowsEffect_, occludersSegmentsCount);
+         
+         //accumulate lights into a buffer
+         Graphics.Device.SetRenderTarget(renderTarget);
+            
+         if(c==0)
+            Graphics.Device.Clear(Color.Black);
+         c++;
+
+         //float blurRadius = 2 / 3f;
+         //shadowsBlur_.Parameters["pixelDimension"].SetValue(new Vector2(blurRadius / renderTarget.Width, blurRadius / renderTarget.Height));
+         //accumulationBatch_.Begin(SpriteSortMode.Deferred, BlendState, SamplerState.PointWrap, DepthStencilState.None, RasterizerState.CullNone, shadowsBlur_);
+         accumulationBatch_.Begin(SpriteSortMode.Immediate, BlendState.Additive, SamplerState.PointWrap, DepthStencilState.None, RasterizerState.CullNone);
+         accumulationBatch_.Draw(tempRawLight, Vector2.Zero, light.cfg.lightColor);
+         accumulationBatch_.End();
+      
       }
-      accumulationBatch_.End();
- 
+
+      tempRawLight.Dispose();
+
       //shadowsBlur.Parameters["pixelDimension"].SetValue(new Vector2(1f/Core.mainCam.RT(0).Width,1f/Core.mainCam.RT(0).Height));
       //return new Result { texture = accumulation_, lastBlurEffect = shadowsBlur };
-      
-//      Graphics.Device.SetRenderTarget(renderTarget);
-//
-//
-//
-//      Graphics.Device.Clear(Color.White);
 
 
    }

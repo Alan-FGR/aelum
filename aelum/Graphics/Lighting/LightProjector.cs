@@ -78,9 +78,6 @@ public class LightProjector : ManagedChunkComponent<LightProjector, LightSystem>
 
    public virtual void RenderProjector(Effect shadowsEffect, int occludersSegmentsCount)
    {
-      Graphics.Device.SetRenderTarget(lightProjectorRT_);
-      Graphics.Device.Clear(Color.Black);
-
       //set projector corners
       float sinT = (float)Math.Sin(entity.Rotation + Math.PI / 4);
       float cosT = (float)Math.Cos(entity.Rotation + Math.PI / 4);

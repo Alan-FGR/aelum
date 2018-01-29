@@ -1,11 +1,8 @@
 ﻿using System;
 using Microsoft.Xna.Framework;
 using Microsoft.Xna.Framework.Graphics;
-using Microsoft.Xna.Framework.Input;
-using FarseerPhysics.Dynamics;
 using MessagePack.Resolvers;
 using Microsoft.Xna.Framework.Content;
-using Priority_Queue;
 
 //TODO offset half a pixel when origin is centered on objects of odd pixel dimension??? OR NOT? =/
 
@@ -47,10 +44,6 @@ public abstract class Core : Game
    
 
 
-   
-   
-   
-   
    // actual systems and managers TODO - ALL OF THIS SUCKS
    public static Texture2D atlas;//TODO move
    public static Texture2D pixel;
@@ -76,9 +69,7 @@ public abstract class Core : Game
    //audio
    //    private Song BGM;
    //    public MediaPlayer BGMPlayer { get; private set; } holy jesus, this is static? 0_o
-
-
-
+   
    public Core(int pixelsPerUnit = 16)
    {
       instance = this;
@@ -97,10 +88,6 @@ public abstract class Core : Game
       graphicsDeviceManager.SynchronizeWithVerticalRetrace = true;
       graphicsDeviceManager.PreferredBackBufferWidth = 1340;
       graphicsDeviceManager.PreferredBackBufferHeight = 720;
-
-      
-      
-      
       
       // init content
       contentManager = Content;
@@ -120,6 +107,8 @@ public abstract class Core : Game
 
       // rendering
       mainCam = new Camera(2);
+      mainCam.GetRenderTarget(1).blendMode = BlendState.Additive;
+      //mainCam.GetRenderTarget(1).cameraTargetPixelSize = 2; //shadows resolution
       
       backBufferBatch_ = new SpriteBatch(Graphics.Device);
 
@@ -156,36 +145,23 @@ public abstract class Core : Game
    {
       OnBeforeDraw?.Invoke();
 
-      mainCam.Render();
-
-      //render 2d lighting
-//      var lights = LightProjector.DrawAllInRect(mainCam.GetCullRect(20), globalMatrix);
+      var renderPasses = mainCam.Render();
 
       //render UI
-//      Texture2D uiRender = UI.DrawUI();
+      Texture2D uiRender = UI.DrawUI();
 
       //debug rendering
-      Texture2D debugRender = Dbg.RenderDebug(mainCam);
+      Texture2D debugRender = DEBUG ? Dbg.RenderDebug(mainCam) : null;
       
-      //render opaque stuff (quads, sprites, etc)
-      RenderToScreen(mainCam.MainRenderTarget, BlendState.Opaque);
-      RenderToScreen(mainCam.GetRenderTarget(1).renderTarget, lightsBlendMode);
-      
-//      RenderToScreen(LightProjector.DEFAULT_SYSTEM.GetAllComponents()[0].lightProjectorRT_);
-
-
-      //render lights and shadows
-//      RenderToScreen(lights.texture, lightsBlendMode);
-
+      foreach (Tuple<Texture2D, BlendState> pass in renderPasses)
+         RenderToScreen(pass.Item1, pass.Item2);
 
       //render UI
-//      backBufferBatch_.Begin(SpriteSortMode.Immediate, BlendState.AlphaBlend, SamplerState.PointClamp, DepthStencilState.Default, RasterizerState.CullCounterClockwise);
-//      backBufferBatch_.Draw(uiRender, Graphics.Viewport.Size().FittingMultiple(UI.PixelSize).FromSize(), Color.White);
-//      backBufferBatch_.End();
-
+      backBufferBatch_.Begin(SpriteSortMode.Immediate, BlendState.AlphaBlend, SamplerState.PointClamp, DepthStencilState.Default, RasterizerState.CullCounterClockwise);
+      backBufferBatch_.Draw(uiRender, Graphics.Viewport.Size().FittingMultiple(UI.PixelSize).FromSize(), Color.White);
+      backBufferBatch_.End();
 
       if (DEBUG) RenderToScreen(debugRender, BlendState.NonPremultiplied, new Color(1, 1, 1, 0.5f));
-
 
       //audio TODO move from here FIXME
       SoundPlayer.DEFAULT_SYSTEM.CullSoundsInRect(mainCam.GetCullRect());

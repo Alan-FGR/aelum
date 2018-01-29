@@ -1,6 +1,4 @@
-﻿using System.Collections.Generic;
-using System.Linq;
-using Microsoft.Xna.Framework;
+﻿using Microsoft.Xna.Framework;
 using Microsoft.Xna.Framework.Audio;
 using Microsoft.Xna.Framework.Graphics;
 using Microsoft.Xna.Framework.Input;
@@ -120,7 +118,7 @@ class TestGame : Core
         clearColor = Color.DarkGray;
         lightsBlendMode = BlendState.Additive;
         LightProjector.DEFAULT_SYSTEM.BlendState = BlendState.Additive;
-//        LightOccluder.SHADOW_BIAS = 0;
+       LightOccluder.DEFAULT_SYSTEM.shadowBias = 0;
         for (int i = 1; i < 4; i++)
         {
             for (int j = 0; j < 2; j++)
@@ -170,7 +168,6 @@ class TestGame : Core
                 Entity.LoadAll("savedata");
             }
         };
-
 
     }
     
