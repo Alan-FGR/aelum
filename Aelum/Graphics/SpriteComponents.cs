@@ -47,7 +47,7 @@ public class SpriteSystem : ChunkedComponentSystem<Sprite, SpriteSystem>, IRende
          drawState.rasterizerState, drawEffect, camera.GetSpritesViewMatrix());
       foreach (Sprite sprite in GetComponentsInRect(camera.GetCullRect(CHUNK_SIZE)))
       {
-         sprite.Draw(batch_, camera.GetCullRect());
+         sprite.DrawSprite(batch_, camera.GetCullRect());
       }
       batch_.End();
    }
@@ -67,7 +67,7 @@ public class Sprite : ManagedChunkComponent<Sprite, SpriteSystem>
       this.spriteData = spriteData;
    }
 
-   public virtual void Draw(SpriteBatch batcher, RectF drawRect)
+   public virtual void DrawSprite(SpriteBatch batcher, RectF drawRect)
    {
       //calc aabb
       RectF wr = spriteData.atlasTile.PixelsToWorld();

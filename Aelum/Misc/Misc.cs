@@ -9,7 +9,7 @@ public enum Quadrant : byte { TL, TR, BR, BL }
 
 public static class BlendStateExtra
 {
-   public static BlendState Multiply = new BlendState
+   public static readonly BlendState Multiply = new BlendState
    {
       ColorSourceBlend = Blend.Zero,
       ColorDestinationBlend = Blend.SourceColor,
@@ -18,6 +18,17 @@ public static class BlendStateExtra
       AlphaDestinationBlend = Blend.One,
       AlphaBlendFunction = BlendFunction.Add
    };
+
+   public static readonly BlendState Max = new BlendState
+   {
+      ColorSourceBlend = Blend.DestinationColor,
+      ColorDestinationBlend = Blend.Zero,
+      ColorBlendFunction = BlendFunction.Max,
+      AlphaSourceBlend = Blend.One,
+      AlphaDestinationBlend = Blend.Zero,
+      AlphaBlendFunction = BlendFunction.Add
+   };
+
 }
 
 public struct NeighborsState

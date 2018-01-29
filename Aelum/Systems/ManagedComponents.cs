@@ -18,7 +18,7 @@ public abstract class ComponentSystem<T, TSystem>
    }
 }
 
-// component that has a management system
+// component that has a management system TODO use the same code for/from the chunked variation
 public abstract class ManagedComponent<T, TSystem> : Component
    where T : ManagedComponent<T, TSystem>
    where TSystem : ComponentSystem<T, TSystem>, new()
