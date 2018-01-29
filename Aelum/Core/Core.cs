@@ -187,8 +187,8 @@ public abstract class Core : Game
       if (DEBUG) RenderToScreen(debugRender, BlendState.NonPremultiplied, new Color(1, 1, 1, 0.5f));
 
 
-      //audio TODO move from here
-      SoundPlayer.CullSoundsInRect(mainCam.GetCullRect());
+      //audio TODO move from here FIXME
+      SoundPlayer.DEFAULT_SYSTEM.CullSoundsInRect(mainCam.GetCullRect());
 
    }
 

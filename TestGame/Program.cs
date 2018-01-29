@@ -59,7 +59,7 @@ public class Projectile : Script
         if (hit.Key != null)
         {
             hit.Key.GetPhysicalBody().entity.Destroy();
-            SoundPlayer.PlayOneShotAt(TestGame.ExplosionSound, entity.Position);
+            SoundSystem.PlayOneShotAt(TestGame.ExplosionSound, entity.Position);
             entity.Destroy();
         }
         else if(lifeTime_ > 5)
