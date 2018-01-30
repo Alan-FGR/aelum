@@ -57,7 +57,7 @@ public sealed partial class Entity
         set { rotation_ = value; InformSpatialChange(); }
     }
     public Vector2 Direction {
-        get => MathUtils.AngleToDirection(rotation_);
+        get => MathUtils.AngleToDirection(rotation_); //TODO CACHE THIS
         set => Rotation = MathUtils.DirectionToAngle(value);
     }
     

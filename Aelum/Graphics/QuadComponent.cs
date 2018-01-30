@@ -158,7 +158,7 @@ public class QuadSystem : ChunkedComponentSystem<QuadComponent, QuadSystem>, IRe
    }
 }
 
-public class QuadComponent : ManagedChunkComponent<QuadComponent, QuadSystem>
+public class QuadComponent : ChunkedComponent<QuadComponent, QuadSystem>
 {
    public QuadData quadData;
 

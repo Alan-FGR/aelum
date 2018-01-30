@@ -52,7 +52,7 @@ public class SpriteSystem : ChunkedComponentSystem<Sprite, SpriteSystem>, IRende
    }
 }
 
-public class Sprite : ManagedChunkComponent<Sprite, SpriteSystem>
+public class Sprite : ChunkedComponent<Sprite, SpriteSystem>
 {
    private SpriteData spriteData;
 

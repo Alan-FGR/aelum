@@ -40,6 +40,7 @@ public class LightSystem : ChunkedComponentSystem<LightProjector, LightSystem>, 
       shadowsEffect_.Parameters["Projection"].SetValue(globalProjMatrix);
  
       //temporary buffer to render each pass before accumulating into result
+      //TODO FIXME cache this! maybe per camera? make a camera field for buffers caching? creating textures is slow as heck
       RenderTarget2D tempRawLight = new RenderTarget2D(Graphics.Device, renderTarget.Width, renderTarget.Height,
          false, SurfaceFormat.Color, DepthFormat.None, 0, RenderTargetUsage.PreserveContents);
 

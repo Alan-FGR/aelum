@@ -3,7 +3,7 @@ using MessagePack;
 using Microsoft.Xna.Framework;
 using Microsoft.Xna.Framework.Graphics;
 
-public class LightProjector : ManagedChunkComponent<LightProjector, LightSystem>
+public class LightProjector : ChunkedComponent<LightProjector, LightSystem>
 {
    private RenderTarget2D lightProjectorRT_;
 

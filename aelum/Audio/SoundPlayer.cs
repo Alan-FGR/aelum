@@ -2,7 +2,7 @@ using MessagePack;
 using Microsoft.Xna.Framework;
 using Microsoft.Xna.Framework.Audio;
 
-public class SoundPlayer : ManagedChunkComponent<SoundPlayer, SoundSystem>
+public class SoundPlayer : ChunkedComponent<SoundPlayer, SoundSystem>
 {
 
    private string effectId_;

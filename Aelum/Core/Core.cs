@@ -86,7 +86,7 @@ public abstract class Core : Game
       Graphics.SetPixelsPerUnit(pixelsPerUnit);
       graphicsDeviceManager = new GraphicsDeviceManager(this);
       graphicsDeviceManager.SynchronizeWithVerticalRetrace = true;
-      graphicsDeviceManager.PreferredBackBufferWidth = 1340;
+      graphicsDeviceManager.PreferredBackBufferWidth = 1280;
       graphicsDeviceManager.PreferredBackBufferHeight = 720;
       
       // init content

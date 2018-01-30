@@ -3,7 +3,7 @@ using System.Collections.Generic;
 using Microsoft.Xna.Framework;
 
 public abstract class ChunkedComponentSystem<T, TSystem>
-   where T : ManagedChunkComponent<T, TSystem>
+   where T : ChunkedComponent<T, TSystem>
    where TSystem : ChunkedComponentSystem<T, TSystem>, new()
 {
    protected static readonly ushort CHUNK_SIZE = 16; //NOTE: override in child systems constr
@@ -131,14 +131,14 @@ public abstract class ChunkedComponentSystem<T, TSystem>
    }
 }
 
-public abstract class ManagedChunkComponent<T, TSystem> : Component
-   where T : ManagedChunkComponent<T, TSystem>
+public abstract class ChunkedComponent<T, TSystem> : Component
+   where T : ChunkedComponent<T, TSystem>
    where TSystem : ChunkedComponentSystem<T, TSystem>, new()
 {
    public static TSystem DEFAULT_SYSTEM => SYSTEMS[0];
    public static readonly List<TSystem> SYSTEMS = new List<TSystem>{new TSystem()};
    
-   static ManagedChunkComponent()
+   static ChunkedComponent()
    {
       Dbg.onBeforeDebugDrawing += DEFAULT_SYSTEM.DrawDebug;
    }
@@ -147,7 +147,7 @@ public abstract class ManagedChunkComponent<T, TSystem> : Component
    public TSystem System => SYSTEMS[systemIndex];
    internal Point currentChunkPos_ = new Point(Int32.MaxValue, Int32.MaxValue);
 
-   protected ManagedChunkComponent(Entity entity, byte system = 0) : base(entity)
+   protected ChunkedComponent(Entity entity, byte system = 0) : base(entity)
    {
       systemIndex = system;
       UpdateChunk();

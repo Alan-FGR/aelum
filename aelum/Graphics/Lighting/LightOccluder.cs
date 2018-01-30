@@ -3,7 +3,7 @@ using System.Collections.Generic;
 using MessagePack;
 using Microsoft.Xna.Framework;
 
-public class LightOccluder : ManagedChunkComponent<LightOccluder, OccluderSystem>
+public class LightOccluder : ChunkedComponent<LightOccluder, OccluderSystem>
 {
    public enum OccluderShape { Cross, Vertical, Horizontal }
    
