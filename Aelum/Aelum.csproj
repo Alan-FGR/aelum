@@ -75,6 +75,9 @@
     <Compile Include="Core\Core.cs" />
     <Compile Include="Core\Input.cs" />
     <Compile Include="Graphics\IRenderableSystem.cs" />
+    <Compile Include="Graphics\Lighting\LightOccluder.cs" />
+    <Compile Include="Graphics\Lighting\LightProjector.cs" />
+    <Compile Include="Graphics\Lighting\OccluderSystem.cs" />
     <Compile Include="Pipeline\PipelineAssets.cs" />
     <Compile Include="Pipeline\SpriteSheet.cs" />
     <Compile Include="Graphics\Camera.cs" />
@@ -95,11 +98,13 @@
     <Compile Include="Systems\EntityContainer.cs" />
     <Compile Include="Systems\EntityRegionSystem1D.cs" />
     <Compile Include="Systems\EntityRegionSystem.cs" />
-    <Compile Include="Graphics\LightSystem.cs" />
+    <Compile Include="Graphics\Lighting\LightSystem.cs" />
     <Compile Include="Systems\ManagedChunkedComponent.cs" />
     <Compile Include="Systems\ManagedComponents.cs" />
     <Compile Include="Systems\Scripts.cs" />
     <Compile Include="Graphics\SpriteComponents.cs" />
+    <Compile Include="Audio\SoundPlayer.cs" />
+    <Compile Include="Audio\SoundSystem.cs" />
     <Compile Include="Systems\TileMapOfEntities.cs" />
     <Compile Include="ThirdParty\FastNoise.cs" />
     <Compile Include="_dev\ObjectsEditor.cs" />
@@ -135,9 +140,7 @@
       <Name>FNA</Name>
     </ProjectReference>
   </ItemGroup>
-  <ItemGroup>
-    <Folder Include="Audio\" />
-  </ItemGroup>
+  <ItemGroup />
   <Import Project="$(MSBuildToolsPath)\Microsoft.CSharp.targets" />
   <PropertyGroup>
     <PreBuildEvent>

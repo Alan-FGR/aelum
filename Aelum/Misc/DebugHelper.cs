@@ -19,11 +19,13 @@ public static class Dbg
    
    public static void AddDebugText(string text, Vector2 position, Color color, int frames = 1)
    {
+      helper_.CheckTexts();
       helper_.dbgTexts_.Add(new DebugHelper.dbgText(text, Core.SnapToPixel(position), color, frames));
    }
 
    public static void AddDebugLine(Vector2 start, Vector2 end, Color color)
    {
+      helper_.CheckLines();
       helper_.dbgLines_.Add(new VertexPositionColor(start.ToVector3(), color));
       helper_.dbgLines_.Add(new VertexPositionColor(end.ToVector3(), color));
    }
@@ -35,6 +37,7 @@ public static class Dbg
 
    public static void AddDebugRect(RectF rect, Color color, float inflate = 0)
    {
+      helper_.CheckLines();
       Vector2 pos = rect.Position - Vector2.One * inflate / 2;
       Vector2 posbr = pos + Vector2.UnitX * (rect.width + inflate);
       Vector2 postl = pos + Vector2.UnitY * (rect.height + inflate);
@@ -67,6 +70,25 @@ public static class Dbg
       internal readonly List<dbgText> dbgTexts_ = new List<dbgText>();
 
       internal RenderTarget2D DbgRenderTarget { get; private set; }
+
+      public void CheckLines()
+      {
+         if (dbgLines_.Count > 50000)
+         {
+            dbgLines_.Clear();
+            Debug.WriteLine("too many lines, clearing... you may not be drawing debug");
+         }
+      }
+
+      public void CheckTexts()
+      {
+         if (dbgTexts_.Count > 50000)
+         {
+            dbgTexts_.Clear();
+            Debug.WriteLine("too many texts, clearing... you may not be drawing debug");
+         }
+      }
+
 
       public DebugHelper()
       {
@@ -112,8 +134,8 @@ public static class Dbg
 
       public void DrawDebug(Camera cam)
       {
-         if (DbgRenderTarget == null || DbgRenderTarget.Width != cam.RenderTargets(0).Width || DbgRenderTarget.Height != cam.RenderTargets(0).Height)
-            DbgRenderTarget = new RenderTarget2D(Graphics.Device, cam.RenderTargets(0).Width, cam.RenderTargets(0).Height);
+         if (DbgRenderTarget == null || DbgRenderTarget.Width != cam.MainRenderTarget.Width || DbgRenderTarget.Height != cam.MainRenderTarget.Height)
+            DbgRenderTarget = new RenderTarget2D(Graphics.Device, cam.MainRenderTarget.Width, cam.MainRenderTarget.Height);
 
          Graphics.Device.SetRenderTarget(DbgRenderTarget);
          Graphics.Manager.GraphicsDevice.Clear(Color.Transparent);

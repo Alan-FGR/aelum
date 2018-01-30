@@ -1,7 +1,7 @@
 ﻿
 Microsoft Visual Studio Solution File, Format Version 12.00
 # Visual Studio 15
-VisualStudioVersion = 15.0.26430.6
+VisualStudioVersion = 15.0.27004.2010
 MinimumVisualStudioVersion = 10.0.40219.1
 Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "Farseer Physics Aelum", "Farseer\Farseer Physics Engine 3.5\Farseer Physics Aelum.csproj", "{0AAD36E3-51A5-4A07-AB60-5C8A66BD38B7}"
 EndProject
@@ -14,6 +14,8 @@ EndProject
 Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "Aelum", "Aelum\Aelum.csproj", "{653266D7-A4B5-41D3-8554-A41ED289F460}"
 EndProject
 Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "TestGame", "TestGame\TestGame.csproj", "{55D4AADB-A980-4E5D-9516-BAFB8631FC06}"
+EndProject
+Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "aelum2", "aelum2\aelum2.csproj", "{83D09D95-880A-4318-8D37-7F645CA78D1C}"
 EndProject
 Global
 	GlobalSection(SolutionConfigurationPlatforms) = preSolution
@@ -89,8 +91,23 @@ Global
 		{55D4AADB-A980-4E5D-9516-BAFB8631FC06}.Release|x64.Build.0 = Release|x64
 		{55D4AADB-A980-4E5D-9516-BAFB8631FC06}.Release|x86.ActiveCfg = Release|x86
 		{55D4AADB-A980-4E5D-9516-BAFB8631FC06}.Release|x86.Build.0 = Release|x86
+		{83D09D95-880A-4318-8D37-7F645CA78D1C}.Debug|Any CPU.ActiveCfg = Debug|Any CPU
+		{83D09D95-880A-4318-8D37-7F645CA78D1C}.Debug|Any CPU.Build.0 = Debug|Any CPU
+		{83D09D95-880A-4318-8D37-7F645CA78D1C}.Debug|x64.ActiveCfg = Debug|Any CPU
+		{83D09D95-880A-4318-8D37-7F645CA78D1C}.Debug|x64.Build.0 = Debug|Any CPU
+		{83D09D95-880A-4318-8D37-7F645CA78D1C}.Debug|x86.ActiveCfg = Debug|Any CPU
+		{83D09D95-880A-4318-8D37-7F645CA78D1C}.Debug|x86.Build.0 = Debug|Any CPU
+		{83D09D95-880A-4318-8D37-7F645CA78D1C}.Release|Any CPU.ActiveCfg = Release|Any CPU
+		{83D09D95-880A-4318-8D37-7F645CA78D1C}.Release|Any CPU.Build.0 = Release|Any CPU
+		{83D09D95-880A-4318-8D37-7F645CA78D1C}.Release|x64.ActiveCfg = Release|Any CPU
+		{83D09D95-880A-4318-8D37-7F645CA78D1C}.Release|x64.Build.0 = Release|Any CPU
+		{83D09D95-880A-4318-8D37-7F645CA78D1C}.Release|x86.ActiveCfg = Release|Any CPU
+		{83D09D95-880A-4318-8D37-7F645CA78D1C}.Release|x86.Build.0 = Release|Any CPU
 	EndGlobalSection
 	GlobalSection(SolutionProperties) = preSolution
 		HideSolutionNode = FALSE
+	EndGlobalSection
+	GlobalSection(ExtensibilityGlobals) = postSolution
+		SolutionGuid = {403D6682-4890-4B8E-8915-C8B99D06FDEB}
 	EndGlobalSection
 EndGlobal

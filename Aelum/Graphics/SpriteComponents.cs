@@ -32,8 +32,7 @@ public class SpriteSystem : ChunkedComponentSystem<Sprite, SpriteSystem>, IRende
 {
    private readonly SpriteBatch batch_ = new SpriteBatch(Graphics.Device);
 
-   public GraphicsDeviceState drawState = new GraphicsDeviceState(
-      BlendState.AlphaBlend, SamplerState.PointClamp, DepthStencilState.None, RasterizerState.CullNone);
+   public GraphicsDeviceState drawState = new GraphicsDeviceState(BlendState.AlphaBlend, SamplerState.PointClamp, DepthStencilState.None, RasterizerState.CullNone);
    public Effect drawEffect;
    public SpriteSortMode sortMode = SpriteSortMode.Texture;
 
@@ -42,13 +41,12 @@ public class SpriteSystem : ChunkedComponentSystem<Sprite, SpriteSystem>, IRende
       //CHUNK_SIZE
    }
 
-   public void Draw(Camera camera, int renderTarget = 0)
+   public void Draw(Camera camera, RenderTarget2D renderTarget)
    {
-      batch_.Begin(sortMode, drawState.blendState, drawState.samplerState, drawState.depthStencilState,
-         drawState.rasterizerState, drawEffect, camera.GetSpritesViewMatrix());
+      batch_.Begin(sortMode, drawState.blendState, drawState.samplerState, drawState.depthStencilState, drawState.rasterizerState, drawEffect, camera.GetSpritesViewMatrix());
       foreach (Sprite sprite in GetComponentsInRect(camera.GetCullRect(CHUNK_SIZE)))
       {
-         sprite.Draw(batch_, camera.GetCullRect());
+         sprite.DrawSprite(batch_, camera.GetCullRect());
       }
       batch_.End();
    }
@@ -60,7 +58,7 @@ public class Sprite : ManagedChunkComponent<Sprite, SpriteSystem>
 
    static Sprite()
    {
-      Camera.DefaultRenderPath.Enqueue(new Camera.RenderLayer(SYSTEM,0),200);
+      Camera.DEFAULT_RENDER_PATH.Enqueue(new Camera.RenderLayer(DEFAULT_SYSTEM,0),200);
    }
 
    public Sprite(Entity entity, SpriteData spriteData) : base(entity)
@@ -68,7 +66,7 @@ public class Sprite : ManagedChunkComponent<Sprite, SpriteSystem>
       this.spriteData = spriteData;
    }
 
-   public virtual void Draw(SpriteBatch batcher, RectF drawRect)
+   public virtual void DrawSprite(SpriteBatch batcher, RectF drawRect)
    {
       //calc aabb
       RectF wr = spriteData.atlasTile.PixelsToWorld();

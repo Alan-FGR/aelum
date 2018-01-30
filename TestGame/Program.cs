@@ -1,6 +1,4 @@
-﻿using System.Collections.Generic;
-using System.Linq;
-using Microsoft.Xna.Framework;
+﻿using Microsoft.Xna.Framework;
 using Microsoft.Xna.Framework.Audio;
 using Microsoft.Xna.Framework.Graphics;
 using Microsoft.Xna.Framework.Input;
@@ -59,7 +57,7 @@ public class Projectile : Script
         if (hit.Key != null)
         {
             hit.Key.GetPhysicalBody().entity.Destroy();
-            SoundPlayer.PlayOneShotAt(TestGame.ExplosionSound, entity.Position);
+            SoundSystem.PlayOneShotAt(TestGame.ExplosionSound, entity.Position);
             entity.Destroy();
         }
         else if(lifeTime_ > 5)
@@ -119,8 +117,8 @@ class TestGame : Core
         //create some rotating lights
         clearColor = Color.DarkGray;
         lightsBlendMode = BlendState.Additive;
-        LightProjector.blendState_ = BlendState.Additive;
-        LightOccluder.SHADOW_BIAS = 0;
+        LightProjector.DEFAULT_SYSTEM.BlendState = BlendState.Additive;
+       LightOccluder.DEFAULT_SYSTEM.shadowBias = 0;
         for (int i = 1; i < 4; i++)
         {
             for (int j = 0; j < 2; j++)
@@ -171,13 +169,12 @@ class TestGame : Core
             }
         };
 
-
     }
     
     private float interval_ = 3;
     public void SpawnEnemy()
     {
-        interval_ += Core.lastDT;
+        interval_ += lastDT;
         if (interval_ > 3)
         {
             interval_ = 0;

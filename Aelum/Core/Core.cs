@@ -1,14 +1,10 @@
 ﻿using System;
 using Microsoft.Xna.Framework;
 using Microsoft.Xna.Framework.Graphics;
-using Microsoft.Xna.Framework.Input;
-using FarseerPhysics.Dynamics;
 using MessagePack.Resolvers;
 using Microsoft.Xna.Framework.Content;
-using Priority_Queue;
 
 //TODO offset half a pixel when origin is centered on objects of odd pixel dimension??? OR NOT? =/
-
 
 public static class Graphics
 {
@@ -28,8 +24,6 @@ public static class Graphics
       PixelsPerUnit = ppu;
       PixelsToWorld = 1f / ppu;
    }
-   
-
 }
 
 public static class Content
@@ -47,14 +41,9 @@ public abstract class Core : Game
 
    // stuff to actually render to window/screen
    private readonly SpriteBatch backBufferBatch_;
-   private readonly BasicEffect backBufferEffect_;
    
 
 
-   
-   
-   
-   
    // actual systems and managers TODO - ALL OF THIS SUCKS
    public static Texture2D atlas;//TODO move
    public static Texture2D pixel;
@@ -80,9 +69,7 @@ public abstract class Core : Game
    //audio
    //    private Song BGM;
    //    public MediaPlayer BGMPlayer { get; private set; } holy jesus, this is static? 0_o
-
-
-
+   
    public Core(int pixelsPerUnit = 16)
    {
       instance = this;
@@ -101,19 +88,15 @@ public abstract class Core : Game
       graphicsDeviceManager.SynchronizeWithVerticalRetrace = true;
       graphicsDeviceManager.PreferredBackBufferWidth = 1340;
       graphicsDeviceManager.PreferredBackBufferHeight = 720;
-
-      
-      
-      
       
       // init content
       contentManager = Content;
       contentManager.RootDirectory = "Content";
       atlas = Content.Load<Texture2D>("Atlas");
       ATLAS_TO_WORLD = atlas.Width / Graphics.PixelsPerUnit;
-      LightProjector.LoadContent();
+      LightProjector.DEFAULT_SYSTEM.LoadContent();//TODO HIGH PRIORITY 
 
-      pixel = new Texture2D(base.GraphicsDevice, 1, 1);
+      pixel = new Texture2D(GraphicsDevice, 1, 1);
       pixel.SetData(new[] { Color.White });
 
       //UI
@@ -124,11 +107,12 @@ public abstract class Core : Game
 
       // rendering
       mainCam = new Camera(2);
+      mainCam.GetRenderTarget(1).blendMode = BlendState.Additive;
+      //mainCam.GetRenderTarget(1).cameraTargetPixelSize = 2; //shadows resolution
       
       backBufferBatch_ = new SpriteBatch(Graphics.Device);
-      backBufferEffect_ = new BasicEffect(Graphics.Device);
 
-      Window.ClientSizeChanged += (o, e) => { UI.ScreenResize(); mainCam.UpdateRenderTargets(); };
+      Window.ClientSizeChanged += (o, e) => { UI.ScreenResize();}; //TODO
       
    }
    
@@ -140,7 +124,8 @@ public abstract class Core : Game
       // update our input
       OnBeforeInputUpdate?.Invoke();
       Input.Update();
-      //UI
+
+      // update the UI
       UI.UpdateUI();
 
       // update our game logic
@@ -160,42 +145,26 @@ public abstract class Core : Game
    {
       OnBeforeDraw?.Invoke();
 
-
-
-      
-      //render quads (and possibly meshes made of quads)
-//      Quad.DrawAllInRect(mainCam.GetCullRect(cullOverScan));
-
-      //render sprite components
-      mainCam.Render();
-
-      //render 2d lighting
-//      var lights = LightProjector.DrawAllInRect(mainCam.GetCullRect(20), globalMatrix);
-
+      var renderPasses = mainCam.Render();
 
       //render UI
-//      Texture2D uiRender = UI.DrawUI();
+      Texture2D uiRender = UI.DrawUI();
 
       //debug rendering
-//      Texture2D debugRender = Dbg.RenderDebug(mainCam);
+      Texture2D debugRender = DEBUG ? Dbg.RenderDebug(mainCam) : null;
       
-      //render opaque stuff (quads, sprites, etc)
-      RenderToScreen(mainCam.RenderTarget, BlendState.Opaque);
-
-      //render lights and shadows
-//      RenderToScreen(lights.texture, lightsBlendMode);
+      foreach (Tuple<Texture2D, BlendState> pass in renderPasses)
+         RenderToScreen(pass.Item1, pass.Item2);
 
       //render UI
-//      backBufferBatch_.Begin(SpriteSortMode.Immediate, BlendState.AlphaBlend, SamplerState.PointClamp, DepthStencilState.Default, RasterizerState.CullCounterClockwise);
-//      backBufferBatch_.Draw(uiRender, Graphics.Viewport.Size().FittingMultiple(UI.PixelSize).FromSize(), Color.White);
-//      backBufferBatch_.End();
+      backBufferBatch_.Begin(SpriteSortMode.Immediate, BlendState.AlphaBlend, SamplerState.PointClamp, DepthStencilState.Default, RasterizerState.CullCounterClockwise);
+      backBufferBatch_.Draw(uiRender, Graphics.Viewport.Size().FittingMultiple(UI.PixelSize).FromSize(), Color.White);
+      backBufferBatch_.End();
 
+      if (DEBUG) RenderToScreen(debugRender, BlendState.NonPremultiplied, new Color(1, 1, 1, 0.5f));
 
-//      if (DEBUG) RenderToScreen(debugRender, BlendState.NonPremultiplied, new Color(1, 1, 1, 0.75f));
-
-
-      //audio TODO move from here
-      SoundPlayer.CullSoundsInRect(mainCam.GetCullRect());
+      //audio TODO move from here FIXME
+      SoundPlayer.DEFAULT_SYSTEM.CullSoundsInRect(mainCam.GetCullRect());
 
    }
 

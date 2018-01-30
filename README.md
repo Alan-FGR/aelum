@@ -129,6 +129,9 @@ Upon a closer look at the sources, the attentive coder will certainly notice tha
 
 - Components should always initialize all its non-private members on the main constructor, so provide a 'base' constructor that does that and always pipe the others through it (`OtherCtor() : this()`) the idea here is that all members should be ready to be acessed in the subclasses ctors, this doesn't apply to user scripts of course, just engine components.
 
+## Docs
+
+- Comment styling: Keep it simple! XML comments sucks! At most this is fine for methods: `/// <summary> Some actually useful comment. No bullshit here please; only really relevant stuff! </summary>` (on a single line).
 
 # Goodies
 
