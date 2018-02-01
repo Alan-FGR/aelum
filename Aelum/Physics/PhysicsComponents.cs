@@ -83,7 +83,6 @@ public abstract class PhysicalBody : Component
    public override void FinalizeComponent()
    {
       Physics.World.RemoveBody(Body);
-      base.FinalizeComponent();
    }
 
    public PhysicalBody CreateCollider(colliderData data)

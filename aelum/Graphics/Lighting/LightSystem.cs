@@ -6,7 +6,7 @@ public class LightSystem : ChunkedComponentSystem<LightProjector, LightSystem>, 
 {
    private static SpriteBatch accumulationBatch_;
 
-   public OccluderSystem OccluderSystem { get; set; } = LightOccluder.DEFAULT_SYSTEM;
+   public OccluderSystem OccluderSystem { get; set; } = LightOccluder.Systems.Default;
 
    public BlendState BlendState { get; set; } = BlendStateExtra.Max;
 

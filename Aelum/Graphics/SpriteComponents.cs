@@ -58,7 +58,7 @@ public class Sprite : ChunkedComponent<Sprite, SpriteSystem>
 
    static Sprite()
    {
-      Camera.DEFAULT_RENDER_PATH.Enqueue(new Camera.RenderLayer(DEFAULT_SYSTEM,0),200);
+      Camera.DEFAULT_RENDER_PATH.Enqueue(new Camera.RenderLayer(Systems.Default,0),200);
    }
 
    public Sprite(Entity entity, SpriteData spriteData) : base(entity)

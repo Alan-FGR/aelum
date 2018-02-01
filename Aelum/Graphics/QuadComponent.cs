@@ -164,7 +164,7 @@ public class QuadComponent : ChunkedComponent<QuadComponent, QuadSystem>
 
    static QuadComponent()
    {
-      Camera.DEFAULT_RENDER_PATH.Enqueue(new Camera.RenderLayer(DEFAULT_SYSTEM,0),100);
+      Camera.DEFAULT_RENDER_PATH.Enqueue(new Camera.RenderLayer(Systems.Default,0),100);
    }
 
    public QuadComponent(Entity entity, QuadData quadData) : base(entity)

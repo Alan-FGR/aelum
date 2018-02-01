@@ -58,12 +58,12 @@ public abstract class Component
 {
     public readonly Entity entity;
 
-    public virtual void FinalizeComponent(){}
+    public abstract void FinalizeComponent();
     public virtual void EntityChanged(){}
 
     public abstract ComponentData GetSerialData();
-    
-    public Component(Entity entity)
+
+    protected Component(Entity entity)
     {
         this.entity = entity.RegisterComponentInternalEcsCall(this);
     }

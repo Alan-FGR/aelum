@@ -320,7 +320,12 @@ class Program2
         {
         }
 
-        public override ComponentData GetSerialData()
+       public override void FinalizeComponent()
+       {
+          throw new NotImplementedException();
+       }
+
+       public override ComponentData GetSerialData()
         {
             throw new NotImplementedException();
         }

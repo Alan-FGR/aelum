@@ -24,7 +24,6 @@ public class EntityContainer : Component
         {
             ced.entity.Destroy();
         }
-        base.FinalizeComponent();
     }
 
     public void AddChild(Entity child, bool inheritRotation = true, bool inheritPosition = true)

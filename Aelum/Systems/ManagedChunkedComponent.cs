@@ -2,7 +2,7 @@ using System;
 using System.Collections.Generic;
 using Microsoft.Xna.Framework;
 
-public abstract class ChunkedComponentSystem<T, TSystem>
+public abstract class ChunkedComponentSystem<T, TSystem> : IComponentSystem<T>
    where T : ChunkedComponent<T, TSystem>
    where TSystem : ChunkedComponentSystem<T, TSystem>, new()
 {
@@ -79,7 +79,7 @@ public abstract class ChunkedComponentSystem<T, TSystem>
    public List<T> GetAllComponents()
    {
       List<T> retList = new List<T>();
-      foreach (KeyValuePair<Point, List<T>> pair in chunks_)
+      foreach (KeyValuePair<Point, List<T>> pair in chunks_) //loop all chunks and add to list
       {
          retList.AddRange(pair.Value);
       }
@@ -98,7 +98,7 @@ public abstract class ChunkedComponentSystem<T, TSystem>
 
       RemoveFromCurrentChunk(component);
 
-      // add to new chunk
+      // add to new chunk if it doesn't exist
       if (!chunks_.ContainsKey(newKey))
       {
          //Debug.WriteLine($"creating new chunk for item at: {currentChunkPos_}");
@@ -129,33 +129,32 @@ public abstract class ChunkedComponentSystem<T, TSystem>
          }
       }
    }
+
+   public void OnComponentCtor(T component)
+   {
+      UpdateComponentChunk(component);
+   }
+
+   public void OnComponentFinalize(T component)
+   {
+      RemoveFromCurrentChunk(component);
+   }
 }
 
-public abstract class ChunkedComponent<T, TSystem> : Component
+public abstract class ChunkedComponent<T, TSystem> : ManagedComponent<T, TSystem>
    where T : ChunkedComponent<T, TSystem>
    where TSystem : ChunkedComponentSystem<T, TSystem>, new()
 {
-   public static TSystem DEFAULT_SYSTEM => SYSTEMS[0];
-   public static readonly List<TSystem> SYSTEMS = new List<TSystem>{new TSystem()};
-   
    static ChunkedComponent()
    {
-      Dbg.onBeforeDebugDrawing += DEFAULT_SYSTEM.DrawDebug;
+      Dbg.onBeforeDebugDrawing += Systems.Default.DrawDebug;
    }
 
-   private byte systemIndex = 0;
-   public TSystem System => SYSTEMS[systemIndex];
    internal Point currentChunkPos_ = new Point(Int32.MaxValue, Int32.MaxValue);
-
-   protected ChunkedComponent(Entity entity, byte system = 0) : base(entity)
-   {
-      systemIndex = system;
-      UpdateChunk();
-   }
 
    protected void UpdateChunk()
    {
-      SYSTEMS[systemIndex].UpdateComponentChunk((T)this);
+      System.UpdateComponentChunk((T)this);
    }
    
    public override void EntityChanged()
@@ -164,11 +163,7 @@ public abstract class ChunkedComponent<T, TSystem> : Component
       UpdateChunk();
    }
 
-   public override void FinalizeComponent()
-   {
-      SYSTEMS[systemIndex].RemoveFromCurrentChunk((T)this);
-      base.FinalizeComponent();
-   }
+   protected ChunkedComponent(Entity entity, byte system = 0) : base(entity, system){}
 }
 
 

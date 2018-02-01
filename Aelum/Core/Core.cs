@@ -94,7 +94,8 @@ public abstract class Core : Game
       contentManager.RootDirectory = "Content";
       atlas = Content.Load<Texture2D>("Atlas");
       ATLAS_TO_WORLD = atlas.Width / Graphics.PixelsPerUnit;
-      LightProjector.DEFAULT_SYSTEM.LoadContent();//TODO HIGH PRIORITY 
+      
+      LightProjector.Systems.Default.LoadContent();//TODO HIGH PRIORITY 
 
       pixel = new Texture2D(GraphicsDevice, 1, 1);
       pixel.SetData(new[] { Color.White });
@@ -130,7 +131,7 @@ public abstract class Core : Game
 
       // update our game logic
       OnBeforeLogicUpdate?.Invoke();
-      Behavior.SYSTEM.Update();
+      Behavior.UpdateAllBehaviorSystems();
 
       // update physics stuff
       OnBeforePhysicsUpdate?.Invoke();
@@ -164,7 +165,7 @@ public abstract class Core : Game
       if (DEBUG) RenderToScreen(debugRender, BlendState.NonPremultiplied, new Color(1, 1, 1, 0.5f));
 
       //audio TODO move from here FIXME
-      SoundPlayer.DEFAULT_SYSTEM.CullSoundsInRect(mainCam.GetCullRect());
+      SoundPlayer.Systems.Default.CullSoundsInRect(mainCam.GetCullRect());
 
    }
 

@@ -15,7 +15,7 @@ public class LightProjector : ChunkedComponent<LightProjector, LightSystem>
 
    static LightProjector()
    {
-      Camera.DEFAULT_RENDER_PATH.Enqueue(new Camera.RenderLayer(DEFAULT_SYSTEM,1), 500);
+      Camera.DEFAULT_RENDER_PATH.Enqueue(new Camera.RenderLayer(Systems.Default,1), 500);
    }
    
    public LightProjector(Entity entity, byte system = 0) : base(entity, system)
