@@ -1,0 +1,37 @@
+<?xml version="1.0" encoding="utf-8"?>
+<AutoVisualizer xmlns="http://schemas.microsoft.com/vstudio/debugger/natvis/2010">
+
+	<Type Name="Lumix::Array&lt;*&gt;">
+		<DisplayString Condition="m_data == nullptr">size={m_size}</DisplayString>
+		<DisplayString Condition="m_data != nullptr">size={m_size} [0]=>{m_data[0]}</DisplayString>
+		<Expand>
+			<ArrayItems>
+				<Size>m_size</Size>
+				<ValuePointer>m_data</ValuePointer>
+			</ArrayItems>
+		</Expand>
+	</Type>
+
+  <Type Name="Lumix::HashMap&lt;*,*&gt;">
+    <DisplayString>{{ size={m_size} }}</DisplayString>
+    <Expand>
+      <Item Name="[size]" ExcludeView="simple">m_size</Item>
+      <CustomListItems MaxItemsPerView="5000" ExcludeView="Test">
+        <Variable Name="i" InitialValue="0" />
+        <Variable Name="j" InitialValue="m_table" />
+        <Loop>
+          <Break Condition="i == m_max_id" />
+          <Exec>j = &amp;m_table[i]</Exec>
+          <Loop>
+            <Break Condition="j == 0" />
+            <Break Condition="j == m_sentinel" />
+            <Break Condition="j-&gt;m_next == m_sentinel" />
+            <Item Name="[{j-&gt;m_key}]">j-&gt;m_value</Item>
+            <Exec>j = j-&gt;m_next</Exec>
+          </Loop>
+          <Exec>++i</Exec>
+        </Loop>
+      </CustomListItems>
+    </Expand>
+  </Type>
+</AutoVisualizer>
