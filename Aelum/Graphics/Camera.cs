@@ -72,7 +72,7 @@ public class Camera
             InitRT(baseSize);
 
          Graphics.Device.SetRenderTarget(renderTarget);
-         Graphics.Device.SetStatesToDefault();
+         Graphics.Device.SetStatesToDefault();//TODO optimize? store states in camera rt?
          Graphics.Device.Clear(clearColor);
       }
 

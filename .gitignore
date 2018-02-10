@@ -1,4 +1,4 @@
-Farseer/Farseer Physics Engine 3.5/obj/
+﻿Farseer/Farseer Physics Engine 3.5/obj/
 Farseer/Farseer Physics Engine 3.5/bin/
 Farseer/Farseer Physics DebugView 3.5/bin/
 Farseer/Farseer Physics DebugView 3.5/obj/
@@ -22,3 +22,5 @@ Pipeline/obj/
 Pipeline/bin/ToolConf
 Aelum/obj/
 Aelum/bin/
+TestGame2/obj/
+
