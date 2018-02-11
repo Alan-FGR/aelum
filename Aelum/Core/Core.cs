@@ -46,8 +46,6 @@ public abstract class Core : Game
 
    // actual systems and managers TODO - ALL OF THIS SUCKS
    public static Texture2D atlas;//TODO move
-   public static Texture2D pixel;
-
    
    public static bool DEBUG = true;
    public static int ATLAS_TO_WORLD { get; private set; }
@@ -96,9 +94,6 @@ public abstract class Core : Game
       ATLAS_TO_WORLD = atlas.Width / Graphics.PixelsPerUnit;
       
       LightProjector.Systems.Default.LoadContent();//TODO HIGH PRIORITY 
-
-      pixel = new Texture2D(GraphicsDevice, 1, 1);
-      pixel.SetData(new[] { Color.White });
 
       //UI
       SpriteFont font = global::Content.Manager.Load<SpriteFont>("Font");

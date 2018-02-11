@@ -1,7 +1,7 @@
 ﻿
 Microsoft Visual Studio Solution File, Format Version 12.00
 # Visual Studio 15
-VisualStudioVersion = 15.0.27004.2010
+VisualStudioVersion = 15.0.26430.6
 MinimumVisualStudioVersion = 10.0.40219.1
 Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "Farseer Physics Aelum", "Farseer\Farseer Physics Engine 3.5\Farseer Physics Aelum.csproj", "{0AAD36E3-51A5-4A07-AB60-5C8A66BD38B7}"
 EndProject
@@ -14,6 +14,10 @@ EndProject
 Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "Aelum", "Aelum\Aelum.csproj", "{653266D7-A4B5-41D3-8554-A41ED289F460}"
 EndProject
 Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "TestGame", "TestGame\TestGame.csproj", "{55D4AADB-A980-4E5D-9516-BAFB8631FC06}"
+EndProject
+Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "TestGame2", "TestGame2\TestGame2.csproj", "{05BD87B9-1483-4DA2-BA5A-E985AFDBFD62}"
+EndProject
+Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "PipelineTool2", "PipelineTool2\PipelineTool2.csproj", "{7D91440E-D8F2-4C25-8841-3F37CECB6D8B}"
 EndProject
 Global
 	GlobalSection(SolutionConfigurationPlatforms) = preSolution
@@ -89,6 +93,30 @@ Global
 		{55D4AADB-A980-4E5D-9516-BAFB8631FC06}.Release|x64.Build.0 = Release|x64
 		{55D4AADB-A980-4E5D-9516-BAFB8631FC06}.Release|x86.ActiveCfg = Release|x86
 		{55D4AADB-A980-4E5D-9516-BAFB8631FC06}.Release|x86.Build.0 = Release|x86
+		{05BD87B9-1483-4DA2-BA5A-E985AFDBFD62}.Debug|Any CPU.ActiveCfg = Debug|Any CPU
+		{05BD87B9-1483-4DA2-BA5A-E985AFDBFD62}.Debug|Any CPU.Build.0 = Debug|Any CPU
+		{05BD87B9-1483-4DA2-BA5A-E985AFDBFD62}.Debug|x64.ActiveCfg = Debug|Any CPU
+		{05BD87B9-1483-4DA2-BA5A-E985AFDBFD62}.Debug|x64.Build.0 = Debug|Any CPU
+		{05BD87B9-1483-4DA2-BA5A-E985AFDBFD62}.Debug|x86.ActiveCfg = Debug|Any CPU
+		{05BD87B9-1483-4DA2-BA5A-E985AFDBFD62}.Debug|x86.Build.0 = Debug|Any CPU
+		{05BD87B9-1483-4DA2-BA5A-E985AFDBFD62}.Release|Any CPU.ActiveCfg = Release|Any CPU
+		{05BD87B9-1483-4DA2-BA5A-E985AFDBFD62}.Release|Any CPU.Build.0 = Release|Any CPU
+		{05BD87B9-1483-4DA2-BA5A-E985AFDBFD62}.Release|x64.ActiveCfg = Release|Any CPU
+		{05BD87B9-1483-4DA2-BA5A-E985AFDBFD62}.Release|x64.Build.0 = Release|Any CPU
+		{05BD87B9-1483-4DA2-BA5A-E985AFDBFD62}.Release|x86.ActiveCfg = Release|Any CPU
+		{05BD87B9-1483-4DA2-BA5A-E985AFDBFD62}.Release|x86.Build.0 = Release|Any CPU
+		{7D91440E-D8F2-4C25-8841-3F37CECB6D8B}.Debug|Any CPU.ActiveCfg = Debug|Any CPU
+		{7D91440E-D8F2-4C25-8841-3F37CECB6D8B}.Debug|Any CPU.Build.0 = Debug|Any CPU
+		{7D91440E-D8F2-4C25-8841-3F37CECB6D8B}.Debug|x64.ActiveCfg = Debug|Any CPU
+		{7D91440E-D8F2-4C25-8841-3F37CECB6D8B}.Debug|x64.Build.0 = Debug|Any CPU
+		{7D91440E-D8F2-4C25-8841-3F37CECB6D8B}.Debug|x86.ActiveCfg = Debug|Any CPU
+		{7D91440E-D8F2-4C25-8841-3F37CECB6D8B}.Debug|x86.Build.0 = Debug|Any CPU
+		{7D91440E-D8F2-4C25-8841-3F37CECB6D8B}.Release|Any CPU.ActiveCfg = Release|Any CPU
+		{7D91440E-D8F2-4C25-8841-3F37CECB6D8B}.Release|Any CPU.Build.0 = Release|Any CPU
+		{7D91440E-D8F2-4C25-8841-3F37CECB6D8B}.Release|x64.ActiveCfg = Release|Any CPU
+		{7D91440E-D8F2-4C25-8841-3F37CECB6D8B}.Release|x64.Build.0 = Release|Any CPU
+		{7D91440E-D8F2-4C25-8841-3F37CECB6D8B}.Release|x86.ActiveCfg = Release|Any CPU
+		{7D91440E-D8F2-4C25-8841-3F37CECB6D8B}.Release|x86.Build.0 = Release|Any CPU
 	EndGlobalSection
 	GlobalSection(SolutionProperties) = preSolution
 		HideSolutionNode = FALSE
