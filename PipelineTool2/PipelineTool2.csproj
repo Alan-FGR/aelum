@@ -46,14 +46,34 @@
     <Reference Include="System.Xml" />
   </ItemGroup>
   <ItemGroup>
+    <Compile Include="AssetImporter.cs" />
+    <Compile Include="FileEntry.cs">
+      <SubType>UserControl</SubType>
+    </Compile>
+    <Compile Include="FileEntry.Designer.cs">
+      <DependentUpon>FileEntry.cs</DependentUpon>
+    </Compile>
+    <Compile Include="FolderPicker.cs">
+      <SubType>UserControl</SubType>
+    </Compile>
+    <Compile Include="FolderPicker.Designer.cs">
+      <DependentUpon>FolderPicker.cs</DependentUpon>
+    </Compile>
     <Compile Include="Form1.cs">
       <SubType>Form</SubType>
     </Compile>
     <Compile Include="Form1.Designer.cs">
       <DependentUpon>Form1.cs</DependentUpon>
     </Compile>
+    <Compile Include="Output.cs" />
     <Compile Include="Program.cs" />
     <Compile Include="Properties\AssemblyInfo.cs" />
+    <EmbeddedResource Include="FileEntry.resx">
+      <DependentUpon>FileEntry.cs</DependentUpon>
+    </EmbeddedResource>
+    <EmbeddedResource Include="FolderPicker.resx">
+      <DependentUpon>FolderPicker.cs</DependentUpon>
+    </EmbeddedResource>
     <EmbeddedResource Include="Form1.resx">
       <DependentUpon>Form1.cs</DependentUpon>
     </EmbeddedResource>

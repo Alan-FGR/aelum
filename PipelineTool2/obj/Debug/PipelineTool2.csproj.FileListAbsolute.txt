@@ -1,9 +1,0 @@
-D:\FNA\Aelum\PipelineTool2\bin\Debug\PipelineTool2.exe.config
-D:\FNA\Aelum\PipelineTool2\bin\Debug\PipelineTool2.exe
-D:\FNA\Aelum\PipelineTool2\bin\Debug\PipelineTool2.pdb
-D:\FNA\Aelum\PipelineTool2\obj\Debug\PipelineTool2.csprojResolveAssemblyReference.cache
-D:\FNA\Aelum\PipelineTool2\obj\Debug\PipelineTool2.Properties.Resources.resources
-D:\FNA\Aelum\PipelineTool2\obj\Debug\PipelineTool2.csproj.GenerateResource.Cache
-D:\FNA\Aelum\PipelineTool2\obj\Debug\PipelineTool2.exe
-D:\FNA\Aelum\PipelineTool2\obj\Debug\PipelineTool2.pdb
-D:\FNA\Aelum\PipelineTool2\obj\Debug\PipelineTool2.Form1.resources
