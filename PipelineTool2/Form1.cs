@@ -20,18 +20,13 @@ namespace PipelineTool2
       private FileSystemWatcher watcher_;
       private int ticksSinceLastFileChange = 0;
       private Timer timer_;
-      
-      Dictionary<string, AssetImporter> importers_ = new Dictionary<string, AssetImporter>
-      {
-         {"ATLAS SPRITE", new AssetImporter(".png")}
-      };
-      
+
       public Form1()
       {
          InitializeComponent();
 
          Instance = this;
-         
+
          notifIcon.Icon = Icon;
          notifIcon.Text = "ælum Pipeline Tool";
          notifIcon.ContextMenu = new ContextMenu(new []{new MenuItem("Quit", OnNotifQuitClick), });

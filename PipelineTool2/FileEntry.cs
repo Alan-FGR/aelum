@@ -46,6 +46,7 @@ namespace PipelineTool2
 
          Output.Log("File Added", parsedFile.fileAbs);
 
+         import_type_selector.DataSource = Importers.GetImportersForExtension(Path.GetExtension(pf.fileAbs));
       }
 
       public void UpdateEntry()
