@@ -13,19 +13,25 @@ namespace PipelineTool2
 {
    public partial class Form1 : Form
    {
+      public static Form1 Instance { get; private set; }
+
       private NotifyIcon notifIcon = new NotifyIcon();
 
+      private FileSystemWatcher watcher_;
+      private int ticksSinceLastFileChange = 0;
+      private Timer timer_;
+      
       Dictionary<string, AssetImporter> importers_ = new Dictionary<string, AssetImporter>
       {
          {"ATLAS SPRITE", new AssetImporter(".png")}
       };
-
+      
       public Form1()
       {
          InitializeComponent();
 
-         Output.outputBox = rtfbox_output;
-
+         Instance = this;
+         
          notifIcon.Icon = Icon;
          notifIcon.Text = "ælum Pipeline Tool";
          notifIcon.ContextMenu = new ContextMenu(new []{new MenuItem("Quit", OnNotifQuitClick), });
@@ -57,114 +63,122 @@ Detailed information:\par
 }
  ";
          #endregion
-         
+
+         folderpicker_input.OnSetValidPath += picker => RefreshInputFiles();
          folderpicker_input.InitPicker();
          folderpicker_output.InitPicker();
          folderpicker_fxc.InitPicker();
 
          folderpicker_input.SetPath("D:\\FNA\\Aelum\\TestGame\\Assets");
          
-         RefreshInputFiles();
-
-         foreach (var atlas in atlases)
-         {
-            CreateGroupBoxForPath(atlas, true);
-         }
-
-         foreach (var pathFile in pathsAndFiles)
-         {
-            CreateGroupBoxForPath(pathFile, false);
-         }
+         timer_ = new Timer();
+         timer_.Tick += (sender, args) => Update();
+         timer_.Interval = 1000; //todo
+         timer_.Start();
       }
 
-      private void CreateGroupBoxForPath(KeyValuePair<string, List<string>> pathFile, bool atlas)
+      void Update()
       {
-         var gb = new GroupBox();
-         gb.Text = atlas ? pathFile.Key : pathFile.Key.Replace(folderpicker_input.Path,"ROOT");
-         gb.Parent = layout_paths;
-         gb.Width = 420;
-         gb.MinimumSize = new Size(420, 0);
-         gb.AutoSize = true;
-         gb.AutoSizeMode = AutoSizeMode.GrowAndShrink;
-         gb.Padding = new Padding(0);
-         gb.Margin = new Padding(8, 8, 0, 8);
-
-         var elo = new FlowLayoutPanel();
-         elo.Parent = gb;
-         elo.Location = new Point(0, 19);
-         elo.FlowDirection = FlowDirection.TopDown;
-         elo.AutoSize = true;
-         elo.AutoSizeMode = AutoSizeMode.GrowAndShrink;
-         elo.Padding = new Padding(0);
-         elo.Margin = new Padding(0);
-
-         foreach (string file in pathFile.Value)
+         if (ticksSinceLastFileChange == 2)//todo
          {
-            var fe = new FileEntry(pathFile.Key, file, Path.Combine(folderpicker_input.Path,pathFile.Key));
-            fe.Parent = elo;
-            fe.Location = new Point(5, 0);
-            fe.Margin = new Padding(8, 1, 0, 1);
-         }
-      }
-
-      FilesManager pathsAndFiles;
-      FilesManager atlases;
-
-      struct ParsedFile
-      {
-         public readonly bool atlas;
-         public readonly string key;
-
-         public ParsedFile(bool atlas, string key, string file)
-         {
-            this.atlas = atlas;
-            this.key = key;
-         }
-      }
-
-      class FilesManager : Dictionary<string, List<string>>
-      {
-         public new List<string> this[string key]
-         {
-            get
+            if (auto_build_checkbox.Checked)
             {
-               if (!ContainsKey(key))
-                  base[key] = new List<string>();
-               return base[key];
+               Output.Log("Auto building assets...");
+               //todo
             }
          }
+         ticksSinceLastFileChange++;
+
       }
 
       void RefreshInputFiles()
       {
          if (!folderpicker_input.IsValid)
+         {
+            Output.LogError("Input path is not valid");
             return;
+         }
 
-         pathsAndFiles = new FilesManager();
-         atlases = new FilesManager();
+         layout_paths.Controls.Clear();
 
          var allfiles = Directory.GetFiles(folderpicker_input.Path, "*.*", SearchOption.AllDirectories);
          
          foreach (string file in allfiles)
          {
-            var parsedFile = ParseFile(file);
-            
-            if (parsedFile.atlas)
+            AddOrUpdateFile(file);
+         }
+
+         watcher_ = new FileSystemWatcher(folderpicker_input.Path);
+         watcher_.SynchronizingObject = this;
+         watcher_.IncludeSubdirectories = true;
+         watcher_.EnableRaisingEvents = true;
+
+         watcher_.NotifyFilter = NotifyFilters.Attributes|NotifyFilters.CreationTime|
+                             NotifyFilters.DirectoryName|NotifyFilters.FileName|NotifyFilters.LastAccess|
+                             NotifyFilters.LastWrite|NotifyFilters.Security|NotifyFilters.Size;
+
+         watcher_.Changed += WatcherOnChanged;
+         watcher_.Created += WatcherOnChanged;
+         watcher_.Deleted += WatcherOnChanged;
+         watcher_.Renamed += WatcherOnChanged;
+         watcher_.Error += (sender, args) => Output.LogError("File system watching error! "+args);
+      }
+
+      private void AddOrUpdateFile(string file)
+      {
+         var parsedFile = ParseFile(file);
+         var box = GetOrCreateGroupBoxFor(parsedFile);
+         box.CreateOrUpdateFileEntry(parsedFile);
+      }
+
+      private void WatcherOnChanged(object sender, FileSystemEventArgs fileSystemEventArgs)
+      {
+         ticksSinceLastFileChange = 0;
+
+         RenamedEventArgs rea = fileSystemEventArgs as RenamedEventArgs;
+
+         if (File.Exists(fileSystemEventArgs.FullPath) || fileSystemEventArgs.ChangeType == WatcherChangeTypes.Deleted)
+         {
+            if (rea != null)
+               AddOrUpdateFile(rea.OldFullPath);
+            AddOrUpdateFile(fileSystemEventArgs.FullPath);
+         }
+         else if (fileSystemEventArgs.ChangeType != WatcherChangeTypes.Changed &&
+                  fileSystemEventArgs.ChangeType != WatcherChangeTypes.All &&
+                  Directory.Exists(fileSystemEventArgs.FullPath))
+         {
+            RefreshInputFiles(); //if dir created/renamed/deleted, we refresh the whole shebang
+         }
+      }
+
+      PipelineGroupBox GetOrCreateGroupBoxFor(ParsedFile pf)
+      {
+         foreach (Control control in layout_paths.Controls)
+         {
+            var pgb = control as PipelineGroupBox;
+            if (pgb != null)
             {
-               atlases[parsedFile.key].Add(file);
-            }
-            else
-            {
-               pathsAndFiles[parsedFile.key].Add(Path.GetFileName(file));
+               if (pf.atlasName != null)
+               {
+                  if (pgb.atlas == pf.atlasName)
+                     return pgb;
+               }
+               else if (pgb.path == pf.FileDir)
+                  return pgb;
             }
          }
+
+         //if we can't find suitable box, we create one
+         var gb = new PipelineGroupBox(pf);
+         gb.Parent = layout_paths;
+         return gb;
       }
       
       private ParsedFile ParseFile(string file)
       {
          var dir = Path.GetDirectoryName(file);
-         Uri inputPath = new Uri(folderpicker_input.Path);
-         string relPath = inputPath.MakeRelativeUri(new Uri(dir)).OriginalString;
+
+         var relPath = Folders.MakePathRelative(dir);
 
          if (relPath.ToLower().Contains("atlas"))
          {
@@ -175,11 +189,11 @@ Detailed information:\par
                string folder = folders[i];
                if (folder.ToLower().Contains("atlas"))
                {
-                  return new ParsedFile(true, folder, file);
+                  return new ParsedFile(file, folder);
                }
             }
          }
-         return new ParsedFile(false, dir, Path.GetFileName(file));
+         return new ParsedFile(file);
       }
 
       private void OnNotifQuitClick(object sender, EventArgs eventArgs)

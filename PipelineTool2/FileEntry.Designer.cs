@@ -39,17 +39,17 @@
          this.import_type_selector.FormattingEnabled = true;
          this.import_type_selector.Items.AddRange(new object[] {
             "Copy"});
-         this.import_type_selector.Location = new System.Drawing.Point(281, 0);
+         this.import_type_selector.Location = new System.Drawing.Point(272, 0);
          this.import_type_selector.Name = "import_type_selector";
          this.import_type_selector.Size = new System.Drawing.Size(79, 21);
          this.import_type_selector.TabIndex = 7;
          // 
          // build_button
          // 
-         this.build_button.AutoSize = true;
-         this.build_button.Location = new System.Drawing.Point(360, -1);
+         this.build_button.Location = new System.Drawing.Point(351, -1);
+         this.build_button.Margin = new System.Windows.Forms.Padding(0);
          this.build_button.Name = "build_button";
-         this.build_button.Size = new System.Drawing.Size(41, 23);
+         this.build_button.Size = new System.Drawing.Size(50, 23);
          this.build_button.TabIndex = 2;
          this.build_button.Text = "Build";
          this.build_button.UseVisualStyleBackColor = true;
@@ -72,7 +72,6 @@
          this.Name = "FileEntry";
          this.Size = new System.Drawing.Size(400, 21);
          this.ResumeLayout(false);
-         this.PerformLayout();
 
       }
 

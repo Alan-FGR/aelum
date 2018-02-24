@@ -22,7 +22,7 @@ namespace PipelineTool2
       {
          SetPath("NOT SELECTED");
       }
-
+      
       public string Path { get; private set; }
 
       [Browsable(true)]

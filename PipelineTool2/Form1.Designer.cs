@@ -34,6 +34,7 @@
          this.button5 = new System.Windows.Forms.Button();
          this.label1 = new System.Windows.Forms.Label();
          this.tabPage6 = new System.Windows.Forms.TabPage();
+         this.folderpicker_fxc = new PipelineTool2.FolderPicker();
          this.folderpicker_output = new PipelineTool2.FolderPicker();
          this.folderpicker_input = new PipelineTool2.FolderPicker();
          this.testbox_help = new System.Windows.Forms.RichTextBox();
@@ -55,7 +56,6 @@
          this.tabPage1 = new System.Windows.Forms.TabPage();
          this.layout_paths = new System.Windows.Forms.FlowLayoutPanel();
          this.Assets = new System.Windows.Forms.TabControl();
-         this.folderpicker_fxc = new PipelineTool2.FolderPicker();
          this.tabPage6.SuspendLayout();
          this.tabPage4.SuspendLayout();
          this.tabPage3.SuspendLayout();
@@ -80,6 +80,8 @@
          // auto_build_checkbox
          // 
          this.auto_build_checkbox.AutoSize = true;
+         this.auto_build_checkbox.Checked = true;
+         this.auto_build_checkbox.CheckState = System.Windows.Forms.CheckState.Checked;
          this.auto_build_checkbox.Location = new System.Drawing.Point(12, 12);
          this.auto_build_checkbox.Name = "auto_build_checkbox";
          this.auto_build_checkbox.Size = new System.Drawing.Size(74, 17);
@@ -118,6 +120,14 @@
          this.tabPage6.TabIndex = 4;
          this.tabPage6.Text = "Paths / Help";
          this.tabPage6.UseVisualStyleBackColor = true;
+         // 
+         // folderpicker_fxc
+         // 
+         this.folderpicker_fxc.Location = new System.Drawing.Point(22, 55);
+         this.folderpicker_fxc.Name = "folderpicker_fxc";
+         this.folderpicker_fxc.Purpose = "Path to FXC";
+         this.folderpicker_fxc.Size = new System.Drawing.Size(410, 21);
+         this.folderpicker_fxc.TabIndex = 4;
          // 
          // folderpicker_output
          // 
@@ -328,14 +338,6 @@
          this.Assets.Size = new System.Drawing.Size(460, 513);
          this.Assets.TabIndex = 0;
          // 
-         // folderpicker_fxc
-         // 
-         this.folderpicker_fxc.Location = new System.Drawing.Point(22, 55);
-         this.folderpicker_fxc.Name = "folderpicker_fxc";
-         this.folderpicker_fxc.Purpose = "Path to FXC";
-         this.folderpicker_fxc.Size = new System.Drawing.Size(410, 21);
-         this.folderpicker_fxc.TabIndex = 4;
-         // 
          // Form1
          // 
          this.AutoScaleDimensions = new System.Drawing.SizeF(6F, 13F);
@@ -377,7 +379,6 @@
       private System.Windows.Forms.TabPage tabPage6;
       private System.Windows.Forms.RichTextBox testbox_help;
       private System.Windows.Forms.TabPage tabPage4;
-      private System.Windows.Forms.RichTextBox rtfbox_output;
       private System.Windows.Forms.TabPage tabPage3;
       private System.Windows.Forms.Label label3;
       private System.Windows.Forms.TabControl tabControl1;
@@ -394,9 +395,10 @@
       private System.Windows.Forms.TabPage tabPage1;
       private System.Windows.Forms.FlowLayoutPanel layout_paths;
       private System.Windows.Forms.TabControl Assets;
-      private FolderPicker folderpicker_input;
-      private FolderPicker folderpicker_output;
-      private FolderPicker folderpicker_fxc;
+      public System.Windows.Forms.RichTextBox rtfbox_output;
+      public FolderPicker folderpicker_input;
+      public FolderPicker folderpicker_output;
+      public FolderPicker folderpicker_fxc;
    }
 }
 

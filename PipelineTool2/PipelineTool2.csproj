@@ -47,6 +47,11 @@
   </ItemGroup>
   <ItemGroup>
     <Compile Include="AssetImporter.cs" />
+    <Compile Include="Folders.cs" />
+    <Compile Include="ParsedFile.cs" />
+    <Compile Include="PipelineGroupBox.cs">
+      <SubType>Component</SubType>
+    </Compile>
     <Compile Include="FileEntry.cs">
       <SubType>UserControl</SubType>
     </Compile>

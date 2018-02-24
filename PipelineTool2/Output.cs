@@ -1,9 +1,10 @@
 ﻿using System.Diagnostics;
 using System.Windows.Forms;
+using PipelineTool2;
 
 public static class Output
 {
-   public static RichTextBox outputBox;
+   static RichTextBox outputBox => Form1.Instance.rtfbox_output;
 
    public static void Log(string message, string details = "")
    {
