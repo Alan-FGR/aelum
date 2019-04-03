@@ -97,7 +97,7 @@ function setPageMarkdown(md) {
         {tables: true, strikethrough: true, noHeaderId: true,
             simplifiedAutoLink: true, excludeTrailingPunctuationFromURLs: true,
             tablesHeaderId: true, ghCodeBlocks: true, tasklists: true, ghMentions: true,
-            simpleLineBreaks: true, parseImgDimensions: true}
+            parseImgDimensions: true}
         );
     var md_html = converter.makeHtml(md);
     $("#markdown").html(md_html);
