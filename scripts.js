@@ -96,7 +96,7 @@ function setPageMarkdown(md) {
     var converter = new showdown.Converter(
         {tables: true, strikethrough: true, noHeaderId: true,
             simplifiedAutoLink: true, excludeTrailingPunctuationFromURLs: true,
-            tablesHeaderId=true, ghCodeBlocks: true, tasklists: true, ghMentions: true,
+            tablesHeaderId: true, ghCodeBlocks: true, tasklists: true, ghMentions: true,
             simpleLineBreaks: true, parseImgDimensions: true}
         );
     var md_html = converter.makeHtml(md);
