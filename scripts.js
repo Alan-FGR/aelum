@@ -93,7 +93,12 @@ function setPageMarkdown(md) {
             TocAnchorMap[slugify(match[1])] = match[2].slice(1);
     }
 
-    var converter = new showdown.Converter({noHeaderId: true});
+    var converter = new showdown.Converter(
+        {tables: true, strikethrough: true, noHeaderId: true,
+            simplifiedAutoLink: true, excludeTrailingPunctuationFromURLs: true,
+            tablesHeaderId=true, ghCodeBlocks: true, tasklists: true, ghMentions: true,
+            simpleLineBreaks: true, parseImgDimensions: true}
+        );
     var md_html = converter.makeHtml(md);
     $("#markdown").html(md_html);
     $(":header").prepend(function (){
